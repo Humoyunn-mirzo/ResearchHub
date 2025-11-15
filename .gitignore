@@ -45,3 +45,6 @@ bin/
 .mvn/
 
 #The configurations Ive added above cover more than necessary, just in case
+
+# Env file, contains sensitive information
+.env
