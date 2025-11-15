@@ -10,11 +10,9 @@ an academic collaboration platform connecting Central Asian and EU universities.
 This initial version provides:
 - ✅ A working **Gradle** build
 - ✅ All required **Spring Boot dependencies**
-- ✅ **JPA** included (database not yet configured)
+- ✅ A configured Dockerfile
+- ✅ **JPA** included
 - ✅ Passing tests and ready for API development
-
-> ⚠️ The application **does not yet connect to a database**.  
-> It includes JPA dependencies, but Postgres setup will be added in the next stage.
 
 ---
 
@@ -94,9 +92,3 @@ BUILD SUCCESSFUL
     - `/api/professors`, `/api/students`, `/api/topics`
 - [ ] Add **JWT-based authentication**
 - [ ] Add **integration tests** using Testcontainers
-
----
-
-**Maintainer:** `@ulugbekobilov`  
-**Branch:** `backend`  
-**Last Updated:** November 2025

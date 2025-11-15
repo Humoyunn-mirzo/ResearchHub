@@ -27,3 +27,31 @@ This platform bridges academia by enabling:
 ├── backend/ # Backend routes (API handlers, DB logic, auth)
 ├── .gitignore # Ignored files and folders for Git
 └── README.md # Project documentation
+
+## 📦 Usage (Docker)
+
+You can build and run the entire platform using Docker Compose.
+
+> [!IMPORTANT]
+> Make sure to run all Docker commands **from the root folder** of the project  
+> (the folder containing `docker-compose.yml`).
+
+
+### Requirements
+
+- You must have Docker installed
+- For windows users, you must have WSL2 installed as well
+
+
+### Build, Run and Stop the project
+This command builds updated images and starts all services in the background:
+
+```
+docker compose up -d --build
+```
+
+This command shuts down all the services running in the background:
+
+```
+docker compose down
+```
