@@ -28,7 +28,7 @@ This platform bridges academia by enabling:
 ├── .gitignore # Ignored files and folders for Git
 └── README.md # Project documentation
 
-## 📦 Usage (Docker)
+## 📦 Usage
 
 You can build and run the entire platform using Docker Compose.
 
@@ -41,6 +41,14 @@ You can build and run the entire platform using Docker Compose.
 
 - You must have Docker installed
 - For windows users, you must have WSL2 installed as well
+- You must also create an `.env` file 
+
+The `.env` file's contents must be like so:
+```
+DB_USER=admin
+DB_PASSWORD=password
+```
+When running locally the user and password don't matter, but in production, a secret password will be used, which must not be leaked.
 
 
 ### Build, Run and Stop the project
