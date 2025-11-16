@@ -34,13 +34,13 @@ You can build and run the entire platform using Docker Compose.
 
 > [!IMPORTANT]
 > Make sure to run all Docker commands **from the root folder** of the project  
-> (the folder containing `docker-compose.yml`).
+> (the folder containing `compose.yaml`).
 
 
 ### Requirements
 
 - You must have Docker installed
-- For windows users, you must have WSL2 installed as well
+- For windows users - you must use WSL2
 - You must also create an `.env` file 
 
 The `.env` file's contents must be like so:
