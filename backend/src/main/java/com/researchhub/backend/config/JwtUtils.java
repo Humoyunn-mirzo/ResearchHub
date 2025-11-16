@@ -13,7 +13,7 @@ import java.util.Date;
 public class JwtUtils {
 
     @Value("${JWT_SECRET}")
-    private final String jwtSecret;
+    private String jwtSecret;
     private final long jwtExpirationMs = 1000 * 60 * 15; // 15 min
 
     public String generateToken(String email) {
