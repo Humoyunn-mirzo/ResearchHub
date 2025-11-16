@@ -28,7 +28,8 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/register").hasRole("UNI_ADMIN")
+                .requestMatchers("/test-db").permitAll()
+                .requestMatchers("/auth/register").hasRole("UNIVERSITY_ADMIN")
                 .requestMatchers("/auth/**").permitAll()
                 .anyRequest().authenticated()
             )
