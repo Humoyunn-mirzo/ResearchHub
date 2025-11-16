@@ -34,9 +34,9 @@ services:
       interval: 3s
       timeout: 5s
       retries: 10
-    ## For access outside of host machine
-    # ports:
-    #   - "5432:5432"
+    # For access outside of host machine
+    ports:
+      - "5432:5432"
     networks:
       - appnet
 
