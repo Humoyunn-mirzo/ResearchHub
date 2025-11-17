@@ -56,8 +56,6 @@ DTOs exist because:
 Types of DTOs:
 - Request DTOs (e.g., CreateUserRequest)
 - Response DTOs (e.g., UserResponse)
-- Authentication DTOs (LoginRequest, LoginResponse)
-- Update DTOs (UpdateUserRequest)
 
 DTOs protect your API from leaking internal database details.
 
@@ -138,7 +136,7 @@ Database
 ```
 
 Supporting flow:
-- DTOs travel between Controller ↔ Service
+- DTOs travel between Client ↔ Controller
 - Entities travel between Service ↔ Repository
 
 This structure ensures:
@@ -147,37 +145,3 @@ This structure ensures:
 - Testability
 - Clean separation of concerns
 
----
-
-## Directory Structure
-
-```
-src/main/java/com/researchhub/backend/
-    controller/
-        UserController.java
-        ProjectController.java
-        ...
-
-    dto/
-        RegisterRequest.java
-        LoginResponse.java
-        ...
-
-    entity/
-        User.java
-        Project.java
-        ...
-
-    repository/
-        UserRepository.java
-        ProjectRepository.java
-        ...
-
-    service/
-        UserService.java
-        ProjectService.java
-        ...
-
-docs/
-    architecture.md   ← this file
-```

@@ -1,7 +1,5 @@
 package com.researchhub.backend.auth;
 
-import com.researchhub.backend.dto.*;
-
 import org.springframework.web.bind.annotation.*;
 
 @RestController
