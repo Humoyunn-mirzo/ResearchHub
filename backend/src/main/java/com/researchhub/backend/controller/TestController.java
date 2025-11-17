@@ -11,17 +11,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @RestController
-public class DatabaseTestController {
-    private static final Logger log = LoggerFactory.getLogger(DatabaseTestController.class);
+public class TestController {
+    private static final Logger log = LoggerFactory.getLogger(TestController.class);
 
 
     @Autowired
     private DataSource dataSource;
 
-    @GetMapping("/test-db")
+    @GetMapping("/test/db")
     public String testDatabaseConnection() {
-        log.info("Received /test-db request");
-
         try (Connection conn = dataSource.getConnection()) {
             if (!conn.isClosed()) {
                 return "Connected to PostgreSQL!";
@@ -31,6 +29,11 @@ public class DatabaseTestController {
         } catch (Exception e) {
             return "Database connection FAILED: " + e.getMessage();
         }
+    }
+
+    @GetMapping("/test/student-auth")
+    public String testStudentAuth() {
+        return "Student authorization exists!";
     }
 }
 
