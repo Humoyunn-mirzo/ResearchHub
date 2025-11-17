@@ -6,6 +6,7 @@ services:
     container_name: backend
     env_file: .env
     environment:
+      # Overrides datasource in application.yaml
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/appdb
     ## For access outside of docker container
     # ports:
