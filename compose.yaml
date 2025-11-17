@@ -7,8 +7,6 @@ services:
     env_file: .env
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/appdb
-      SPRING_DATASOURCE_USERNAME: ${DB_USER}
-      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
     ## For access outside of docker container
     # ports:
     #   - "8080:8080"
@@ -21,7 +19,6 @@ services:
   db:
     image: postgres:16
     container_name: db
-    env_file: .env
     environment:
       POSTGRES_DB: appdb
       POSTGRES_USER: ${DB_USER}
