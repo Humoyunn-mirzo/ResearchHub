@@ -1,11 +1,11 @@
-package com.researchhub.backend.model;
+package com.researchhub.backend.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
 
 import java.util.Set;
 
-import com.researchhub.backend.model.enums.Role;
+import com.researchhub.backend.entity.enums.Role;
 
 @Data
 @Entity

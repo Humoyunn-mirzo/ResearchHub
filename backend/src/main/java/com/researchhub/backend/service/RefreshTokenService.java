@@ -1,6 +1,6 @@
 package com.researchhub.backend.service;
 
-import com.researchhub.backend.model.RefreshToken;
+import com.researchhub.backend.entity.RefreshToken;
 import com.researchhub.backend.repository.RefreshTokenRepository;
 import org.springframework.stereotype.Service;
 

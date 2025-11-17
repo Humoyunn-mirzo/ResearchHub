@@ -2,13 +2,14 @@ package com.researchhub.backend.service;
 
 import com.researchhub.backend.config.JwtUtils;
 import com.researchhub.backend.dto.*;
-import com.researchhub.backend.model.User;
-import com.researchhub.backend.model.enums.Role;
+import com.researchhub.backend.entity.User;
+import com.researchhub.backend.entity.enums.Role;
 import com.researchhub.backend.repository.UserRepository;
 
 import java.awt.List;
 import java.util.Set;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

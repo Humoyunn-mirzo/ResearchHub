@@ -1,7 +1,7 @@
 # Backend Architecture Overview
 
 This document explains all major backend layers used in a Spring Boot application:
-Controller, DTO, Model (Entity), Repository, and Service.
+Controller, DTO, Entity, Repository, and Service.
 
 It describes how each layer works, how they interact, and why they exist.
 
@@ -11,7 +11,7 @@ It describes how each layer works, how they interact, and why they exist.
 
 1. [Controller Layer](#controller-layer)
 2. [DTO Layer](#dto-layer)
-3. [Model (Entity) Layer](#model-entity-layer)
+3. [Entity Layer](#entity-layer)
 4. [Repository Layer](#repository-layer)
 5. [Service Layer](#service-layer)
 6. [Layer Interaction Summary](#layer-interaction-summary)
@@ -63,9 +63,9 @@ DTOs protect your API from leaking internal database details.
 
 ---
 
-## Model (Entity) Layer
+## Entity Layer
 
-The model layer contains database entities annotated with JPA/Hibernate.
+The entity layer contains database entities annotated with JPA/Hibernate.
 
 Entities:
 - Map directly to database tables
@@ -159,11 +159,11 @@ src/main/java/com/researchhub/backend/
         ...
 
     dto/
-        CreateUserRequest.java
-        UserResponse.java
+        RegisterRequest.java
+        LoginResponse.java
         ...
 
-    model/
+    entity/
         User.java
         Project.java
         ...
