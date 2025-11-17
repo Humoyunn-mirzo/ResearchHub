@@ -9,7 +9,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/appdb
       SPRING_DATASOURCE_USERNAME: ${DB_USER}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
-    ## For access outside of host machine
+    ## For access outside of docker container
     # ports:
     #   - "8080:8080"
     depends_on:
@@ -33,7 +33,7 @@ services:
       interval: 3s
       timeout: 5s
       retries: 10
-    # For access outside of host machine
+    # For access outside of docker container
     ports:
       - "5432:5432"
     networks:
