@@ -1,4 +1,4 @@
-package com.researchhub.backend.entity.enums;
+package com.researchhub.backend.user;
 
 public enum Role {
     DEVELOPER,

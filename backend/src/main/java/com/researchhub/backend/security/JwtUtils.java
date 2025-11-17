@@ -1,4 +1,4 @@
-package com.researchhub.backend.config;
+package com.researchhub.backend.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;

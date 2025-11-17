@@ -1,4 +1,4 @@
-package com.researchhub.backend.dto;
+package com.researchhub.backend.auth;
 
 import lombok.Data;
 

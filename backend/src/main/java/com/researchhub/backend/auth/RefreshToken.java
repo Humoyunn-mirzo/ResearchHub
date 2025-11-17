@@ -1,4 +1,4 @@
-package com.researchhub.backend.entity;
+package com.researchhub.backend.auth;
 
 import jakarta.persistence.*;
 import lombok.Data;

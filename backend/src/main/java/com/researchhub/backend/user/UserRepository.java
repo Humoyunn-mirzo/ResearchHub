@@ -1,6 +1,5 @@
-package com.researchhub.backend.repository;
+package com.researchhub.backend.user;
 
-import com.researchhub.backend.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

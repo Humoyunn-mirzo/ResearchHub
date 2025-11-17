@@ -1,10 +1,9 @@
-package com.researchhub.backend.service;
+package com.researchhub.backend.auth;
 
-import com.researchhub.backend.config.JwtUtils;
-import com.researchhub.backend.dto.*;
-import com.researchhub.backend.entity.User;
-import com.researchhub.backend.entity.enums.Role;
-import com.researchhub.backend.repository.UserRepository;
+import com.researchhub.backend.security.JwtUtils;
+import com.researchhub.backend.user.User;
+import com.researchhub.backend.user.Role;
+import com.researchhub.backend.user.UserRepository;
 
 import java.awt.List;
 import java.util.Set;

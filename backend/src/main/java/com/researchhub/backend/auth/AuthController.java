@@ -1,7 +1,6 @@
-package com.researchhub.backend.controller;
+package com.researchhub.backend.auth;
 
 import com.researchhub.backend.dto.*;
-import com.researchhub.backend.service.AuthService;
 
 import org.springframework.web.bind.annotation.*;
 

@@ -1,6 +1,6 @@
-package com.researchhub.backend.service;
+package com.researchhub.backend.security;
 
-import com.researchhub.backend.repository.UserRepository;
+import com.researchhub.backend.user.UserRepository;
 import org.springframework.security.core.userdetails.*;
 import org.springframework.stereotype.Service;
 

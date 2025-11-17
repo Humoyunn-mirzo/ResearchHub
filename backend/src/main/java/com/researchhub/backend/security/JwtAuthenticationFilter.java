@@ -1,6 +1,5 @@
-package com.researchhub.backend.config;
+package com.researchhub.backend.security;
 
-import com.researchhub.backend.service.UserDetailsServiceImpl;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import org.springframework.security.authentication.*;
