@@ -47,7 +47,7 @@ The `.env` file's contents must be like so:
 ```
 DB_USER=admin
 DB_PASSWORD=password
-JWT_SECRET=SecretKeyThatIs32BytesLongInBase64
+JWT_SECRET=SecretJwtKeyThatIsAtLeast32BytesLongInBase64
 ```
 When running locally the user and password don't matter, but in production, a secret password will be used, which must not be leaked.
 When deploying to production, the JWT secret must be generated using the following command:

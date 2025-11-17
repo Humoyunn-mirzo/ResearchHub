@@ -29,7 +29,7 @@ public class JwtUtils {
 
     public String extractEmail(String token) {
         return Jwts.parserBuilder()
-                .setSigningKey(jwtSecret.getBytes())
+                .setSigningKey(Decoders.BASE64.decode(jwtSecret))
                 .build()
                 .parseClaimsJws(token)
                 .getBody()
