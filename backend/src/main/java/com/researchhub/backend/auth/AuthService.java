@@ -5,18 +5,11 @@ import com.researchhub.backend.user.User;
 import com.researchhub.backend.user.Role;
 import com.researchhub.backend.user.UserRepository;
 
-import ch.qos.logback.core.subst.Token;
-
-import java.awt.List;
 import java.util.Set;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseCookie;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.CookieValue;
 
 @Service
 public class AuthService {
