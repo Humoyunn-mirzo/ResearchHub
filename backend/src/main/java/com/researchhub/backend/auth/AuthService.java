@@ -5,13 +5,18 @@ import com.researchhub.backend.user.User;
 import com.researchhub.backend.user.Role;
 import com.researchhub.backend.user.UserRepository;
 
+import ch.qos.logback.core.subst.Token;
+
 import java.awt.List;
 import java.util.Set;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.CookieValue;
 
 @Service
 public class AuthService {
@@ -31,7 +36,7 @@ public class AuthService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public LoginResponse register(String email, String password, String role) {
+    public void register(String email, String password, String role) {
 
         if (userRepository.findByEmail(email).isPresent()) {
             throw new RuntimeException("Email already exists");
@@ -43,14 +48,9 @@ public class AuthService {
         user.setRoles(Set.of(Role.valueOf(role)));
 
         userRepository.save(user);
-
-        String accessToken = jwtUtils.generateToken(user.getEmail());
-        var refreshToken = refreshTokenService.create(user.getId());
-
-        return new LoginResponse(accessToken, refreshToken.getToken());
     }
 
-    public LoginResponse login(String email, String password) {
+    public TokenPair login(String email, String password) {
         authManager.authenticate(
             new UsernamePasswordAuthenticationToken(email, password)
         );
@@ -60,17 +60,16 @@ public class AuthService {
         String accessToken = jwtUtils.generateToken(user.getEmail());
         var refreshToken = refreshTokenService.create(user.getId());
 
-        return new LoginResponse(accessToken, refreshToken.getToken());
+        return new TokenPair(accessToken, refreshToken.getToken());
     }
 
-    public LoginResponse refresh(String token) {
-        var rt = refreshTokenService.validate(token);
+    public TokenPair refresh(String refreshToken) {
+        var rt = refreshTokenService.validate(refreshToken);
         var user = userRepository.findById(rt.getUserId()).get();
 
-        return new LoginResponse(
+        return new TokenPair(
             jwtUtils.generateToken(user.getEmail()),
             refreshTokenService.create(user.getId()).getToken()
         );
     }
 }
-

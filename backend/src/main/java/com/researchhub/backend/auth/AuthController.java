@@ -1,5 +1,8 @@
 package com.researchhub.backend.auth;
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -13,18 +16,37 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public LoginResponse register(@RequestBody RegisterRequest req) {
-        return authService.register(req.getEmail(), req.getPassword(), req.getRole());
+    public String register(@RequestBody RegisterRequest req) {
+        authService.register(req.getEmail(), req.getPassword(), req.getRole());
+        return "Successfully created user";
     }
 
     @PostMapping("/login")
-    public LoginResponse login(@RequestBody LoginRequest req) {
-        return authService.login(req.getEmail(), req.getPassword());
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest req) {
+        TokenPair newTokens = authService.login(req.getEmail(), req.getPassword());
+
+        return GetTokenResponse(newTokens);
     }
 
     @PostMapping("/refresh")
-    public LoginResponse refresh(@RequestBody RefreshTokenRequest req) {
-        return authService.refresh(req.getRefreshToken());
+    public ResponseEntity<LoginResponse> refresh(@CookieValue(value = "refreshToken") String refreshToken) {
+        TokenPair newTokens = authService.refresh(refreshToken);
+
+        return GetTokenResponse(newTokens);
+    }
+
+    private ResponseEntity<LoginResponse> GetTokenResponse(TokenPair tokenPair) {
+        var cookie = ResponseCookie
+        .from("refreshToken", tokenPair.refreshToken())
+        .secure(true)
+        .httpOnly(true)
+        .sameSite("Lax")
+        .path("/api/auth")
+        .build();
+
+        return ResponseEntity
+        .ok()
+        .header(HttpHeaders.SET_COOKIE, cookie.toString())
+        .body(new LoginResponse(tokenPair.accessToken()));
     }
 }
-
