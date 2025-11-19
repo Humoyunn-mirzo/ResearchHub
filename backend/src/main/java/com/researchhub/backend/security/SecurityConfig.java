@@ -26,13 +26,18 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/test/db").permitAll()
-                .requestMatchers("/test/student-auth").hasRole("STUDENT")
-                .requestMatchers("/auth/register").hasRole("UNIVERSITY_ADMIN")
-                .requestMatchers("/auth/**").permitAll()
-                .anyRequest().authenticated()
-            )
+            .authorizeHttpRequests(auth -> {
+                auth.requestMatchers("/test/db").permitAll();
+                auth.requestMatchers("/test/student-auth").hasRole("STUDENT");
+                auth.requestMatchers("/test/developer-auth").hasRole("DEVELOPER");
+
+                auth.requestMatchers("/auth/**").permitAll();
+
+                auth.requestMatchers("/user/register").hasRole("UNIVERSITY_ADMIN");
+                auth.requestMatchers("/user/register-developer").hasRole("DEVELOPER");
+
+                auth.anyRequest().denyAll();
+            })
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

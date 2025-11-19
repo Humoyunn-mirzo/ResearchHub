@@ -26,5 +26,5 @@ public class User {
     )
     @Column(name = "role")
     @Enumerated(EnumType.STRING)
-    private Set<Role> roles;
+    private Set<UserRole> roles;
 }

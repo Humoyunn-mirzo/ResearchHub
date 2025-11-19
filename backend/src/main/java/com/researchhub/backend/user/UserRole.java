@@ -1,6 +1,6 @@
 package com.researchhub.backend.user;
 
-public enum Role {
+public enum UserRole {
     DEVELOPER,
     PROFESSOR,
     STUDENT,

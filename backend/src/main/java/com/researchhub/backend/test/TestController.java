@@ -34,5 +34,10 @@ public class TestController {
     public String testStudentAuth() {
         return "Student authorization exists!";
     }
+
+    @GetMapping("/test/developer-auth")
+    public String testDeveloperAuth() {
+        return "Developer authorization exists!";
+    }
 }
 

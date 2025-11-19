@@ -15,12 +15,6 @@ public class AuthController {
         this.authService = auth;
     }
 
-    @PostMapping("/register")
-    public String register(@RequestBody RegisterRequest req) {
-        authService.register(req.getEmail(), req.getPassword(), req.getRole());
-        return "Successfully created user";
-    }
-
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest req) {
         TokenPair newTokens = authService.login(req.getEmail(), req.getPassword());

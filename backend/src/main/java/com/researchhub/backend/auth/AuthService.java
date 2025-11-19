@@ -2,11 +2,12 @@ package com.researchhub.backend.auth;
 
 import com.researchhub.backend.security.JwtUtils;
 import com.researchhub.backend.user.User;
-import com.researchhub.backend.user.Role;
+import com.researchhub.backend.user.UserRole;
 import com.researchhub.backend.user.UserRepository;
 
 import java.util.Set;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -18,29 +19,13 @@ public class AuthService {
     private final JwtUtils jwtUtils;
     private final RefreshTokenService refreshTokenService;
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
 
     public AuthService(AuthenticationManager authManager, JwtUtils jwtUtils,
-                       RefreshTokenService refreshTokenService, UserRepository userRepository, PasswordEncoder passwordEncoder) {
+                       RefreshTokenService refreshTokenService, UserRepository userRepository) {
         this.authManager = authManager;
         this.jwtUtils = jwtUtils;
         this.refreshTokenService = refreshTokenService;
         this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
-
-    public void register(String email, String password, String role) {
-
-        if (userRepository.findByEmail(email).isPresent()) {
-            throw new RuntimeException("Email already exists");
-        }
-
-        User user = new User();
-        user.setEmail(email);
-        user.setPasswordHash(passwordEncoder.encode(password));
-        user.setRoles(Set.of(Role.valueOf(role)));
-
-        userRepository.save(user);
     }
 
     public TokenPair login(String email, String password) {

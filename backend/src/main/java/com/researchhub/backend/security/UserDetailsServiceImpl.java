@@ -1,11 +1,18 @@
 package com.researchhub.backend.security;
 
 import com.researchhub.backend.user.UserRepository;
+import com.researchhub.backend.user.UserRole;
+
+import java.util.Arrays;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.userdetails.*;
 import org.springframework.stereotype.Service;
 
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
+    private static final Logger log = LoggerFactory.getLogger(UserDetailsServiceImpl.class);
 
     private final UserRepository userRepository;
 
@@ -18,16 +25,17 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         var user = userRepository.findByEmail(email)
             .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        String[] authorities = user.getRoles()
+        String[] roleNames = user.getRoles()
             .stream()
-            .map(role -> "ROLE_" + role.name())
-            .toArray(String[]::new)
-        ;
+            .map(UserRole::name)
+            .toArray(String[]::new);
+
+        log.info("user has the following authorities: " + Arrays.toString(roleNames));
 
         return org.springframework.security.core.userdetails.User
             .withUsername(user.getEmail())
             .password(user.getPasswordHash())
-            .authorities(authorities)
+            .roles(roleNames)
             .build();
     }
 }
