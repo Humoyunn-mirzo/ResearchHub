@@ -14,7 +14,7 @@ public class RefreshTokenService {
         this.repo = repo;
     }
 
-    public RefreshToken create(Long userId) {
+    public RefreshToken create(UUID userId) {
         RefreshToken token = new RefreshToken();
         token.setToken(UUID.randomUUID().toString());
         token.setUserId(userId);
