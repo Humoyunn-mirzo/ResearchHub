@@ -1,4 +1,4 @@
-package com.researchhub.backend.applications;
+package com.researchhub.backend.application;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;

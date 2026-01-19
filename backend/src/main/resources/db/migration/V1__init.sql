@@ -24,3 +24,36 @@ CREATE TABLE refresh_tokens (
     CONSTRAINT pk_refresh_token PRIMARY KEY (id),
     CONSTRAINT fk_refresh_token_user FOREIGN KEY (user_id) REFERENCES users(id)
 );
+
+CREATE TABLE students (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+
+    field_of_interest TEXT,
+    bio TEXT,
+
+    total_applications INTEGER NOT NULL DEFAULT 0,
+    accepted_projects INTEGER NOT NULL DEFAULT 0,
+
+    created_at TIMESTAMPTZ NOT NULL,
+    updated_at TIMESTAMPTZ NOT NULL
+);
+
+
+CREATE TABLE applications (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    student_id UUID NOT NULL,
+    status VARCHAR(50) NOT NULL DEFAULT 'pending',
+    cv_url TEXT,
+    applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT fk_applications_student FOREIGN KEY (student_id)
+        REFERENCES students(id) ON DELETE CASCADE
+);
+
+
+CREATE UNIQUE INDEX idx_students_email ON students(email);
+ALTER TABLE students
+ADD CONSTRAINT chk_students_counters CHECK (total_applications >= 0 AND accepted_projects >= 0);

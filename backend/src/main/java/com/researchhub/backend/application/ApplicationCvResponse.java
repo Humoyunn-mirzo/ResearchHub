@@ -1,4 +1,4 @@
-package com.researchhub.backend.applications;
+package com.researchhub.backend.application;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
