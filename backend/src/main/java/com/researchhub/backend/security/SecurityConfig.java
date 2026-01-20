@@ -41,6 +41,9 @@ public class SecurityConfig {
                 auth.requestMatchers(HttpMethod.GET, "/universities/**").permitAll();
                 auth.requestMatchers(HttpMethod.POST, "/universities").hasRole("DEVELOPER");
 
+                auth.requestMatchers(HttpMethod.GET, "students/**").authenticated();
+                auth.requestMatchers(HttpMethod.POST, "students").hasRole("UNIVERSITY_ADMIN");
+
                 auth.anyRequest().denyAll();
             })
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
