@@ -31,6 +31,31 @@ CREATE TABLE refresh_tokens (
 
 
 
+CREATE TABLE universities (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    name VARCHAR(255) NOT NULL,
+    country VARCHAR(255) NOT NULL,
+    region VARCHAR(255) NOT NULL,
+
+    ranking_score INTEGER NOT NULL DEFAULT 0,
+    total_research_projects INTEGER NOT NULL DEFAULT 0,
+    total_students_supported INTEGER NOT NULL DEFAULT 0,
+
+    created_at TIMESTAMPTZ NOT NULL,
+    updated_at TIMESTAMPTZ NOT NULL
+
+    CONSTRAINT chk_universities_counters
+        CHECK (
+            ranking_score >= 0
+            AND total_research_projects >= 0
+            AND total_students_supported >= 0
+        )
+);
+CREATE UNIQUE INDEX idx_universities_name ON universities(name);
+
+
+
 CREATE TABLE students (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
@@ -73,29 +98,4 @@ CREATE TABLE applications (
     CONSTRAINT fk_applications_student FOREIGN KEY (student_id)
         REFERENCES students(id) ON DELETE CASCADE
 );
-
-
-CREATE TABLE universities (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-
-    name VARCHAR(255) NOT NULL,
-    country VARCHAR(255) NOT NULL,
-    region VARCHAR(255) NOT NULL,
-
-    ranking_score INTEGER NOT NULL DEFAULT 0,
-    total_research_projects INTEGER NOT NULL DEFAULT 0,
-    total_students_supported INTEGER NOT NULL DEFAULT 0,
-
-    created_at TIMESTAMPTZ NOT NULL,
-    updated_at TIMESTAMPTZ NOT NULL
-);
-ALTER TABLE universities
-ADD CONSTRAINT chk_universities_counters
-CHECK (
-    ranking_score >= 0 AND
-    total_research_projects >= 0 AND
-    total_students_supported >= 0
-);
-CREATE UNIQUE INDEX idx_universities_name ON universities(name);
-
 
