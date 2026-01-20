@@ -37,6 +37,8 @@ CREATE TABLE students (
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
 
+    university_id UUID, --FK to university id
+
     field_of_interest TEXT,
     bio TEXT,
 
@@ -44,11 +46,21 @@ CREATE TABLE students (
     accepted_projects INTEGER NOT NULL DEFAULT 0,
 
     created_at TIMESTAMPTZ NOT NULL,
-    updated_at TIMESTAMPTZ NOT NULL
+    updated_at TIMESTAMPTZ NOT NULL,
+
+    CONSTRAINT fk_students_university
+            FOREIGN KEY (university_id)
+            REFERENCES universities(id)
+            ON DELETE SET NULL, --if uni deleted the reference will be null, student wont vanish
+
+    CONSTRAINT chk_students_counters
+        CHECK (
+            total_applications >= 0
+            AND accepted_projects >= 0
+        )
 );
 CREATE UNIQUE INDEX idx_students_email ON students(email);
-ALTER TABLE students
-ADD CONSTRAINT chk_students_counters CHECK (total_applications >= 0 AND accepted_projects >= 0);
+
 
 
 CREATE TABLE applications (

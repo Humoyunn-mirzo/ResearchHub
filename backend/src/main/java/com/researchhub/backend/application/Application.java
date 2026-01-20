@@ -22,6 +22,10 @@ public class Application {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_id", nullable = false)
     private Student student;
+    /*Here student is just for the ORM - the application.java owns the relationship
+    * to keep Student object light. This way we can keep lazy fetching
+    * and also allow the ORM to do its job for efficiency in speed and coding.
+    * However, the SQL uses the ID unlike JPA/hibernate*/
 
     @Column(name = "status", nullable = false, length = 50)
     private String status = "pending"; //change to enum later

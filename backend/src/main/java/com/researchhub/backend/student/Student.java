@@ -1,32 +1,37 @@
 package com.researchhub.backend.student;
 
-import com.researchhub.backend.application.Application;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.GenericGenerator;
 
 import java.time.OffsetDateTime;
-import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "students")
+@Table(
+        name = "students",
+        indexes = {
+                @Index(name = "idx_students_email", columnList = "email", unique = true)
+        }
+)
 @Getter
 @Setter
 public class Student {
-
+    //I chose not to use @OneToMany to application, but instead made a query in applicationrepository
+    //this way, there is more control over the relationship and query and its faster and more efficient.
     @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(columnDefinition = "uuid", updatable = false, nullable = false)
     private UUID id;
 
     @Column(nullable = false, length = 255)
     private String name;
 
-    @Column(nullable = false, unique = true, length = 255)
+    @Column(nullable = false, length = 255, unique = true)
     private String email;
+
+    @Column(name = "university_id")
+    private UUID universityId;
 
     @Column(name = "field_of_interest", columnDefinition = "TEXT")
     private String fieldOfInterest;
@@ -35,20 +40,16 @@ public class Student {
     private String bio;
 
     @Column(name = "total_applications", nullable = false)
-    private Integer totalApplications = 0;
+    private int totalApplications = 0;
 
     @Column(name = "accepted_projects", nullable = false)
-    private Integer acceptedProjects = 0;
+    private int acceptedProjects = 0;
 
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt = OffsetDateTime.now();
 
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt = OffsetDateTime.now();
-
-    // One-to-many relationship with applications
-    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Application> applications;
 
     @PreUpdate
     public void preUpdate() {
