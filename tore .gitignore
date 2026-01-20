@@ -1,217 +1,0 @@
-[1mdiff --git a/.gitignore b/.gitignore[m
-[1mindex 4cf5d3b..021da56 100644[m
-[1m--- a/.gitignore[m
-[1m+++ b/.gitignore[m
-[36m@@ -1,50 +1,50 @@[m
-[31m-# Compiled class file[m
-[31m-*.class[m
-[31m-[m
-[31m-# Log file[m
-[31m-*.log[m
-[31m-[m
-[31m-# BlueJ files[m
-[31m-*.ctxt[m
-[31m-[m
-[31m-# Mobile Tools for Java (J2ME)[m
-[31m-.mtj.tmp/[m
-[31m-[m
-[31m-# Package Files #[m
-[31m-*.jar[m
-[31m-*.war[m
-[31m-*.nar[m
-[31m-*.ear[m
-[31m-*.zip[m
-[31m-*.tar.gz[m
-[31m-*.rar[m
-[31m-[m
-[31m-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml[m
-[31m-hs_err_pid*[m
-[31m-replay_pid*[m
-[31m-[m
-[31m-# added some more .gitignore configurations for specific IDEs, since my .idea wasnt included[m
-[31m-[m
-[31m-# IntelliJ IDEA / JetBrains IDEs[m
-[31m-.idea/[m
-[31m-*.iml[m
-[31m-out/[m
-[31m-[m
-[31m-# VS Code settings[m
-[31m-.vscode/[m
-[31m-[m
-[31m-# OS-specific junk[m
-[31m-.DS_Store[m
-[31m-Thumbs.db[m
-[31m-[m
-[31m-# Build directories[m
-[31m-target/[m
-[31m-build/[m
-[31m-bin/[m
-[31m-.gradle/[m
-[31m-.mvn/[m
-[31m-[m
-[31m-#The configurations Ive added above cover more than necessary, just in case[m
-[31m-[m
-[31m-# Env file, contains sensitive information[m
-[31m-.env[m
-[32m+[m[32m# Compiled class file[m[41m[m
-[32m+[m[32m*.class[m[41m[m
-[32m+[m[41m[m
-[32m+[m[32m# Log file[m[41m[m
-[32m+[m[32m*.log[m[41m[m
-[32m+[m[41m[m
-[32m+[m[32m# BlueJ files[m[41m[m
-[32m+[m[32m*.ctxt[m[41m[m
-[32m+[m[41m[m
-[32m+[m[32m# Mobile Tools for Java (J2ME)[m[41m[m
-[32m+[m[32m.mtj.tmp/[m[41m[m
-[32m+[m[41m[m
-[32m+[m[32m# Package Files #[m[41m[m
-[32m+[m[32m*.jar[m[41m[m
-[32m+[m[32m*.war[m[41m[m
-[32m+[m[32m*.nar[m[41m[m
-[32m+[m[32m*.ear[m[41m[m
-[32m+[m[32m*.zip[m[41m[m
-[32m+[m[32m*.tar.gz[m[41m[m
-[32m+[m[32m*.rar[m[41m[m
-[32m+[m[41m[m
-[32m+[m[32m# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml[m[41m[m
-[32m+[m[32mhs_err_pid*[m[41m[m
-[32m+[m[32mreplay_pid*[m[41m[m
-[32m+[m[41m[m
-[32m+[m[32m# added some more .gitignore configurations for specific IDEs, since my .idea wasnt included[m[41m[m
-[32m+[m[41m[m
-[32m+[m[32m# IntelliJ IDEA / JetBrains IDEs[m[41m[m
-[32m+[m[32m.idea/[m[41m[m
-[32m+[m[32m*.iml[m[41m[m
-[32m+[m[32mout/[m[41m[m
-[32m+[m[41m[m
-[32m+[m[32m# VS Code settings[m[41m[m
-[32m+[m[32m.vscode/[m[41m[m
-[32m+[m[41m[m
-[32m+[m[32m# OS-specific junk[m[41m[m
-[32m+[m[32m.DS_Store[m[41m[m
-[32m+[m[32mThumbs.db[m[41m[m
-[32m+[m[41m[m
-[32m+[m[32m# Build directories[m[41m[m
-[32m+[m[32mtarget/[m[41m[m
-[32m+[m[32mbuild/[m[41m[m
-[32m+[m[32mbin/[m[41m[m
-[32m+[m[32m.gradle/[m[41m[m
-[32m+[m[32m.mvn/[m[41m[m
-[32m+[m[41m[m
-[32m+[m[32m#The configurations Ive added above cover more than necessary, just in case[m[41m[m
-[32m+[m[41m[m
-[32m+[m[32m# Env file, contains sensitive information[m[41m[m
-[32m+[m[32m.env[m[41m[m
-[1mdiff --git a/README.md b/README.md[m
-[1mindex cc0cea4..1dd47ec 100644[m
-[1m--- a/README.md[m
-[1m+++ b/README.md[m
-[36m@@ -1,70 +1,70 @@[m
-[31m-# ResearchHub[m
-[31m-[m
-[31m-A research collaboration platform focusing on regional issues, bridging academia between Central Asian and European Union universities[m
-[31m-[m
-[31m-## 🌍 Overview[m
-[31m-This platform bridges academia by enabling:[m
-[31m-- Professors to post research topics, details, and student requirements[m
-[31m-- Students to apply and schedule interviews through the platform[m
-[31m-- Rankings of universities and professors based on platform activity and engagement[m
-[31m-[m
-[31m-[m
-[31m-## 🚀 Features[m
-[31m-- Professor profiles & research topic listings[m
-[31m-- Student profiles & application system[m
-[31m-- Interview scheduling interface[m
-[31m-- University & professor activity-based rankings[m
-[31m-- Admin interface for moderation & stats[m
-[31m-[m
-[31m-[m
-[31m-## 🧱 Tech Stack[m
-[31m-- **Frontend**: React, Next.js, TailwindCSS[m
-[31m-- **Backend**: Node.js (API routes), possibly integrated with a NoSQL/SQL DB[m
-[31m-[m
-[31m-[m
-[31m-## 📁 Folder Structure[m
-[31m-├── frontend/ # Frontend source code (pages, components, styles)[m
-[31m-├── backend/ # Backend routes (API handlers, DB logic, auth)[m
-[31m-├── .gitignore # Ignored files and folders for Git[m
-[31m-└── README.md # Project documentation[m
-[31m-[m
-[31m-## 📦 Usage[m
-[31m-[m
-[31m-You can build and run the entire platform using Docker Compose.[m
-[31m-[m
-[31m-> [!IMPORTANT][m
-[31m-> Make sure to run all Docker commands **from the root folder** of the project  [m
-[31m-> (the folder containing `compose.yaml`).[m
-[31m-[m
-[31m-[m
-[31m-### Requirements[m
-[31m-[m
-[31m-- You must have Docker installed[m
-[31m-- For windows users - you must use WSL2[m
-[31m-- You must also create an `.env` file [m
-[31m-[m
-[31m-The `.env` file's contents must be like so:[m
-[31m-```[m
-[31m-DB_USER=admin[m
-[31m-DB_PASSWORD=password[m
-[31m-JWT_SECRET=SecretJwtKeyThatIsAtLeast32BytesLongInBase64[m
-[31m-```[m
-[31m-When running locally the user and password don't matter, but in production, a secret password will be used, which must not be leaked.[m
-[31m-When deploying to production, the JWT secret must be generated using the following command:[m
-[31m-```[m
-[31m-openssl rand -base64 32[m
-[31m-```[m
-[31m-[m
-[31m-[m
-[31m-### Build, Run and Stop the project[m
-[31m-This command builds updated images and starts all services in the background:[m
-[31m-[m
-[31m-```[m
-[31m-docker compose up -d --build[m
-[31m-```[m
-[31m-[m
-[31m-This command shuts down all the services running in the background:[m
-[31m-[m
-[31m-```[m
-[31m-docker compose down[m
-[31m-```[m
-[32m+[m[32m# ResearchHub[m[41m[m
-[32m+[m[41m[m
-[32m+[m[32mA research collaboration platform focusing on regional issues, bridging academia between Central Asian and European Union universities[m[41m[m
-[32m+[m[41m[m
-[32m+[m[32m## 🌍 Overview[m[41m[m
-[32m+[m[32mThis platform bridges academia by enabling:[m[41m[m
-[32m+[m[32m- Professors to post research topics, details, and student requirements[m[41m[m
-[32m+[m[32m- Students to apply and schedule interviews through the platform[m[41m[m
-[32m+[m[32m- Rankings of universities and professors based on platform activity and engagement[m[41m[m
-[32m+[m[41m[m
-[32m+[m[41m[m
-[32m+[m[32m## 🚀 Features[m[41m[m
-[32m+[m[32m- Professor profiles & research topic listings[m[41m[m
-[32m+[m[32m- Student profiles & application system[m[41m[m
-[32m+[m[32m- Interview scheduling interface[m[41m[m
-[32m+[m[32m- University & professor activity-based rankings[m[41m[m
-[32m+[m[32m- Admin interface for moderation & stats[m[41m[m
-[32m+[m[41m[m
-[32m+[m[41m[m
-[32m+[m[32m## 🧱 Tech Stack[m[41m[m
-[32m+[m[32m- **Frontend**: React, Next.js, TailwindCSS[m[41m[m
-[32m+[m[32m- **Backend**: Node.js (API routes), possibly integrated with a NoSQL/SQL DB[m[41m[m
-[32m+[m[41m[m
-[32m+[m[41m[m
-[32m+[m[32m## 📁 Folder Structure[m[41m[m
-[32m+[m[32m├── frontend/ # Frontend source code (pages, components, styles)[m[41m[m
-[32m+[m[32m├── backend/ # Backend routes (API handlers, DB logic, auth)[m[41m[m
-[32m+[m[32m├── .gitignore # Ignored files and folders for Git[m[41m[m
-[32m+[m[32m└── README.md # Project documentation[m[41m[m
-[32m+[m[41m[m
-[32m+[m[32m## 📦 Usage[m[41m[m
-[32m+[m[41m[m
-[32m+[m[32mYou can build and run the entire platform using Docker Compose.[m[41m[m
-[32m+[m[41m[m
-[32m+[m[32m> [!IMPORTANT][m[41m[m
-[32m+[m[32m> Make sure to run all Docker commands **from the root folder** of the project[m[41m  [m
-[32m+[m[32m> (the folder containing `compose.yaml`).[m

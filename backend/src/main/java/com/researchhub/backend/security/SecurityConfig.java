@@ -1,6 +1,7 @@
 package com.researchhub.backend.security;
 
 import org.springframework.context.annotation.*;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.*;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -33,8 +34,12 @@ public class SecurityConfig {
 
                 auth.requestMatchers("/auth/**").permitAll();
 
+
                 auth.requestMatchers("/user/register").hasRole("UNIVERSITY_ADMIN");
                 auth.requestMatchers("/user/register-developer").hasRole("DEVELOPER");
+
+                auth.requestMatchers(HttpMethod.GET, "/universities/**").permitAll();
+                auth.requestMatchers(HttpMethod.POST, "/universities").hasRole("DEVELOPER");
 
                 auth.anyRequest().denyAll();
             })
