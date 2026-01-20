@@ -33,10 +33,10 @@ public class StudentService {
 
         Student student = new Student();
         student.setName(name);
-        student.setEmail(email.toLowerCase().trim());
+        student.setEmail(email.trim());
         student.setUniversityId(universityId);
-        student.setFieldOfInterest(fieldOfInterest != null ? fieldOfInterest.trim() : null);
-        student.setBio(bio != null ? bio.trim() : null);
+        student.setFieldOfInterest(fieldOfInterest != null ? fieldOfInterest.trim() : "");
+        student.setBio(bio != null ? bio.trim() : "");
         student.setCreatedAt(OffsetDateTime.now());
         student.setUpdatedAt(OffsetDateTime.now());
 

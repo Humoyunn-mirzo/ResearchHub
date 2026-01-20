@@ -2,6 +2,8 @@ package com.researchhub.backend.student;
 
 import com.researchhub.backend.application.Application;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,7 +31,7 @@ public class StudentController {
                 student.getFieldOfInterest(),
                 student.getBio()
         );
-        return ResponseEntity.status(201).body(created);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @GetMapping("/{id}")

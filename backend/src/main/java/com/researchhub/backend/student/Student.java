@@ -33,10 +33,10 @@ public class Student {
     @Column(name = "university_id")
     private UUID universityId;
 
-    @Column(name = "field_of_interest", columnDefinition = "TEXT")
+    @Column(name = "field_of_interest", columnDefinition = "TEXT", nullable = false)
     private String fieldOfInterest;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String bio;
 
     @Column(name = "total_applications", nullable = false)
