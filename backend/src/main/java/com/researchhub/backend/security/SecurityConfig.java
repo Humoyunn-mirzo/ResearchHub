@@ -30,21 +30,18 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> {
                 auth.requestMatchers("/test/db").permitAll();
                 auth.requestMatchers("/test/student-auth").hasRole("STUDENT");
-                auth.requestMatchers("/test/developer-auth").hasRole("DEVELOPER");
 
                 auth.requestMatchers("/auth/**").permitAll();
 
-
                 auth.requestMatchers("/user/register").hasRole("UNIVERSITY_ADMIN");
-                auth.requestMatchers("/user/register-developer").hasRole("DEVELOPER");
 
                 auth.requestMatchers(HttpMethod.GET, "/universities/**").permitAll();
-                auth.requestMatchers(HttpMethod.POST, "/universities").hasRole("DEVELOPER");
 
                 auth.requestMatchers(HttpMethod.GET, "students/**").authenticated();
                 auth.requestMatchers(HttpMethod.POST, "students").hasRole("UNIVERSITY_ADMIN");
+                auth.requestMatchers(HttpMethod.PATCH, "students/**").hasRole("UNIVERSITY_ADMIN");
 
-                auth.anyRequest().denyAll();
+                auth.anyRequest().hasRole("DEVELOPER");
             })
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
