@@ -157,7 +157,7 @@ CREATE TABLE research_projects (
 
     status VARCHAR(50) NOT NULL DEFAULT 'open',
 
-    interview_questions JSONB,
+    interview_questions JSONB, --using TEXT would lose JSON features - Jsonb good practice
 
     title_en TEXT,
     title_ru TEXT,

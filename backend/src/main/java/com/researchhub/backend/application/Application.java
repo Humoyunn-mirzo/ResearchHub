@@ -1,5 +1,6 @@
 package com.researchhub.backend.application;
 
+import com.researchhub.backend.project.ResearchProject;
 import com.researchhub.backend.student.Student;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -21,11 +22,15 @@ public class Application {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_id", nullable = false)
-    private Student student;
+    private Student student;  //a student can have many applications
     /*Here student is just for the ORM - the application.java owns the relationship
     * to keep Student object light. This way we can keep lazy fetching
     * and also allow the ORM to do its job for efficiency in speed and coding.
     * However, the SQL uses the ID unlike JPA/hibernate*/
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "student_id", nullable = false)
+    private ResearchProject researchProject;  //a research project -> Many applications
 
     @Column(name = "status", nullable = false, length = 50)
     private String status = "pending"; //change to enum later
@@ -39,7 +44,6 @@ public class Application {
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt = OffsetDateTime.now();
 
-    // Optional: helper method to update timestamps automatically
     @PreUpdate
     public void preUpdate() {
         this.updatedAt = OffsetDateTime.now();
