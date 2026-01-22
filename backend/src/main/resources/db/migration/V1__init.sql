@@ -66,12 +66,15 @@ CREATE UNIQUE INDEX idx_students_email ON students(email);
 CREATE TABLE applications (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     student_id UUID NOT NULL,
+    project_id UUID NOT NULL,
     status VARCHAR(50) NOT NULL DEFAULT 'pending',
     cv_url TEXT,
     applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CONSTRAINT fk_applications_student FOREIGN KEY (student_id)
-        REFERENCES students(id) ON DELETE CASCADE
+        REFERENCES students(id) ON DELETE CASCADE,
+    CONSTRAINT fk_applications_project FOREIGN KEY (project_id)
+        REFERENCES research_projects(id) ON DELETE CASCADE;
 );
 
 
@@ -97,5 +100,87 @@ CHECK (
     total_students_supported >= 0
 );
 CREATE UNIQUE INDEX idx_universities_name ON universities(name);
+
+
+
+
+CREATE TABLE professors (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+
+    university_id UUID,
+
+    field_of_study TEXT NOT NULL,
+    bio TEXT,
+
+    ranking_score INTEGER NOT NULL DEFAULT 0,
+    total_projects INTEGER NOT NULL DEFAULT 0,
+    students_supervised INTEGER NOT NULL DEFAULT 0,
+    acceptance_rate REAL,
+
+    created_at TIMESTAMPTZ NOT NULL,
+    updated_at TIMESTAMPTZ NOT NULL,
+
+    CONSTRAINT fk_professors_university
+        FOREIGN KEY (university_id)
+        REFERENCES universities(id)
+        ON DELETE SET NULL,
+
+    CONSTRAINT chk_professors_counters
+        CHECK (
+            ranking_score >= 0
+            AND total_projects >= 0
+            AND students_supervised >= 0
+        )
+);
+CREATE UNIQUE INDEX idx_professors_email ON professors(email);
+
+
+
+
+CREATE TABLE research_projects (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    professor_id UUID,
+
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    field TEXT NOT NULL,
+    region_focus TEXT NOT NULL,
+
+    requirements TEXT,
+
+    max_students INTEGER,
+    current_students INTEGER NOT NULL DEFAULT 0,
+
+    status VARCHAR(50) NOT NULL DEFAULT 'open',
+
+    interview_questions JSONB,
+
+    title_en TEXT,
+    title_ru TEXT,
+    title_uz TEXT,
+
+    description_en TEXT,
+    description_ru TEXT,
+    description_uz TEXT,
+
+    created_at TIMESTAMPTZ NOT NULL,
+    updated_at TIMESTAMPTZ NOT NULL,
+
+    CONSTRAINT fk_projects_professor
+        FOREIGN KEY (professor_id)
+        REFERENCES professors(id)
+        ON DELETE SET NULL,
+
+    CONSTRAINT chk_projects_students
+        CHECK (
+            max_students IS NULL
+            OR max_students >= current_students
+        )
+);
+
 
 
