@@ -88,21 +88,6 @@ CREATE UNIQUE INDEX idx_students_email ON students(email);
 
 
 
-CREATE TABLE applications (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    student_id UUID NOT NULL,
-    project_id UUID NOT NULL,
-    status VARCHAR(50) NOT NULL DEFAULT 'pending',
-    cv_url TEXT,
-    applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    CONSTRAINT fk_applications_student FOREIGN KEY (student_id)
-        REFERENCES students(id) ON DELETE CASCADE,
-    CONSTRAINT fk_applications_project FOREIGN KEY (project_id)
-        REFERENCES research_projects(id) ON DELETE CASCADE;
-);
-
-
 CREATE TABLE professors (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
@@ -135,7 +120,6 @@ CREATE TABLE professors (
         )
 );
 CREATE UNIQUE INDEX idx_professors_email ON professors(email);
-
 
 
 
@@ -183,3 +167,16 @@ CREATE TABLE research_projects (
 
 
 
+CREATE TABLE applications (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    student_id UUID NOT NULL,
+    project_id UUID NOT NULL,
+    status VARCHAR(50) NOT NULL DEFAULT 'pending',
+    cv_url TEXT,
+    applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT fk_applications_student FOREIGN KEY (student_id)
+        REFERENCES students(id) ON DELETE CASCADE,
+    CONSTRAINT fk_applications_project FOREIGN KEY (project_id)
+        REFERENCES research_projects(id) ON DELETE CASCADE
+);
