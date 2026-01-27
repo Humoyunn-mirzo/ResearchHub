@@ -1,3 +1,4 @@
+#!/bin/env sh
 # creates a DEVELOPER user with the following credentials:
 # email: developer@example.com
 # password: 123

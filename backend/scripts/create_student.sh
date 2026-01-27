@@ -1,3 +1,4 @@
+#!/bin/env sh
 # creates a STUDENT user with the following credentials:
 # email: student@example.com
 # password: 123
