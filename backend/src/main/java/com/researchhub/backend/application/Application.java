@@ -29,7 +29,7 @@ public class Application {
     * However, the SQL uses the ID unlike JPA/hibernate*/
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "student_id", nullable = false)
+    @JoinColumn(name = "project_id", nullable = false)
     private ResearchProject researchProject;  //a research project -> Many applications
 
     @Column(name = "status", nullable = false, length = 50)
