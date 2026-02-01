@@ -1,0 +1,293 @@
+openapi: 3.0.3
+
+info:
+  title: Research Hub API
+  description: >
+    REST API for managing resources in the Research Hub Backend system.
+  version: 1.0.0
+  contact:
+    name: Komil Tokhirov
+    email: komil.tokhirov@gmail.com
+
+servers:
+  - url: http://localhost
+    description: Local development
+  # - url: https://example.com
+  #   description: Production
+
+tags:
+  - name: auth
+  - name: students
+    # description: Authentication endpoints
+  # - name: students
+  #   description: Student management endpoints
+
+components:
+  schemas:
+    ResponseMeta:
+      type: object
+      required:
+        - timestamp
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+
+    ResponsePagination:
+      type: object
+      required:
+        - page
+        - size
+        - totalElements
+      properties:
+        page:
+          type: integer
+          example: 0
+        size:
+          type: integer
+          example: 20
+        totalElements:
+          type: integer
+          example: 124
+
+    ErrorResponse:
+      type: object
+      required:
+        - timestamp
+        - message
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        message:
+          type: string
+
+
+    Student:
+      type: object
+      required:
+        - id
+        - name
+        - email
+        - universityId
+        - fieldOfInterest
+        - bio
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        universityId:
+          type: string
+          format: uuid
+        fieldOfInterest:
+          type: string
+        bio:
+          type: string
+
+    Professor:
+      required:
+        - id
+        - name
+        - email
+        - universityId
+        - fieldOfStudy
+        - bio
+        - rankingScore
+        - totalProjects
+        - studentsSupervised
+        - acceptanceRate
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        universityId:
+          type: string
+          format: uuid
+        fieldOfInterest:
+          type: string
+        bio:
+          type: string
+        rankingScore:
+          type: integer
+        totalProjects:
+          type: integer
+        studentsSupervised:
+          type: integer
+        acceptanceRate:
+          type: number
+
+  parameters:
+    PageNumber:
+      name: page
+      in: query
+      description: Zero-based page index
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+
+    PageSize:
+      name: size
+      in: query
+      description: Number of items per page
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+
+    
+
+  responses:
+    # 400
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    # 401
+    Unauthorized:
+      description: Authentication required or invalid token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    # 403
+    Forbidden:
+      description: Authenticated but not allowed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    # 404
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+paths:
+  /api/students:
+    get:
+      tags: [students]
+      summary: Get all students
+      operationId: getAllStudents
+      responses:
+        '200':
+          description: List of students
+          content:
+            application/json:
+              schema:
+                meta:
+                  $ref: '#/components/schemas/ResponseMeta'
+                pagination:
+                  $ref: '#/components/schemas/ResponsePagination'
+                data: 
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Student'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+    post:
+      tags: [students]
+      summary: Create a new student
+      operationId: createStudent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateStudentRequest'
+      responses:
+        '201':
+          description: Student created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponseStudent'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/students/{id}:
+    get:
+      # tags: [students]
+      summary: Get student by ID
+      operationId: getStudentById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Student found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      # tags: [students]
+      summary: Delete student
+      operationId: deleteStudent
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Student deleted
+
+  /actuator/health:
+    get:
+      tags: [Health]
+      summary: Health check
+      operationId: health
+      responses:
+        '200':
+          description: Application is healthy
+
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
