@@ -4,9 +4,11 @@ CREATE TABLE users (
     id UUID DEFAULT gen_random_uuid(),
     email VARCHAR(255) NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
+    name VARCHAR(255) NOT NULL,
     CONSTRAINT pk_users PRIMARY KEY (id),
     CONSTRAINT uq_users_email UNIQUE (email)
 );
+CREATE UNIQUE INDEX idx_users_email ON users(email);
 
 
 
@@ -25,8 +27,8 @@ CREATE TABLE refresh_tokens (
     expiry_date TIMESTAMPTZ,
     user_id UUID NOT NULL,
     token VARCHAR(255),
-    CONSTRAINT pk_refresh_token PRIMARY KEY (id),
-    CONSTRAINT fk_refresh_token_user FOREIGN KEY (user_id) REFERENCES users(id)
+    CONSTRAINT pk_refresh_tokens PRIMARY KEY (id),
+    CONSTRAINT fk_refresh_tokens_user FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
 
@@ -57,10 +59,7 @@ CREATE UNIQUE INDEX idx_universities_name ON universities(name);
 
 
 CREATE TABLE students (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-
-    name VARCHAR(255) NOT NULL,
-    email VARCHAR(255) NOT NULL UNIQUE,
+    id UUID PRIMARY KEY,
 
     university_id UUID, --FK to university id
 
@@ -73,6 +72,11 @@ CREATE TABLE students (
     created_at TIMESTAMPTZ NOT NULL,
     updated_at TIMESTAMPTZ NOT NULL,
 
+    CONSTRAINT fk_students_user
+            FOREIGN KEY (user_id)
+            REFERENCES users(id)
+            ON DELETE CASCADE,
+
     CONSTRAINT fk_students_university
             FOREIGN KEY (university_id)
             REFERENCES universities(id)
@@ -84,15 +88,11 @@ CREATE TABLE students (
             AND accepted_projects >= 0
         )
 );
-CREATE UNIQUE INDEX idx_students_email ON students(email);
 
 
 
 CREATE TABLE professors (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-
-    name VARCHAR(255) NOT NULL,
-    email VARCHAR(255) NOT NULL UNIQUE,
+    id UUID PRIMARY KEY,
 
     university_id UUID,
 
@@ -106,6 +106,11 @@ CREATE TABLE professors (
 
     created_at TIMESTAMPTZ NOT NULL,
     updated_at TIMESTAMPTZ NOT NULL,
+
+    CONSTRAINT fk_professors_user
+            FOREIGN KEY (user_id)
+            REFERENCES users(id)
+            ON DELETE CASCADE,
 
     CONSTRAINT fk_professors_university
         FOREIGN KEY (university_id)

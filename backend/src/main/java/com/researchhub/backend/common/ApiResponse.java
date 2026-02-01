@@ -1,22 +1,14 @@
 package com.researchhub.backend.common;
 
-// import java.time.Instant;
+import lombok.Getter;
 
+@Getter
 public class ApiResponse<T> {
-
-    private T data;
-    // private Instant timestamp = Instant.now();
+    private final ResponseMeta meta;
+    private final T data;
 
     public ApiResponse(T data) {
+        this.meta = new ResponseMeta();
         this.data = data;
     }
-
-    public T getData() {
-        return data;
-    }
-
-    // public Instant getTimestamp() {
-    //     return timestamp;
-    // }
 }
-

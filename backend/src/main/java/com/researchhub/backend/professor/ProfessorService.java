@@ -4,9 +4,11 @@ import com.researchhub.backend.application.ResourceNotFoundException;
 import com.researchhub.backend.project.ResearchProject;
 import com.researchhub.backend.project.ResearchProjectRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -19,18 +21,17 @@ public class ProfessorService {
     private final ProfessorRepository professorRepository;
     private final ResearchProjectRepository researchProjectRepository;
 
-    public List<Professor> getProfessors(
-            int limit,
-            int offset,
-            String search,
-            UUID universityId,
-            String fieldOfStudy
+    public Page<Professor> getProfessors(
+        Pageable pageable,
+        String search,
+        UUID universityId,
+        String fieldOfStudy
     ) {
         return professorRepository.findFiltered(
-                search,
-                universityId,
-                fieldOfStudy,
-                PageRequest.of(offset / limit, limit)
+            pageable,
+            search,
+            universityId,
+            fieldOfStudy
         );
     }
 

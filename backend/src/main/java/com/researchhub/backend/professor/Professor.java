@@ -1,11 +1,12 @@
 package com.researchhub.backend.professor;
 
 import com.researchhub.backend.university.University;
+import com.researchhub.backend.user.User;
+
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.OffsetDateTime;
-import java.util.UUID;
 
 @Entity
 @Table(name = "professors")
@@ -14,17 +15,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Professor {
-
-    @Id
-    @GeneratedValue
-    private UUID id;
-
-    @Column(nullable = false)
-    private String name;
-
-    @Column(nullable = false, unique = true)
-    private String email;
+public class Professor extends User {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "university_id")

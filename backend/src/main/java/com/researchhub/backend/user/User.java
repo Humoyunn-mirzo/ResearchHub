@@ -8,8 +8,14 @@ import java.util.UUID;
 
 @Data
 @Entity
-@Table(name = "users")
-public class User {
+@Table(
+    name = "users",
+    indexes = {
+        @Index(name = "idx_users_email", columnList = "email", unique = true)
+    }
+)
+@Inheritance(strategy = InheritanceType.JOINED)
+public abstract class User { // check if maybe need to remove abstract
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -21,6 +27,9 @@ public class User {
 
     @Column(nullable = false)
     private String passwordHash;
+
+    @Column(nullable = false)
+    private String name;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
