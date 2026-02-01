@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import com.researchhub.backend.common.ApiResponse;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -15,14 +17,14 @@ public class ProfessorController {
     private final ProfessorService professorService;
 
     @GetMapping
-    public List<Professor> getProfessors(
+    public ApiResponse<List<Professor>> getProfessors(
             @RequestParam(defaultValue = "10") int limit,
             @RequestParam(defaultValue = "0") int offset,
             @RequestParam(required = false) String search,
             @RequestParam(required = false) UUID universityId,
             @RequestParam(required = false) String fieldOfStudy
     ) {
-        return professorService.getProfessors(limit, offset, search, universityId, fieldOfStudy);
+        return new ApiResponse<>(professorService.getProfessors(limit, offset, search, universityId, fieldOfStudy));
     }
 
     @PostMapping

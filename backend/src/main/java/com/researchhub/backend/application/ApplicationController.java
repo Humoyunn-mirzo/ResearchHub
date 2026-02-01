@@ -21,7 +21,7 @@ public class ApplicationController {
     private final ApplicationService applicationService;
 
     @PostMapping("/{id}/upload-cv")
-    public ResponseEntity<?> uploadCv(
+    public ResponseEntity<ApplicationCvResponse> uploadCv(
             @PathVariable UUID id,
             @Valid @RequestBody UploadCvRequest request
     ) {
