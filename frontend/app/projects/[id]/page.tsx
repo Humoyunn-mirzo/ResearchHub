@@ -68,116 +68,227 @@ export default function ProjectDetailPage() {
   const canApply = isAuthenticated && user?.role === 'STUDENT' && project.status === 'OPEN'
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-12 lg:px-8">
-      <Link href="/projects">
-        <Button variant="ghost" className="mb-6">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Projects
-        </Button>
-      </Link>
+    <div className="mx-auto max-w-7xl px-4 py-12 lg:px-8">
+      {/* Breadcrumb */}
+      <div className="mb-6">
+        <Link href="/projects">
+          <Button variant="ghost" className="mb-4">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            <span className="text-sm text-muted-foreground">Projects</span>
+          </Button>
+        </Link>
+      </div>
 
-      <div className="space-y-6">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-4xl font-bold">{project.title}</h1>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {project.tags.map((tag) => (
-                <Badge key={tag} variant="outline">
-                  {tag}
+      <div className="grid gap-8 lg:grid-cols-3">
+        {/* Main Content */}
+        <div className="lg:col-span-2">
+          <div className="space-y-6">
+            {/* Project Title & Summary */}
+            <div>
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1">
+                  <h1 className="text-4xl font-bold">{project.title}</h1>
+                  <p className="mt-2 text-lg text-muted-foreground">
+                    Research opportunity connecting students with cutting-edge academic work
+                  </p>
+                </div>
+                <Badge
+                  variant={project.status === 'OPEN' ? 'default' : 'secondary'}
+                  className="text-lg"
+                >
+                  {project.status}
                 </Badge>
-              ))}
+              </div>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {project.tags.map((tag) => (
+                  <Badge key={tag} variant="outline">
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
             </div>
+
+            {/* Project Description */}
+            <Card>
+              <CardContent className="pt-6">
+                <h2 className="mb-4 text-2xl font-semibold">Description</h2>
+                <div className="prose prose-sm max-w-none">
+                  <p className="whitespace-pre-wrap text-muted-foreground">
+                    {project.description}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Participants/Team Section */}
+            <Card>
+              <CardContent className="pt-6">
+                <h2 className="mb-4 text-2xl font-semibold">Team</h2>
+                <div className="space-y-3">
+                  {project.professor && (
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                        <User className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <p className="font-medium">{project.professor.name}</p>
+                        <p className="text-sm text-muted-foreground">Project Lead (PI)</p>
+                      </div>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+                      <Users className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                    <div>
+                      <p className="font-medium">{project.slots} student positions available</p>
+                      <p className="text-sm text-muted-foreground">Currently recruiting</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
-          <Badge variant={project.status === 'OPEN' ? 'default' : 'secondary'} className="text-lg">
-            {project.status}
-          </Badge>
         </div>
 
-        <Card>
-          <CardContent className="pt-6">
-            <div className="space-y-4">
-              {project.professor && (
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <User className="h-5 w-5" />
-                  <span className="font-medium">{project.professor.name}</span>
-                  <span>({project.professor.email})</span>
+        {/* Sidebar */}
+        <div className="lg:col-span-1">
+          <div className="sticky top-24 space-y-6">
+            {/* Project Info Sidebar */}
+            <Card>
+              <CardContent className="pt-6">
+                <div className="space-y-6">
+                  {/* Professor/Lead */}
+                  {project.professor && (
+                    <div>
+                      <h3 className="mb-2 text-sm font-semibold text-muted-foreground">
+                        Project Lead
+                      </h3>
+                      <div className="flex items-center gap-2">
+                        <User className="h-4 w-4 text-muted-foreground" />
+                        <div>
+                          <p className="font-medium">{project.professor.name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {project.professor.email}
+                          </p>
+                        </div>
+                      </div>
+                      <Button variant="outline" className="mt-3 w-full" size="sm">
+                        Contact Professor
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* Status & Openings */}
+                  <div>
+                    <h3 className="mb-2 text-sm font-semibold text-muted-foreground">
+                      Status & Openings
+                    </h3>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">Status</span>
+                        <Badge variant={project.status === 'OPEN' ? 'default' : 'secondary'}>
+                          {project.status}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">Available Slots</span>
+                        <span className="font-semibold">{project.slots}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Timeline */}
+                  <div>
+                    <h3 className="mb-2 text-sm font-semibold text-muted-foreground">Timeline</h3>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-muted-foreground">
+                          Posted: {format(new Date(project.createdAt), 'MMM d, yyyy')}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Tags/Keywords */}
+                  <div>
+                    <h3 className="mb-2 text-sm font-semibold text-muted-foreground">
+                      Skills & Topics
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {project.tags.map((tag) => (
+                        <Badge key={tag} variant="outline" className="text-xs">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
                 </div>
-              )}
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Users className="h-5 w-5" />
-                <span>{project.slots} slots available</span>
-              </div>
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Calendar className="h-5 w-5" />
-                <span>Posted on {format(new Date(project.createdAt), 'MMMM d, yyyy')}</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardContent className="prose prose-sm max-w-none pt-6">
-            <h2 className="text-2xl font-semibold">Description</h2>
-            <p className="whitespace-pre-wrap text-muted-foreground">{project.description}</p>
-          </CardContent>
-        </Card>
+            {/* Apply Button */}
+            {canApply && !showApplicationForm && (
+              <Button size="lg" className="w-full" onClick={() => setShowApplicationForm(true)}>
+                Apply to Join Project
+              </Button>
+            )}
 
-        {canApply && !showApplicationForm && (
-          <Button size="lg" className="w-full" onClick={() => setShowApplicationForm(true)}>
-            Apply to This Project
-          </Button>
-        )}
-
-        {canApply && showApplicationForm && (
-          <Card>
-            <CardContent className="pt-6">
-              <form onSubmit={handleApply} className="space-y-4">
-                <div>
-                  <Label htmlFor="motivation">Motivation Statement</Label>
-                  <p className="mb-2 text-sm text-muted-foreground">
-                    Explain why you are interested in this project (50-1000 characters)
+            {!isAuthenticated && project.status === 'OPEN' && (
+              <Card className="bg-muted/50">
+                <CardContent className="pt-6 text-center">
+                  <p className="mb-4 text-sm text-muted-foreground">
+                    Sign in to apply to this research project
                   </p>
-                  <Textarea
-                    id="motivation"
-                    value={motivation}
-                    onChange={(e) => setMotivation(e.target.value)}
-                    placeholder="Describe your background, skills, and why this project interests you..."
-                    rows={8}
-                    required
-                    minLength={50}
-                    maxLength={1000}
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <Button type="submit" disabled={applyMutation.isPending} className="flex-1">
-                    {applyMutation.isPending ? 'Submitting...' : 'Submit Application'}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setShowApplicationForm(false)}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
-        )}
-
-        {!isAuthenticated && project.status === 'OPEN' && (
-          <Card className="bg-muted/50">
-            <CardContent className="pt-6 text-center">
-              <p className="mb-4 text-muted-foreground">
-                Sign in to apply to this research project
-              </p>
-              <Link href="/login">
-                <Button>Sign In</Button>
-              </Link>
-            </CardContent>
-          </Card>
-        )}
+                  <Link href="/login">
+                    <Button className="w-full">Sign In</Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </div>
       </div>
+
+      {/* Application Form */}
+      {canApply && showApplicationForm && (
+        <Card className="mt-8">
+          <CardContent className="pt-6">
+            <h2 className="mb-4 text-2xl font-semibold">Apply to Join Project</h2>
+            <form onSubmit={handleApply} className="space-y-4">
+              <div>
+                <Label htmlFor="motivation">Motivation Statement</Label>
+                <p className="mb-2 text-sm text-muted-foreground">
+                  Explain why you are interested in this project (50-1000 characters)
+                </p>
+                <Textarea
+                  id="motivation"
+                  value={motivation}
+                  onChange={(e) => setMotivation(e.target.value)}
+                  placeholder="Describe your background, skills, and why this project interests you..."
+                  rows={8}
+                  required
+                  minLength={50}
+                  maxLength={1000}
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button type="submit" disabled={applyMutation.isPending} className="flex-1">
+                  {applyMutation.isPending ? 'Submitting...' : 'Submit Application'}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowApplicationForm(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }
