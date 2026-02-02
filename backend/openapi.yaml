@@ -63,19 +63,24 @@ components:
           type: string
 
 
-    Student:
+    ID:
       type: object
       required:
         - id
+      properties:
+        name:
+          type: string
+          format: uuid
+
+    Student:
+      type: object
+      required:
         - name
         - email
         - universityId
         - fieldOfInterest
         - bio
       properties:
-        id:
-          type: string
-          format: uuid
         name:
           type: string
         email:
@@ -91,7 +96,6 @@ components:
 
     Professor:
       required:
-        - id
         - name
         - email
         - universityId
@@ -102,9 +106,6 @@ components:
         - studentsSupervised
         - acceptanceRate
       properties:
-        id:
-          type: string
-          format: uuid
         name:
           type: string
         email:
@@ -127,6 +128,15 @@ components:
           type: number
 
   parameters:
+    ID:
+      name: id
+      in: path
+      required: true
+      description: ID of object
+      schema:
+        type: string
+        format: uuid
+
     PageNumber:
       name: page
       in: query
@@ -145,8 +155,6 @@ components:
         minimum: 1
         maximum: 100
         default: 20
-
-    
 
   responses:
     # 400
@@ -187,6 +195,9 @@ paths:
       tags: [students]
       summary: Get all students
       operationId: getAllStudents
+      parameters:
+        - $ref: '#components/parameters/PageNumber'
+        - $ref: '#components/parameters/PageSize'
       responses:
         '200':
           description: List of students
@@ -200,7 +211,9 @@ paths:
                 data: 
                   type: array
                   items:
-                    $ref: '#/components/schemas/Student'
+                    allOf:
+                      - $ref: '#/components/schemas/ID'
+                      - $ref: '#/components/schemas/Student'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -215,14 +228,19 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateStudentRequest'
+              $ref: '#/components/schemas/Student'
       responses:
         '201':
           description: Student created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiResponseStudent'
+                meta:
+                  $ref: '#/components/schemas/ResponseMeta'
+                data: 
+                  allOf:
+                    - $ref: '#/components/schemas/ID'
+                    - $ref: '#/components/schemas/Student'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -231,63 +249,125 @@ paths:
           $ref: '#/components/responses/Forbidden'
 
   /api/students/{id}:
+    parameters:
+      - $ref: '#/components/parameters/ID'
+
     get:
-      # tags: [students]
+      tags: [students]
       summary: Get student by ID
       operationId: getStudentById
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
       responses:
         '200':
           description: Student found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiResponse'
+                meta: 
+                  $ref: '#/components/schemas/ResponseMeta'
+                data: 
+                  allOf:
+                    - $ref: '#/components/schemas/ID'
+                    - $ref: '#/components/schemas/Student'
         '404':
           $ref: '#/components/responses/NotFound'
 
     delete:
-      # tags: [students]
+      tags: [students]
       summary: Delete student
       operationId: deleteStudent
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
       responses:
         '204':
           description: Student deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
 
-  /actuator/health:
+  /api/professors:
     get:
-      tags: [Health]
-      summary: Health check
-      operationId: health
+      tags: [professors]
+      summary: Get all professors
+      operationId: getAllProfessors
+      parameters:
+        - $ref: '#components/parameters/PageNumber'
+        - $ref: '#components/parameters/PageSize'
       responses:
         '200':
-          description: Application is healthy
+          description: List of professors
+          content:
+            application/json:
+              schema:
+                meta:
+                  $ref: '#/components/schemas/ResponseMeta'
+                pagination:
+                  $ref: '#/components/schemas/ResponsePagination'
+                data:
+                  type: array
+                  items:
+                    allOf:
+                      - $ref: '#/components/schemas/ID'
+                      - $ref: '#/components/schemas/Professor'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
 
-  responses:
-    BadRequest:
-      description: Invalid request
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
+    post:
+      tags: [professors]
+      summary: Create a new professor
+      operationId: createProfessor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProfessorRequest'
+      responses:
+        '201':
+          description: Professor created
+          content:
+            application/json:
+              schema:
+                meta:
+                  $ref: '#/components/schemas/ResponseMeta'
+                data: 
+                  allOf:
+                    - $ref: '#/components/schemas/ID'
+                    - $ref: '#/components/schemas/Professor'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
 
-    NotFound:
-      description: Resource not found
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
+  /api/professors/{id}:
+    parameters:
+      - $ref: '#/components/parameters/ID'
 
+    get:
+      tags: [professors]
+      summary: Get professor by ID
+      operationId: getProfessorById
+      responses:
+        '200':
+          description: Professor found
+          content:
+            application/json:
+              schema:
+                meta:
+                  $ref: '#/components/schemas/ResponseMeta'
+                data:
+                  allOf:
+                    - $ref: '#/components/schemas/ID'
+                    - $ref: '#/components/schemas/Professor'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [professors]
+      summary: Delete professor
+      operationId: deleteProfessor
+      responses:
+        '204':
+          description: Professor deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
