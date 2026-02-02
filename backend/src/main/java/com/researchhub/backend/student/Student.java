@@ -7,11 +7,13 @@ import lombok.Setter;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
+import com.researchhub.backend.user.User;
+
 @Entity
 @Table(name = "students")
 @Getter
 @Setter
-public class Student {
+public class Student extends User {
     //I chose not to use @OneToMany to application, but instead made a query in applicationrepository
     //this way, there is more control over the relationship and query and its faster and more efficient.
 
