@@ -23,6 +23,12 @@ tags:
   #   description: Student management endpoints
 
 components:
+  securitySchemes:
+    accessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
   schemas:
     ResponseMeta:
       type: object
@@ -199,13 +205,11 @@ components:
             $ref: '#/components/schemas/ErrorResponse'
 
 paths:
-  # Add Auth
   /api/auth/login:
     post:
       tags: [auth]
       summary: Login
       operationId: authLogin
-      # TODO: check if response has to specify cookies
       requestBody:
         required: true
         content:
@@ -242,9 +246,7 @@ paths:
       tags: [auth]
       summary: Refresh access token
       operationId: authRefresh
-      # TODO: check if response has to specify cookies
       requestBody: _
-      # TODO: check if request has to specify cookies
       responses:
         '200':
           description: Successfully refresh access token
@@ -260,6 +262,9 @@ paths:
 
 
   /api/users:
+    security:
+      - accessToken: []
+
     get:
       tags: [users]
       summary: Get all Users
@@ -283,10 +288,6 @@ paths:
                     allOf:
                       - $ref: '#/components/schemas/ID'
                       - $ref: '#/components/schemas/Users'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
 
     post:
       tags: [users]
@@ -312,12 +313,11 @@ paths:
                     - $ref: '#/components/schemas/User'
         '400':
           $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
 
   /api/users/{id}:
+    security:
+      - accessToken: []
+
     parameters:
       - $ref: '#/components/parameters/ID'
 
@@ -340,10 +340,37 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+    put: 
+      tags: [users]
+      summary: Replace user by ID
+      operationId: replaceUserById
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          description: User replaced
+          content:
+            application/json:
+              schema:
+                meta:
+                  $ref: '#/components/schemas/ResponseMeta'
+                data: 
+                  allOf:
+                    - $ref: '#/components/schemas/ID'
+                    - $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
     delete:
       tags: [users]
       summary: Delete user
-      operationId: deleteUser
+      operationId: deleteUserById
       responses:
         '204':
           description: User deleted
@@ -351,6 +378,9 @@ paths:
           $ref: '#/components/responses/NotFound'
 
   /api/students:
+    security:
+      - accessToken: []
+
     get:
       tags: [students]
       summary: Get all students
@@ -374,10 +404,6 @@ paths:
                     allOf:
                       - $ref: '#/components/schemas/ID'
                       - $ref: '#/components/schemas/Student'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
 
     post:
       tags: [students]
@@ -403,12 +429,11 @@ paths:
                     - $ref: '#/components/schemas/Student'
         '400':
           $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
 
   /api/students/{id}:
+    security:
+      - accessToken: []
+
     parameters:
       - $ref: '#/components/parameters/ID'
 
@@ -431,10 +456,37 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+    put: 
+      tags: [students]
+      summary: Replace student by ID
+      operationId: replaceStudentById
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Student'
+      responses:
+        '200':
+          description: Student replaced
+          content:
+            application/json:
+              schema:
+                meta:
+                  $ref: '#/components/schemas/ResponseMeta'
+                data: 
+                  allOf:
+                    - $ref: '#/components/schemas/ID'
+                    - $ref: '#/components/schemas/Student'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
     delete:
       tags: [students]
       summary: Delete student
-      operationId: deleteStudent
+      operationId: deleteStudentById
       responses:
         '204':
           description: Student deleted
@@ -442,6 +494,9 @@ paths:
           $ref: '#/components/responses/NotFound'
 
   /api/professors:
+    security:
+      - accessToken: []
+
     get:
       tags: [professors]
       summary: Get all professors
@@ -465,10 +520,6 @@ paths:
                     allOf:
                       - $ref: '#/components/schemas/ID'
                       - $ref: '#/components/schemas/Professor'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
 
     post:
       tags: [professors]
@@ -494,12 +545,11 @@ paths:
                     - $ref: '#/components/schemas/Professor'
         '400':
           $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
 
   /api/professors/{id}:
+    security:
+      - accessToken: []
+
     parameters:
       - $ref: '#/components/parameters/ID'
 
@@ -522,10 +572,37 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+    put: 
+      tags: [professors]
+      summary: Replace professor by ID
+      operationId: replaceProfessorById
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Professor'
+      responses:
+        '200':
+          description: Professor replaced
+          content:
+            application/json:
+              schema:
+                meta:
+                  $ref: '#/components/schemas/ResponseMeta'
+                data: 
+                  allOf:
+                    - $ref: '#/components/schemas/ID'
+                    - $ref: '#/components/schemas/Professer'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
     delete:
       tags: [professors]
       summary: Delete professor
-      operationId: deleteProfessor
+      operationId: deleteProfessorById
       responses:
         '204':
           description: Professor deleted
