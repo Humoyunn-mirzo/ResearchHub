@@ -35,9 +35,6 @@ public class University {
     @Column(nullable = false)
     private Integer totalResearchProjects = 0;
 
-    @Column(nullable = false)
-    private Integer totalStudentsSupported = 0;
-
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private OffsetDateTime createdAt;

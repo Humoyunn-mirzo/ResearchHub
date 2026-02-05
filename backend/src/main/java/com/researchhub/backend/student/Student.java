@@ -7,6 +7,7 @@ import lombok.Setter;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
+import com.researchhub.backend.university.University;
 import com.researchhub.backend.user.User;
 
 @Entity
@@ -14,11 +15,13 @@ import com.researchhub.backend.user.User;
 @Getter
 @Setter
 public class Student extends User {
-    //I chose not to use @OneToMany to application, but instead made a query in applicationrepository
-    //this way, there is more control over the relationship and query and its faster and more efficient.
 
+    // @ManyToOne(fetch = FetchType.LAZY)
+    // @JoinColumn(name = "university_id")
+    // private University university;
     @Column(name = "university_id")
     private UUID universityId;
+    // replace universityId with university
 
     @Column(name = "field_of_interest", columnDefinition = "TEXT")
     private String fieldOfInterest;

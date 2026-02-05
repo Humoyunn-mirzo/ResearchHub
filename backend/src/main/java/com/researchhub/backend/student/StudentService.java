@@ -28,7 +28,7 @@ public class StudentService {
     }
 
     @Transactional
-    public Student createStudent(String name, String email, UUID universityId, String fieldOfInterest, String bio) {
+    public Student createStudent(String name, String email, String passwordHash, UUID universityId, String fieldOfInterest, String bio) {
         if (studentRepository.existsByEmail(email)) {
             throw new RuntimeException("Email already exists");
         }
@@ -36,6 +36,7 @@ public class StudentService {
         Student student = new Student();
         student.setName(name);
         student.setEmail(email.trim());
+        student.setPasswordHash(passwordHash);
         student.setUniversityId(universityId);
         student.setFieldOfInterest(fieldOfInterest != null ? fieldOfInterest.trim() : null);
         student.setBio(bio != null ? bio.trim() : null);

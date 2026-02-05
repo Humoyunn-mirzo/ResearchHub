@@ -15,7 +15,7 @@ import java.util.UUID;
     }
 )
 @Inheritance(strategy = InheritanceType.JOINED)
-public abstract class User { // check if maybe need to remove abstract
+public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

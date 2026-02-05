@@ -29,6 +29,7 @@ public class StudentController {
         Student created = studentService.createStudent(
                 student.getName(),
                 student.getEmail(),
+                student.getPasswordHash(),
                 student.getUniversityId(),
                 student.getFieldOfInterest(),
                 student.getBio()

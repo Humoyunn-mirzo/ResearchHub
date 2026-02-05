@@ -42,7 +42,6 @@ CREATE TABLE universities (
 
     ranking_score INTEGER NOT NULL DEFAULT 0,
     total_research_projects INTEGER NOT NULL DEFAULT 0,
-    total_students_supported INTEGER NOT NULL DEFAULT 0,
 
     created_at TIMESTAMPTZ NOT NULL,
     updated_at TIMESTAMPTZ NOT NULL
@@ -51,7 +50,6 @@ CREATE TABLE universities (
         CHECK (
             ranking_score >= 0
             AND total_research_projects >= 0
-            AND total_students_supported >= 0
         )
 );
 CREATE UNIQUE INDEX idx_universities_name ON universities(name);
@@ -73,7 +71,7 @@ CREATE TABLE students (
     updated_at TIMESTAMPTZ NOT NULL,
 
     CONSTRAINT fk_students_user
-            FOREIGN KEY (user_id)
+            FOREIGN KEY (id)
             REFERENCES users(id)
             ON DELETE CASCADE,
 
@@ -108,7 +106,7 @@ CREATE TABLE professors (
     updated_at TIMESTAMPTZ NOT NULL,
 
     CONSTRAINT fk_professors_user
-            FOREIGN KEY (user_id)
+            FOREIGN KEY (id)
             REFERENCES users(id)
             ON DELETE CASCADE,
 
@@ -124,7 +122,6 @@ CREATE TABLE professors (
             AND students_supervised >= 0
         )
 );
-CREATE UNIQUE INDEX idx_professors_email ON professors(email);
 
 
 
@@ -143,7 +140,7 @@ CREATE TABLE research_projects (
     max_students INTEGER,
     current_students INTEGER NOT NULL DEFAULT 0,
 
-    status VARCHAR(50) NOT NULL DEFAULT 'open',
+    status VARCHAR(50) NOT NULL DEFAULT 'OPEN',
 
     interview_questions JSONB, --using TEXT would lose JSON features - Jsonb good practice
 
@@ -167,7 +164,10 @@ CREATE TABLE research_projects (
         CHECK (
             max_students IS NULL
             OR max_students >= current_students
-        )
+        ),
+
+    CONSTRAINT chk_applications_status
+        CHECK (status IN ('OPEN', 'CLOSED'))
 );
 
 
@@ -176,12 +176,14 @@ CREATE TABLE applications (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     student_id UUID NOT NULL,
     project_id UUID NOT NULL,
-    status VARCHAR(50) NOT NULL DEFAULT 'pending',
+    status VARCHAR(50) NOT NULL DEFAULT 'PENDING',
     cv_url TEXT,
     applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CONSTRAINT fk_applications_student FOREIGN KEY (student_id)
         REFERENCES students(id) ON DELETE CASCADE,
     CONSTRAINT fk_applications_project FOREIGN KEY (project_id)
-        REFERENCES research_projects(id) ON DELETE CASCADE
+        REFERENCES research_projects(id) ON DELETE CASCADE,
+    CONSTRAINT chk_applications_status
+        CHECK (status IN ('PENDING', 'ACCEPTED', 'REJECTED'))
 );

@@ -1,4 +1,4 @@
-pckage com.researchhub.backend.professor;
+package com.researchhub.backend.professor;
 
 import java.util.UUID;
 
