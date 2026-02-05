@@ -35,7 +35,7 @@ public class AuthController {
         .secure(true)
         .httpOnly(true)
         .sameSite("Lax")
-        .path("/api/auth")
+        .path("/api/auth/refresh")
         .build();
 
         return ResponseEntity
