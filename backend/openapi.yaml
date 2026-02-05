@@ -24,7 +24,12 @@ tags:
 
 components:
   securitySchemes:
-    accessToken:
+    refreshTokenCookie:
+      type: apiKey
+      in: cookie
+      name: refreshToken
+
+    accessTokenBearer:
       type: http
       scheme: bearer
       bearerFormat: JWT
@@ -56,6 +61,28 @@ components:
           type: integer
           example: 124
 
+    GenericResponse:
+      type: object
+      required:
+        - meta
+        - data
+      properties:
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+
+    GenericListResponse:
+      type: object
+      required:
+        - meta
+        - pagination
+        - data
+      properties:
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+        pagination:
+          $ref: '#/components/schemas/ResponsePagination'
+
+
     ErrorResponse:
       type: object
       required:
@@ -68,34 +95,128 @@ components:
         message:
           type: string
 
-
     AccessToken:
       type: object
       required:
         - accessToken
       properties:
         accessToken:
-                      # TODO: check if there is a more specific type/format for JWTs
           type: string
+          format: jwt
 
-    ID:
+    Password:
+      type: string
+      format: password
+      minLength: 8
+      maxLength: 128
+      # TODO: maybe enforce some conditions
+      # pattern: '^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&]).+$'
+      description: Must be 8-128 characters
+
+
+    StudentResponse:
+      allOf:
+        - $ref: '#/components/schemas/GenericResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/StudentResponseBase'
+
+    StudentListResponse:
+      allOf:
+        - $ref: '#/components/schemas/GenericListResponse'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/StudentResponseBase'
+
+    ProfessorResponse:
+      allOf:
+        - $ref: '#/components/schemas/GenericResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/ProfessorResponseBase'
+
+    ProfessorListResponse:
+      allOf:
+        - $ref: '#/components/schemas/GenericListResponse'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/ProfessorResponseBase'
+
+    ResearchProjectResponse:
+      allOf:
+        - $ref: '#/components/schemas/GenericResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/ResearchProjectResponseBase'
+
+    ResearchProjectListResponse:
+      allOf:
+        - $ref: '#/components/schemas/GenericListResponse'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/ResearchProjectResponseBase'
+
+    ApplicationResponse:
+      allOf:
+        - $ref: '#/components/schemas/GenericResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/ApplicationResponseBase'
+
+    ApplicationListResponse:
+      allOf:
+        - $ref: '#/components/schemas/GenericListResponse'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/ApplicationResponseBase'
+
+    UniversityResponse:
+      allOf:
+        - $ref: '#/components/schemas/GenericResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/UniversityResponseBase'
+
+    UniversityListResponse:
+      allOf:
+        - $ref: '#/components/schemas/GenericListResponse'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/UniversityResponseBase'
+
+    StudentResponseBase:
       type: object
       required:
         - id
-      properties:
-        name:
-          type: string
-          format: uuid
-
-    Student:
-      type: object
-      required:
         - name
         - email
         - universityId
         - fieldOfInterest
         - bio
       properties:
+        id:
+          type: string
+          format: uuid
         name:
           type: string
         email:
@@ -109,8 +230,52 @@ components:
         bio:
           type: string
 
-    Professor:
+    StudentCreateInput:
+      type: object
       required:
+        - email
+        - password
+        - name
+        - universityId
+        - fieldOfInterest
+        - bio
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          $ref: '#/components/schemas/Password'
+        name:
+          type: string
+        universityId:
+          type: string
+          format: uuid
+        fieldOfInterest:
+          type: string
+        bio:
+          type: string
+
+    StudentUpdateInput:
+      type: object
+      required:
+        - name
+        - universityId
+        - fieldOfInterest
+        - bio
+      properties:
+        name:
+          type: string
+        universityId:
+          type: string
+          format: uuid
+        fieldOfInterest:
+          type: string
+        bio:
+          type: string
+
+    ProfessorResponseBase:
+      required:
+        - id
         - name
         - email
         - universityId
@@ -121,6 +286,9 @@ components:
         - studentsSupervised
         - acceptanceRate
       properties:
+        id:
+          type: string
+          format: uuid
         name:
           type: string
         email:
@@ -129,7 +297,7 @@ components:
         universityId:
           type: string
           format: uuid
-        fieldOfInterest:
+        fieldOfStudy:
           type: string
         bio:
           type: string
@@ -141,6 +309,244 @@ components:
           type: integer
         acceptanceRate:
           type: number
+
+    ProfessorCreateInput:
+      type: object
+      required:
+        - email
+        - password
+        - name
+        - universityId
+        - fieldOfStudy
+        - bio
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          $ref: '#/components/schemas/Password'
+        name:
+          type: string
+        universityId:
+          type: string
+          format: uuid
+        fieldOfStudy:
+          type: string
+        bio:
+          type: string
+
+    ProfessorUpdateInput:
+      type: object
+      required:
+        - name
+        - universityId
+        - fieldOfStudy
+        - bio
+      properties:
+        name:
+          type: string
+        universityId:
+          type: string
+          format: uuid
+        fieldOfStudy:
+          type: string
+        bio:
+          type: string
+
+    ResearchProjectResponseBase:
+      type: object
+      required:
+        - id
+        - professorId
+        - title
+        - description
+        - field
+        - regionFocus
+        - requirements
+        - maxStudents
+        - currentStudents
+        - status
+        - interviewQuestions
+      properties:
+        id:
+          type: string
+          format: uuid
+        professorId:
+          type: string
+          format: uuid
+          description: ID of the professor leading the project
+        title:
+          type: string
+          description: Project title in the requested language
+        description:
+          type: string
+          description: Project description in the requested language
+        field:
+          type: string
+          description: Research field/category
+        regionFocus:
+          type: string
+          description: Geographic focus or target region
+        requirements:
+          type: string
+          description: Requirements for students applying
+        maxStudents:
+          type: integer
+          description: Maximum number of students allowed
+        currentStudents:
+          type: integer
+          description: Current number of students enrolled
+        status:
+          type: string
+          enum:
+            - OPEN
+            - CLOSED
+          description: Project status
+        interviewQuestions:
+          type: array
+          # TODO: think about the "interview" object, and the concrete type
+          items:
+            type: object
+          description: Interview questions for students
+
+    ResearchProjectInput:
+      type: object
+      required:
+        - professorId
+        - title
+        - description
+        - field
+        - regionFocus
+        - requirements
+        - maxStudents
+        - status
+        - interviewQuestions
+      properties:
+        professorId:
+          type: string
+          format: uuid
+          description: ID of the professor leading the project
+        title:
+          type: string
+          description: Project title in the requested language
+        description:
+          type: string
+          description: Project description in the requested language
+        field:
+          type: string
+          description: Research field/category
+        regionFocus:
+          type: string
+          description: Geographic focus or target region
+        requirements:
+          type: string
+          description: Requirements for students applying
+        maxStudents:
+          type: integer
+          description: Maximum number of students allowed
+        status:
+          type: string
+          description: Project status, e.g., "open", "closed"
+        interviewQuestions:
+          type: array
+          # TODO: think about the "interview" object, and the concrete type
+          items:
+            type: object
+          description: Interview questions for students
+
+    ApplicationResponseBase:
+      type: object
+      required:
+        - id
+        - studentId
+        - projectId
+        - status
+        - appliedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        studentId:
+          type: string
+          format: uuid
+          description: ID of the student who applied
+        projectId:
+          type: string
+          format: uuid
+          description: ID of the research project applied to
+        status:
+          type: string
+          enum:
+            - PENDING
+            - ACCEPTED
+            - REJECTED
+          description: Application status
+        # TODO: look into cv_url
+        appliedAt:
+          type: string
+          format: date-time
+          description: Timestamp when the application was submitted
+
+    ApplicationInput:
+      type: object
+      required:
+        - studentId
+        - projectId
+      properties:
+        studentId:
+          type: string
+          format: uuid
+          description: ID of the student who applied
+        projectId:
+          type: string
+          format: uuid
+          description: ID of the research project applied to
+
+    UniversityResponseBase:
+      type: object
+      required:
+        - id
+        - name
+        - country
+        - region
+        - rankingScore
+        - totalResearchProjects
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          description: Name of the university
+        country:
+          type: string
+          description: Country where the university is located
+        region:
+          type: string
+          description: Geographic region of the university
+        rankingScore:
+          type: integer
+          description: University ranking score
+        totalResearchProjects:
+          type: integer
+          description: Total number of research projects hosted by the university
+
+    UniversityInput:
+      type: object
+      required:
+        - name
+        - country
+        - rankingScore
+      properties:
+        name:
+          type: string
+          description: Name of the university
+        country:
+          type: string
+          description: Country where the university is located
+        rankingScore:
+          type: integer
+          description: University ranking score
 
   parameters:
     ID:
@@ -224,20 +630,22 @@ paths:
                   type: string
                   format: email
                 password:
-                  type: string
-                  # TODO: check conditions
-                  minimum: 4
-                  maximum: 20
+                  $ref: '#/components/schemas/Password'
       responses:
         '200':
           description: Successfully logged in (and received access token)
           content:
             application/json:
               schema:
-                meta:
-                  $ref: '#/components/schemas/ResponseMeta'
-                data:
-                  $ref: '#/components/schemas/AccessToken'
+                type: object
+                required:
+                  - meta
+                  - data
+                properties:
+                  meta:
+                    $ref: '#/components/schemas/ResponseMeta'
+                  data:
+                    $ref: '#/components/schemas/AccessToken'
         '400':
           $ref: '#/components/responses/BadRequest'
 
@@ -246,164 +654,45 @@ paths:
       tags: [auth]
       summary: Refresh access token
       operationId: authRefresh
-      requestBody: _
+      security:
+        - refreshTokenCookie: []
       responses:
         '200':
           description: Successfully refresh access token
           content:
             application/json:
               schema:
-                meta:
-                  $ref: '#/components/schemas/ResponseMeta'
-                data:
-                  $ref: '#/components/schemas/AccessToken'
+                type: object
+                required:
+                  - meta
+                  - data
+                properties:
+                  meta:
+                    $ref: '#/components/schemas/ResponseMeta'
+                  data:
+                    $ref: '#/components/schemas/AccessToken'
         '401':
           $ref: '#/components/responses/Unauthorized'
 
 
-  /api/users:
-    security:
-      - accessToken: []
-
-    get:
-      tags: [users]
-      summary: Get all Users
-      operationId: getAllUsers
-      parameters:
-        - $ref: '#components/parameters/PageNumber'
-        - $ref: '#components/parameters/PageSize'
-      responses:
-        '200':
-          description: List of users
-          content:
-            application/json:
-              schema:
-                meta:
-                  $ref: '#/components/schemas/ResponseMeta'
-                pagination:
-                  $ref: '#/components/schemas/ResponsePagination'
-                data: 
-                  type: array
-                  items:
-                    allOf:
-                      - $ref: '#/components/schemas/ID'
-                      - $ref: '#/components/schemas/Users'
-
-    post:
-      tags: [users]
-      summary: Create a new user
-      operationId: createUser
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/User'
-      responses:
-        '201':
-          description: User created
-          content:
-            application/json:
-              schema:
-                meta:
-                  $ref: '#/components/schemas/ResponseMeta'
-                data: 
-                  allOf:
-                    - $ref: '#/components/schemas/ID'
-                    - $ref: '#/components/schemas/User'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-
-  /api/users/{id}:
-    security:
-      - accessToken: []
-
-    parameters:
-      - $ref: '#/components/parameters/ID'
-
-    get:
-      tags: [users]
-      summary: Get user by ID
-      operationId: getUserById
-      responses:
-        '200':
-          description: User found
-          content:
-            application/json:
-              schema:
-                meta: 
-                  $ref: '#/components/schemas/ResponseMeta'
-                data: 
-                  allOf:
-                    - $ref: '#/components/schemas/ID'
-                    - $ref: '#/components/schemas/User'
-        '404':
-          $ref: '#/components/responses/NotFound'
-
-    put: 
-      tags: [users]
-      summary: Replace user by ID
-      operationId: replaceUserById
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/User'
-      responses:
-        '200':
-          description: User replaced
-          content:
-            application/json:
-              schema:
-                meta:
-                  $ref: '#/components/schemas/ResponseMeta'
-                data: 
-                  allOf:
-                    - $ref: '#/components/schemas/ID'
-                    - $ref: '#/components/schemas/User'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '404':
-          $ref: '#/components/responses/NotFound'
-
-    delete:
-      tags: [users]
-      summary: Delete user
-      operationId: deleteUserById
-      responses:
-        '204':
-          description: User deleted
-        '404':
-          $ref: '#/components/responses/NotFound'
-
   /api/students:
     security:
-      - accessToken: []
+      - accessTokenBearer: []
 
     get:
       tags: [students]
       summary: Get all students
       operationId: getAllStudents
       parameters:
-        - $ref: '#components/parameters/PageNumber'
-        - $ref: '#components/parameters/PageSize'
+        - $ref: '#/components/parameters/PageNumber'
+        - $ref: '#/components/parameters/PageSize'
       responses:
         '200':
           description: List of students
           content:
             application/json:
               schema:
-                meta:
-                  $ref: '#/components/schemas/ResponseMeta'
-                pagination:
-                  $ref: '#/components/schemas/ResponsePagination'
-                data: 
-                  type: array
-                  items:
-                    allOf:
-                      - $ref: '#/components/schemas/ID'
-                      - $ref: '#/components/schemas/Student'
+                $ref: '#/components/schemas/StudentListResponse'
 
     post:
       tags: [students]
@@ -414,25 +703,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Student'
+              $ref: '#/components/schemas/StudentCreateInput'
       responses:
         '201':
           description: Student created
           content:
             application/json:
               schema:
-                meta:
-                  $ref: '#/components/schemas/ResponseMeta'
-                data: 
-                  allOf:
-                    - $ref: '#/components/schemas/ID'
-                    - $ref: '#/components/schemas/Student'
+                $ref: '#/components/schemas/StudentResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
 
   /api/students/{id}:
     security:
-      - accessToken: []
+      - accessTokenBearer: []
 
     parameters:
       - $ref: '#/components/parameters/ID'
@@ -447,16 +731,11 @@ paths:
           content:
             application/json:
               schema:
-                meta: 
-                  $ref: '#/components/schemas/ResponseMeta'
-                data: 
-                  allOf:
-                    - $ref: '#/components/schemas/ID'
-                    - $ref: '#/components/schemas/Student'
+                $ref: '#/components/schemas/StudentResponse'
         '404':
           $ref: '#/components/responses/NotFound'
 
-    put: 
+    put:
       tags: [students]
       summary: Replace student by ID
       operationId: replaceStudentById
@@ -465,19 +744,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Student'
+              $ref: '#/components/schemas/StudentUpdateInput'
       responses:
         '200':
           description: Student replaced
           content:
             application/json:
               schema:
-                meta:
-                  $ref: '#/components/schemas/ResponseMeta'
-                data: 
-                  allOf:
-                    - $ref: '#/components/schemas/ID'
-                    - $ref: '#/components/schemas/Student'
+                $ref: '#/components/schemas/StudentResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
@@ -495,31 +769,22 @@ paths:
 
   /api/professors:
     security:
-      - accessToken: []
+      - accessTokenBearer: []
 
     get:
       tags: [professors]
       summary: Get all professors
       operationId: getAllProfessors
       parameters:
-        - $ref: '#components/parameters/PageNumber'
-        - $ref: '#components/parameters/PageSize'
+        - $ref: '#/components/parameters/PageNumber'
+        - $ref: '#/components/parameters/PageSize'
       responses:
         '200':
           description: List of professors
           content:
             application/json:
               schema:
-                meta:
-                  $ref: '#/components/schemas/ResponseMeta'
-                pagination:
-                  $ref: '#/components/schemas/ResponsePagination'
-                data:
-                  type: array
-                  items:
-                    allOf:
-                      - $ref: '#/components/schemas/ID'
-                      - $ref: '#/components/schemas/Professor'
+                $ref: '#/components/schemas/ProfessorListResponse'
 
     post:
       tags: [professors]
@@ -530,25 +795,21 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateProfessorRequest'
+              $ref: '#/components/schemas/ProfessorCreateInput'
       responses:
         '201':
           description: Professor created
           content:
             application/json:
               schema:
-                meta:
-                  $ref: '#/components/schemas/ResponseMeta'
-                data: 
-                  allOf:
-                    - $ref: '#/components/schemas/ID'
-                    - $ref: '#/components/schemas/Professor'
+                $ref: '#/components/schemas/ProfessorResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
 
+
   /api/professors/{id}:
     security:
-      - accessToken: []
+      - accessTokenBearer: []
 
     parameters:
       - $ref: '#/components/parameters/ID'
@@ -563,16 +824,11 @@ paths:
           content:
             application/json:
               schema:
-                meta:
-                  $ref: '#/components/schemas/ResponseMeta'
-                data:
-                  allOf:
-                    - $ref: '#/components/schemas/ID'
-                    - $ref: '#/components/schemas/Professor'
+                $ref: '#/components/schemas/ProfessorResponse'
         '404':
           $ref: '#/components/responses/NotFound'
 
-    put: 
+    put:
       tags: [professors]
       summary: Replace professor by ID
       operationId: replaceProfessorById
@@ -581,19 +837,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Professor'
+              $ref: '#/components/schemas/ProfessorUpdateInput'
       responses:
         '200':
           description: Professor replaced
           content:
             application/json:
               schema:
-                meta:
-                  $ref: '#/components/schemas/ResponseMeta'
-                data: 
-                  allOf:
-                    - $ref: '#/components/schemas/ID'
-                    - $ref: '#/components/schemas/Professer'
+                $ref: '#/components/schemas/ProfessorResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
@@ -606,5 +857,284 @@ paths:
       responses:
         '204':
           description: Professor deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/research-projects:
+    security:
+      - accessTokenBearer: []
+
+    get:
+      tags: [research-projects]
+      summary: Get all research projects
+      operationId: getAllResearchProjects
+      parameters:
+        - $ref: '#/components/parameters/PageNumber'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: List of research projects
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResearchProjectListResponse'
+
+    post:
+      tags: [research-projects]
+      summary: Create a new research project
+      operationId: createResearchProject
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResearchProjectInput'
+      responses:
+        '201':
+          description: Research project created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResearchProjectResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+
+  /api/research-projects/{id}:
+    security:
+      - accessTokenBearer: []
+
+    parameters:
+      - $ref: '#/components/parameters/ID'
+
+    get:
+      tags: [research-projects]
+      summary: Get research project by ID
+      operationId: getResearchProjectById
+      responses:
+        '200':
+          description: Research project found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResearchProjectResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [research-projects]
+      summary: Replace research project by ID
+      operationId: replaceResearchProjectById
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResearchProjectInput'
+      responses:
+        '200':
+          description: Research project replaced
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResearchProjectResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [research-projects]
+      summary: Delete research project
+      operationId: deleteResearchProjectById
+      responses:
+        '204':
+          description: Research project deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/applications:
+    security:
+      - accessTokenBearer: []
+
+    get:
+      tags: [applications]
+      summary: Get all applications
+      operationId: getAllApplications
+      parameters:
+        - $ref: '#/components/parameters/PageNumber'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: List of applications
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationListResponse'
+
+    post:
+      tags: [applications]
+      summary: Create a new application
+      operationId: createApplication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplicationInput'
+      responses:
+        '201':
+          description: Application created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+
+  /api/applications/{id}:
+    security:
+      - accessTokenBearer: []
+
+    parameters:
+      - $ref: '#/components/parameters/ID'
+
+    get:
+      tags: [applications]
+      summary: Get application by ID
+      operationId: getApplicationById
+      responses:
+        '200':
+          description: Application found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [applications]
+      summary: Replace application by ID
+      operationId: replaceApplicationById
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplicationInput'
+      responses:
+        '200':
+          description: Application replaced
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [applications]
+      summary: Delete application
+      operationId: deleteApplicationById
+      responses:
+        '204':
+          description: Application deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/universities:
+    security:
+      - accessTokenBearer: []
+
+    get:
+      tags: [universities]
+      summary: Get all universities
+      operationId: getAllUniversities
+      parameters:
+        - $ref: '#/components/parameters/PageNumber'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: List of universities
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UniversityListResponse'
+
+    post:
+      tags: [universities]
+      summary: Create a new university
+      operationId: createUniversity
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UniversityInput'
+      responses:
+        '201':
+          description: University created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UniversityResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+
+  /api/universities/{id}:
+    security:
+      - accessTokenBearer: []
+
+    parameters:
+      - $ref: '#/components/parameters/ID'
+
+    get:
+      tags: [universities]
+      summary: Get university by ID
+      operationId: getUniversityById
+      responses:
+        '200':
+          description: University found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UniversityResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [universities]
+      summary: Replace university by ID
+      operationId: replaceUniversityById
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UniversityInput'
+      responses:
+        '200':
+          description: University replaced
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UniversityResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [universities]
+      summary: Delete university
+      operationId: deleteUniversityById
+      responses:
+        '204':
+          description: University deleted
         '404':
           $ref: '#/components/responses/NotFound'
