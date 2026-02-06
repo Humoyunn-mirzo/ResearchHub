@@ -150,15 +150,15 @@ components:
               items:
                 $ref: '#/components/schemas/ProfessorResponseBase'
 
-    ResearchProjectResponse:
+    ProjectResponse:
       allOf:
         - $ref: '#/components/schemas/GenericResponse'
         - type: object
           properties:
             data:
-              $ref: '#/components/schemas/ResearchProjectResponseBase'
+              $ref: '#/components/schemas/ProjectResponseBase'
 
-    ResearchProjectListResponse:
+    ProjectListResponse:
       allOf:
         - $ref: '#/components/schemas/GenericListResponse'
         - type: object
@@ -166,7 +166,7 @@ components:
             data:
               type: array
               items:
-                $ref: '#/components/schemas/ResearchProjectResponseBase'
+                $ref: '#/components/schemas/ProjectResponseBase'
 
     ApplicationResponse:
       allOf:
@@ -353,7 +353,7 @@ components:
         bio:
           type: string
 
-    ResearchProjectResponseBase:
+    ProjectResponseBase:
       type: object
       required:
         - id
@@ -409,7 +409,7 @@ components:
             type: object
           description: Interview questions for students
 
-    ResearchProjectInput:
+    ProjectInput:
       type: object
       required:
         - professorId
@@ -473,7 +473,7 @@ components:
         projectId:
           type: string
           format: uuid
-          description: ID of the research project applied to
+          description: ID of the project applied to
         status:
           type: string
           enum:
@@ -500,7 +500,7 @@ components:
         projectId:
           type: string
           format: uuid
-          description: ID of the research project applied to
+          description: ID of the project applied to
 
     UniversityResponseBase:
       type: object
@@ -510,7 +510,7 @@ components:
         - country
         - region
         - rankingScore
-        - totalResearchProjects
+        - totalProjects
       properties:
         id:
           type: string
@@ -527,9 +527,9 @@ components:
         rankingScore:
           type: integer
           description: University ranking score
-        totalResearchProjects:
+        totalProjects:
           type: integer
-          description: Total number of research projects hosted by the university
+          description: Total number of projects hosted by the university
 
     UniversityInput:
       type: object
@@ -860,47 +860,47 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/research-projects:
+  /api/projects:
     security:
       - accessTokenBearer: []
 
     get:
-      tags: [research-projects]
-      summary: Get all research projects
-      operationId: getAllResearchProjects
+      tags: [projects]
+      summary: Get all projects
+      operationId: getAllProjects
       parameters:
         - $ref: '#/components/parameters/PageNumber'
         - $ref: '#/components/parameters/PageSize'
       responses:
         '200':
-          description: List of research projects
+          description: List of projects
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResearchProjectListResponse'
+                $ref: '#/components/schemas/ProjectListResponse'
 
     post:
-      tags: [research-projects]
-      summary: Create a new research project
-      operationId: createResearchProject
+      tags: [projects]
+      summary: Create a new project
+      operationId: createProject
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ResearchProjectInput'
+              $ref: '#/components/schemas/ProjectInput'
       responses:
         '201':
-          description: Research project created
+          description: Project created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResearchProjectResponse'
+                $ref: '#/components/schemas/ProjectResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
 
 
-  /api/research-projects/{id}:
+  /api/projects/{id}:
     security:
       - accessTokenBearer: []
 
@@ -908,48 +908,48 @@ paths:
       - $ref: '#/components/parameters/ID'
 
     get:
-      tags: [research-projects]
-      summary: Get research project by ID
-      operationId: getResearchProjectById
+      tags: [projects]
+      summary: Get project by ID
+      operationId: getProjectById
       responses:
         '200':
-          description: Research project found
+          description: Project found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResearchProjectResponse'
+                $ref: '#/components/schemas/ProjectResponse'
         '404':
           $ref: '#/components/responses/NotFound'
 
     put:
-      tags: [research-projects]
-      summary: Replace research project by ID
-      operationId: replaceResearchProjectById
+      tags: [projects]
+      summary: Replace project by ID
+      operationId: replaceProjectById
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ResearchProjectInput'
+              $ref: '#/components/schemas/ProjectInput'
       responses:
         '200':
-          description: Research project replaced
+          description: Project replaced
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResearchProjectResponse'
+                $ref: '#/components/schemas/ProjectResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
 
     delete:
-      tags: [research-projects]
-      summary: Delete research project
-      operationId: deleteResearchProjectById
+      tags: [projects]
+      summary: Delete project
+      operationId: deleteProjectById
       responses:
         '204':
-          description: Research project deleted
+          description: Project deleted
         '404':
           $ref: '#/components/responses/NotFound'
 

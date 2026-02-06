@@ -33,7 +33,7 @@ public class University {
     private Integer rankingScore = 0;
 
     @Column(nullable = false)
-    private Integer totalResearchProjects = 0;
+    private Integer totalProjects = 0;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)

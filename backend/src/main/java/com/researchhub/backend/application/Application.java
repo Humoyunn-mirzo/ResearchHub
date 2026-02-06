@@ -1,6 +1,6 @@
 package com.researchhub.backend.application;
 
-import com.researchhub.backend.project.ResearchProject;
+import com.researchhub.backend.project.Project;
 import com.researchhub.backend.student.Student;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -30,7 +30,7 @@ public class Application {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id", nullable = false)
-    private ResearchProject researchProject;  //a research project -> Many applications
+    private Project project;  //a research project -> Many applications
 
     @Column(name = "status", nullable = false, length = 50)
     private String status = "pending"; //change to enum later

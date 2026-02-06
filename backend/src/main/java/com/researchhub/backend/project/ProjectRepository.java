@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.UUID;
 
-public interface ResearchProjectRepository extends JpaRepository<ResearchProject, UUID> {
+public interface ProjectRepository extends JpaRepository<Project, UUID> {
 
-    List<ResearchProject> findByProfessorId(UUID professorId);
+    List<Project> findByProfessorId(UUID professorId);
 }

@@ -1,8 +1,8 @@
 package com.researchhub.backend.professor;
 
 import com.researchhub.backend.application.ResourceNotFoundException;
-import com.researchhub.backend.project.ResearchProject;
-import com.researchhub.backend.project.ResearchProjectRepository;
+import com.researchhub.backend.project.Project;
+import com.researchhub.backend.project.ProjectRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -19,7 +19,7 @@ import java.util.UUID;
 public class ProfessorService {
 
     private final ProfessorRepository professorRepository;
-    private final ResearchProjectRepository researchProjectRepository;
+    private final ProjectRepository projectRepository;
 
     public Page<Professor> getProfessors(
         Pageable pageable,
@@ -55,8 +55,8 @@ public class ProfessorService {
         Professor professor = professorRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Professor not found"));
 
-        List<ResearchProject> projects =
-                researchProjectRepository.findByProfessorId(id);
+        List<Project> projects =
+                projectRepository.findByProfessorId(id);
 
         return new ProfessorWithProjectsResponse(professor, projects);
     }

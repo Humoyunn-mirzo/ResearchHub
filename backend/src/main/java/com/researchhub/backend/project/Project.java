@@ -13,12 +13,12 @@ import java.util.Map;
 import java.util.UUID;
 
 @Entity
-@Table(name = "research_projects")
+@Table(name = "projects")
 @Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ResearchProject {
+public class Project {
     @Id
     @GeneratedValue
     private UUID id;

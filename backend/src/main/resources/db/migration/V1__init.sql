@@ -41,7 +41,7 @@ CREATE TABLE universities (
     region VARCHAR(255) NOT NULL,
 
     ranking_score INTEGER NOT NULL DEFAULT 0,
-    total_research_projects INTEGER NOT NULL DEFAULT 0,
+    total_projects INTEGER NOT NULL DEFAULT 0,
 
     created_at TIMESTAMPTZ NOT NULL,
     updated_at TIMESTAMPTZ NOT NULL
@@ -49,7 +49,7 @@ CREATE TABLE universities (
     CONSTRAINT chk_universities_counters
         CHECK (
             ranking_score >= 0
-            AND total_research_projects >= 0
+            AND total_projects >= 0
         )
 );
 CREATE UNIQUE INDEX idx_universities_name ON universities(name);
@@ -125,7 +125,7 @@ CREATE TABLE professors (
 
 
 
-CREATE TABLE research_projects (
+CREATE TABLE projects (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     professor_id UUID,
@@ -183,7 +183,7 @@ CREATE TABLE applications (
     CONSTRAINT fk_applications_student FOREIGN KEY (student_id)
         REFERENCES students(id) ON DELETE CASCADE,
     CONSTRAINT fk_applications_project FOREIGN KEY (project_id)
-        REFERENCES research_projects(id) ON DELETE CASCADE,
+        REFERENCES projects(id) ON DELETE CASCADE,
     CONSTRAINT chk_applications_status
         CHECK (status IN ('PENDING', 'ACCEPTED', 'REJECTED'))
 );
