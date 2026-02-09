@@ -2,72 +2,83 @@ package com.researchhub.backend.student;
 
 import com.researchhub.backend.application.Application;
 import com.researchhub.backend.application.ApplicationRepository;
+import com.researchhub.backend.common.ApiResponse;
+import com.researchhub.backend.university.University;
+import com.researchhub.backend.university.UniversityRepository;
+import com.researchhub.backend.user.UserRole;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class StudentService {
-    private ApplicationRepository applicationRepository;
     private final StudentRepository studentRepository;
+    private final UniversityRepository universityRepository;
+    private final StudentMapper studentMapper;
+    private final PasswordEncoder passwordEncoder;
 
-    public List<Student> getStudents() {
-        return studentRepository.findAll(); // later add filtering/pagination
+    public Page<StudentResponse> getStudents(Pageable pageable) {
+        Page<Student> page = studentRepository.findAll(pageable);
+
+        List<StudentResponse> content = studentMapper.toResponseList(page.getContent());
+
+        return new PageImpl<>(content, pageable, page.getTotalElements());
     }
 
-    public Student getStudentById(UUID id) {
-        return studentRepository.findById(id)
+    public StudentResponse getStudentById(UUID id) {
+        Student student = studentRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Student not found"));
+        return studentMapper.toResponse(student);
     }
 
     @Transactional
-    public Student createStudent(String name, String email, String passwordHash, UUID universityId, String fieldOfInterest, String bio) {
-        if (studentRepository.existsByEmail(email)) {
+    public StudentResponse createStudent(CreateStudentRequest request) {
+        if (studentRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email already exists");
         }
 
-        Student student = new Student();
-        student.setName(name);
-        student.setEmail(email.trim());
-        student.setPasswordHash(passwordHash);
-        student.setUniversityId(universityId);
-        student.setFieldOfInterest(fieldOfInterest != null ? fieldOfInterest.trim() : null);
-        student.setBio(bio != null ? bio.trim() : null);
+        Student student = studentMapper.toEntity(request);
         student.setCreatedAt(OffsetDateTime.now());
         student.setUpdatedAt(OffsetDateTime.now());
+        student.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        student.setRoles(Set.of(UserRole.valueOf("STUDENT")));
 
-        return studentRepository.save(student);
+        University university = null;
+        if (request.getUniversityId() != null) {
+            university = universityRepository.findById(request.getUniversityId())
+            .orElseThrow(() -> new EntityNotFoundException(
+                "University not found: " + request.getUniversityId()
+            ));
+        }
+
+        student.setUniversity(university);
+
+        studentRepository.save(student);
+
+        return studentMapper.toResponse(student);
     }
 
     @Transactional
-    public Student patchStudent(UUID id, String name, String email, UUID universityId, String fieldOfInterest, String bio) {
+    public StudentResponse updateStudent(UUID id, UpdateStudentRequest request) {
         Student student = studentRepository.findById(id)
             .orElseThrow(() -> new EntityNotFoundException("Student not found"));
 
-        if (name != null) {
-            student.setName(name);
-        }
-        if (email != null) {
-            student.setEmail(email);
-        }
-        if (universityId != null) {
-            student.setUniversityId(universityId);
-        }
-        if (fieldOfInterest != null) {
-            student.setFieldOfInterest(fieldOfInterest);
-        }
-        if (bio != null) {
-            student.setBio(bio);
-        }
+        student = studentRepository.save(student);
 
-        return studentRepository.save(student);
+        return studentMapper.toResponse(student);
     }
 
     @Transactional
@@ -77,11 +88,5 @@ public class StudentService {
         }
 
         studentRepository.deleteById(id);
-    }
-
-
-    // Optional: add methods to get applications for student
-    public List<Application> getStudentApplications(UUID studentId) {
-        return applicationRepository.findByStudentId(studentId);
     }
 }

@@ -16,12 +16,9 @@ import com.researchhub.backend.user.User;
 @Setter
 public class Student extends User {
 
-    // @ManyToOne(fetch = FetchType.LAZY)
-    // @JoinColumn(name = "university_id")
-    // private University university;
-    @Column(name = "university_id")
-    private UUID universityId;
-    // replace universityId with university
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "university_id")
+    private University university;
 
     @Column(name = "field_of_interest", columnDefinition = "TEXT")
     private String fieldOfInterest;
