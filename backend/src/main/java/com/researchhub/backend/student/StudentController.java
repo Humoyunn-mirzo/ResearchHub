@@ -23,7 +23,7 @@ public class StudentController {
     private final StudentService studentService;
 
     @GetMapping
-    public ResponseEntity<ApiResponsePage<StudentResponse>> getAllStudents(
+    public ResponseEntity<ApiResponsePage<StudentResponse>> getStudents(
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "20") int size
     ) {
