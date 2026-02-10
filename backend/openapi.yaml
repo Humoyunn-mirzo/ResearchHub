@@ -229,6 +229,10 @@ components:
           type: string
         bio:
           type: string
+        totalApplications:
+          type: integer
+        acceptedProjects:
+          type: integer
 
     StudentCreateInput:
       type: object

@@ -32,9 +32,12 @@ public abstract class StudentMapper {
     }
 
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "roles", ignore = true)
     @Mapping(target = "university", ignore = true)
     @Mapping(target = "totalApplications", ignore = true)
     @Mapping(target = "acceptedProjects", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
     @Mapping(
         target = "passwordHash",
         source = "password",
@@ -45,8 +48,6 @@ public abstract class StudentMapper {
     @AfterMapping
     protected void afterCreate(CreateStudentRequest request, @MappingTarget Student student) {
         student.setRoles(Set.of(UserRole.STUDENT));
-        student.setCreatedAt(OffsetDateTime.now());
-        student.setUpdatedAt(OffsetDateTime.now());
     }
 
 
@@ -58,12 +59,8 @@ public abstract class StudentMapper {
     @Mapping(target = "totalApplications", ignore = true)
     @Mapping(target = "acceptedProjects", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
     public abstract void toEntity(UpdateStudentRequest request, @MappingTarget Student student);
-
-    @AfterMapping
-    protected void afterUpdate(CreateStudentRequest request, @MappingTarget Student student) {
-        student.setUpdatedAt(OffsetDateTime.now());
-    }
 
 
     @Named("hashPassword")

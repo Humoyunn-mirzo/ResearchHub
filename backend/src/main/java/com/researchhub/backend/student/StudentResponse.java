@@ -8,5 +8,7 @@ public record StudentResponse (
     String email,
     UUID universityId,
     String fieldOfInterest,
-    String bio
+    String bio,
+    int totalApplications,
+    int acceptedProjects
 ) {}
