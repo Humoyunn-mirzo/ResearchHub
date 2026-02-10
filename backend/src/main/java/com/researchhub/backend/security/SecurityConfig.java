@@ -1,5 +1,6 @@
 package com.researchhub.backend.security;
 
+import org.springframework.boot.autoconfigure.graphql.GraphQlProperties.Http;
 import org.springframework.context.annotation.*;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.*;
@@ -38,8 +39,9 @@ public class SecurityConfig {
                 auth.requestMatchers(HttpMethod.GET, "/universities/**").permitAll();
 
                 auth.requestMatchers(HttpMethod.GET, "/students/**").authenticated();
-                auth.requestMatchers(HttpMethod.POST, "/students").hasRole("UNIVERSITY_ADMIN");
-                auth.requestMatchers(HttpMethod.PATCH, "/students/**").hasRole("UNIVERSITY_ADMIN");
+                auth.requestMatchers(HttpMethod.POST, "/students/**").hasRole("UNIVERSITY_ADMIN");
+                auth.requestMatchers(HttpMethod.PUT, "/students/**").authenticated();
+                auth.requestMatchers(HttpMethod.DELETE, "/students/**").hasRole("UNIVERSITY_ADMIN");
 
                 auth.requestMatchers(HttpMethod.GET, "/professors/**").authenticated();
                 auth.requestMatchers(HttpMethod.POST, "/professors").hasRole("UNIVERSITY_ADMIN");

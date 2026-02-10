@@ -28,7 +28,6 @@ public class StudentService {
     private final StudentRepository studentRepository;
     private final UniversityRepository universityRepository;
     private final StudentMapper studentMapper;
-    private final PasswordEncoder passwordEncoder;
 
     public Page<StudentResponse> getStudents(Pageable pageable) {
         Page<Student> page = studentRepository.findAll(pageable);
@@ -51,10 +50,6 @@ public class StudentService {
         }
 
         Student student = studentMapper.toEntity(request);
-        student.setCreatedAt(OffsetDateTime.now());
-        student.setUpdatedAt(OffsetDateTime.now());
-        student.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-        student.setRoles(Set.of(UserRole.valueOf("STUDENT")));
 
         University university = null;
         if (request.getUniversityId() != null) {
@@ -66,7 +61,7 @@ public class StudentService {
 
         student.setUniversity(university);
 
-        studentRepository.save(student);
+        student = studentRepository.save(student);
 
         return studentMapper.toResponse(student);
     }
@@ -75,6 +70,8 @@ public class StudentService {
     public StudentResponse updateStudent(UUID id, UpdateStudentRequest request) {
         Student student = studentRepository.findById(id)
             .orElseThrow(() -> new EntityNotFoundException("Student not found"));
+
+        studentMapper.toEntity(request, student);
 
         student = studentRepository.save(student);
 

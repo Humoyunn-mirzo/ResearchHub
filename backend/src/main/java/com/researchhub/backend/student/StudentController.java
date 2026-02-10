@@ -48,7 +48,7 @@ public class StudentController {
         return ResponseEntity.ok(new ApiResponse<>(response));
     }
 
-    @PatchMapping("/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<StudentResponse>> updateStudent(@PathVariable UUID id, @RequestBody UpdateStudentRequest request) {
         StudentResponse response = studentService.updateStudent(id, request);
         return ResponseEntity.ok(new ApiResponse<>(response));
