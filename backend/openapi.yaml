@@ -685,8 +685,8 @@ paths:
 
     get:
       tags: [students]
-      summary: Get all students
-      operationId: getAllStudents
+      summary: Get students
+      operationId: getStudents
       parameters:
         - $ref: '#/components/parameters/PageNumber'
         - $ref: '#/components/parameters/PageSize'
@@ -777,8 +777,8 @@ paths:
 
     get:
       tags: [professors]
-      summary: Get all professors
-      operationId: getAllProfessors
+      summary: Get professors
+      operationId: getProfessors
       parameters:
         - $ref: '#/components/parameters/PageNumber'
         - $ref: '#/components/parameters/PageSize'
@@ -870,8 +870,8 @@ paths:
 
     get:
       tags: [projects]
-      summary: Get all projects
-      operationId: getAllProjects
+      summary: Get projects
+      operationId: getProjects
       parameters:
         - $ref: '#/components/parameters/PageNumber'
         - $ref: '#/components/parameters/PageSize'
@@ -963,8 +963,8 @@ paths:
 
     get:
       tags: [applications]
-      summary: Get all applications
-      operationId: getAllApplications
+      summary: Get applications
+      operationId: getApplications
       parameters:
         - $ref: '#/components/parameters/PageNumber'
         - $ref: '#/components/parameters/PageSize'
@@ -1056,8 +1056,8 @@ paths:
 
     get:
       tags: [universities]
-      summary: Get all universities
-      operationId: getAllUniversities
+      summary: Get universities
+      operationId: getUniversities
       parameters:
         - $ref: '#/components/parameters/PageNumber'
         - $ref: '#/components/parameters/PageSize'
