@@ -5,9 +5,7 @@ import java.util.UUID;
 import lombok.Data;
 
 @Data
-public class CreateProfessorRequest {
-    private String email;
-    private String password;
+public class UpdateProfessorRequest {
     private String name;
     private String fieldOfStudy;
     private UUID universityId;

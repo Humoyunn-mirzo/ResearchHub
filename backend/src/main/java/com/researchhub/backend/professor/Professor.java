@@ -1,20 +1,18 @@
 package com.researchhub.backend.professor;
 
-import com.researchhub.backend.university.University;
-import com.researchhub.backend.user.User;
-
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.OffsetDateTime;
+
+import com.researchhub.backend.university.University;
+import com.researchhub.backend.user.User;
 
 @Entity
 @Table(name = "professors")
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class Professor extends User {
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -38,8 +36,13 @@ public class Professor extends User {
     private Double acceptanceRate;
 
     @Column(nullable = false)
-    private OffsetDateTime createdAt;
+    private OffsetDateTime createdAt = OffsetDateTime.now();
 
     @Column(nullable = false)
-    private OffsetDateTime updatedAt;
+    private OffsetDateTime updatedAt = OffsetDateTime.now();
+
+    @PreUpdate
+    public void preUpdate() {
+        this.updatedAt = OffsetDateTime.now();
+    }
 }

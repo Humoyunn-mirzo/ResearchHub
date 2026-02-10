@@ -3,10 +3,18 @@ package com.researchhub.backend.professor;
 import com.researchhub.backend.application.ResourceNotFoundException;
 import com.researchhub.backend.project.Project;
 import com.researchhub.backend.project.ProjectRepository;
+import com.researchhub.backend.student.StudentMapper;
+import com.researchhub.backend.university.University;
+import com.researchhub.backend.university.UniversityRepository;
+
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
@@ -19,45 +27,72 @@ import java.util.UUID;
 public class ProfessorService {
 
     private final ProfessorRepository professorRepository;
-    private final ProjectRepository projectRepository;
+	private final UniversityRepository universityRepository;
+    private final ProfessorMapper professorMapper;
 
-    public Page<Professor> getProfessors(
+    public Page<ProfessorResponse> getProfessors(
         Pageable pageable,
         String search,
         UUID universityId,
         String fieldOfStudy
     ) {
-        return professorRepository.findFiltered(
-            pageable,
-            search,
-            universityId,
-            fieldOfStudy
+        Page<Professor> page = professorRepository.findAll(
+            ProfessorSpecification.search(search, universityId, fieldOfStudy),
+            pageable
         );
+
+        List<ProfessorResponse> content = professorMapper.toResponseList(page.getContent());
+
+        return new PageImpl<>(content, pageable, page.getTotalElements());
     }
 
-    public Professor createProfessor(CreateProfessorRequest request) {
-        Professor professor = new Professor();
-        professor.setName(request.name().trim());
-        professor.setEmail(request.email().trim());  ///Look into lowercasing the domain of the email later
-        professor.setFieldOfStudy(request.fieldOfStudy().trim());
-        professor.setBio(request.bio());
-        professor.setAcceptanceRate(request.acceptanceRate());
-        professor.setRankingScore(0);
-        professor.setTotalProjects(0);
-        professor.setStudentsSupervised(0);
-        professor.setCreatedAt(OffsetDateTime.now());
-        professor.setUpdatedAt(OffsetDateTime.now());
-
-        return professorRepository.save(professor);
-    }
-
-    public ProfessorWithProjectsResponse getProfessorWithProjects(UUID id) {
+    public ProfessorResponse getProfessorById(UUID id) {
         Professor professor = professorRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Professor not found"));
+            .orElseThrow(() -> new RuntimeException("Professor not found"));
+        return professorMapper.toResponse(professor);
+    }
 
-        List<Project> projects =
-                projectRepository.findByProfessorId(id);
+    @Transactional
+    public ProfessorResponse createProfessor(CreateProfessorRequest request) {
+        if (professorRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("Email already exists");
+        }
 
-        return new ProfessorWithProjectsResponse(professor, projects);
+        Professor professor = professorMapper.toEntity(request);
+
+        University university = null;
+        if (request.getUniversityId() != null) {
+            university = universityRepository.findById(request.getUniversityId())
+            .orElseThrow(() -> new EntityNotFoundException(
+                "University not found: " + request.getUniversityId()
+            ));
+        }
+
+        professor.setUniversity(university);
+
+        professor = professorRepository.save(professor);
+
+        return professorMapper.toResponse(professor);
+    }
+
+    @Transactional
+    public ProfessorResponse updateProfessor(UUID id, UpdateProfessorRequest request) {
+        Professor professor = professorRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("Professor not found"));
+
+        professorMapper.toEntity(request, professor);
+
+        professor = professorRepository.save(professor);
+
+        return professorMapper.toResponse(professor);
+    }
+
+    @Transactional
+    public void deleteProfessor(UUID id) {
+        if (!professorRepository.existsById(id)) {
+            throw new EntityNotFoundException("Professor not found");
+        }
+
+        professorRepository.deleteById(id);
     }
 }
