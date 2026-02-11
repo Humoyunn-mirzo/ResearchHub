@@ -1,13 +1,10 @@
 package com.researchhub.backend.university;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-@Setter
-@Getter
-public class UniversityRequest {
+@Data
+public class CreateUniversityRequest {
     private String name;
     private String country;
     private String region;
-
 }
