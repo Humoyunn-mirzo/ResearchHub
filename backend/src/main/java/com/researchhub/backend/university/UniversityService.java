@@ -1,8 +1,13 @@
 package com.researchhub.backend.university;
 
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -12,46 +17,56 @@ import java.util.UUID;
 public class UniversityService {
 
     private final UniversityRepository universityRepository;
+    private final UniversityMapper universityMapper;
 
-    // Create new university
+    public Page<UniversityResponse> getUniversities(Pageable pageable) {
+        Page<University> page = universityRepository.findAll(pageable);
+
+        List<UniversityResponse> content =
+                universityMapper.toResponseList(page.getContent());
+
+        return new PageImpl<>(content, pageable, page.getTotalElements());
+    }
+
+    public UniversityResponse getUniversityById(UUID id) {
+        University university = universityRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("University not found"));
+
+        return universityMapper.toResponse(university);
+    }
+
     @Transactional
-    public University createUniversity(String name, String country, String region) {
-        if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("Name is required and cannot be empty");
-        }
-        if (country == null || country.isBlank()) {
-            throw new IllegalArgumentException("Country is required and cannot be empty");
-        }
-        if (region == null || (!region.equals("Central Asia") && !region.equals("European Union"))) {
-            throw new IllegalArgumentException("Region must be either \"Central Asia\" or \"European Union\"");
+    public UniversityResponse createUniversity(CreateUniversityRequest request) {
+
+        if (universityRepository.existsByName(request.getName())) {
+            throw new RuntimeException("University already exists");
         }
 
-        University university = new University();
-        university.setName(name.trim());
-        university.setCountry(country.trim());
-        university.setRegion(region.trim());
-        return universityRepository.save(university);
+        University university = universityMapper.toEntity(request);
+        university = universityRepository.save(university);
+
+        return universityMapper.toResponse(university);
     }
 
-    // Get all universities with optional filters
-    public List<University> getUniversities(String search, String country, String region, int limit, int offset) {
-        // Basic example using repository. For more complex filtering, use Specification or QueryDSL
-        List<University> all = universityRepository.findAll();
+    @Transactional
+    public UniversityResponse updateUniversity(UUID id, UpdateUniversityRequest request) {
 
-        //review later (IMPORTANT LOGIC)
-        return all.stream()
-                .filter(u -> search == null || u.getName().toLowerCase().contains(search.toLowerCase())
-                        || u.getCountry().toLowerCase().contains(search.toLowerCase()))
-                .filter(u -> country == null || u.getCountry().equalsIgnoreCase(country))
-                .filter(u -> region == null || u.getRegion().equalsIgnoreCase(region))
-                .skip(offset)
-                .limit(limit)
-                .toList();
+        University university = universityRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("University not found"));
+
+        universityMapper.toEntity(request, university);
+
+        university = universityRepository.save(university);
+
+        return universityMapper.toResponse(university);
     }
 
-    // Get university by ID
-    public University getUniversityById(UUID id) {
-        return universityRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("University not found"));
+    @Transactional
+    public void deleteUniversity(UUID id) {
+        if (!universityRepository.existsById(id)) {
+            throw new EntityNotFoundException("University not found");
+        }
+
+        universityRepository.deleteById(id);
     }
 }
