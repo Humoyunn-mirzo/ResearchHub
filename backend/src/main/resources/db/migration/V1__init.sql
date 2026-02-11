@@ -144,14 +144,6 @@ CREATE TABLE projects (
 
     interview_questions JSONB, --using TEXT would lose JSON features - Jsonb good practice
 
-    title_en TEXT,
-    title_ru TEXT,
-    title_uz TEXT,
-
-    description_en TEXT,
-    description_ru TEXT,
-    description_uz TEXT,
-
     created_at TIMESTAMPTZ NOT NULL,
     updated_at TIMESTAMPTZ NOT NULL,
 

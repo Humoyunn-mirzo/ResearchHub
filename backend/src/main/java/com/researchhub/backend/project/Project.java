@@ -6,18 +6,14 @@ import lombok.*;
 import com.vladmihalcea.hibernate.type.json.JsonType;
 import org.hibernate.annotations.Type;
 
-
-
 import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.UUID;
 
 @Entity
 @Table(name = "projects")
-@Getter @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@Getter
+@Setter
 public class Project {
     @Id
     @GeneratedValue
@@ -53,17 +49,14 @@ public class Project {
     @Column(columnDefinition = "jsonb") //using TEXT would lose JSON features - good practice
     private Map<String, Object> interviewQuestions;
 
-    private String titleEn;
-    private String titleRu;
-    private String titleUz;
-
-    private String descriptionEn;
-    private String descriptionRu;
-    private String descriptionUz;
+    @Column(nullable = false)
+    private OffsetDateTime createdAt = OffsetDateTime.now();
 
     @Column(nullable = false)
-    private OffsetDateTime createdAt;
+    private OffsetDateTime updatedAt = OffsetDateTime.now();
 
-    @Column(nullable = false)
-    private OffsetDateTime updatedAt;
+    @PreUpdate
+    public void preUpdate() {
+        this.updatedAt = OffsetDateTime.now();
+    }
 }

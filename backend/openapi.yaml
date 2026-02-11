@@ -381,10 +381,10 @@ components:
           description: ID of the professor leading the project
         title:
           type: string
-          description: Project title in the requested language
+          description: Project title
         description:
           type: string
-          description: Project description in the requested language
+          description: Project description
         field:
           type: string
           description: Research field/category
@@ -432,10 +432,10 @@ components:
           description: ID of the professor leading the project
         title:
           type: string
-          description: Project title in the requested language
+          description: Project title
         description:
           type: string
-          description: Project description in the requested language
+          description: Project description
         field:
           type: string
           description: Research field/category
