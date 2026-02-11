@@ -36,22 +36,31 @@ public class SecurityConfig {
 
                 auth.requestMatchers("/user/register").hasRole("UNIVERSITY_ADMIN");
 
-                auth.requestMatchers(HttpMethod.GET, "/universities/**").permitAll();
-
                 auth.requestMatchers(HttpMethod.GET, "/students/**").authenticated();
                 auth.requestMatchers(HttpMethod.POST, "/students/**").hasRole("UNIVERSITY_ADMIN");
                 auth.requestMatchers(HttpMethod.PUT, "/students/**").hasAnyRole("UNIVERSITY_ADMIN", "STUDENT");
                 auth.requestMatchers(HttpMethod.DELETE, "/students/**").hasRole("UNIVERSITY_ADMIN");
 
                 auth.requestMatchers(HttpMethod.GET, "/professors/**").authenticated();
-                auth.requestMatchers(HttpMethod.POST, "/professors").hasAnyRole("UNIVERSITY_ADMIN", "PROFESSOR");
-                auth.requestMatchers(HttpMethod.PUT, "/professors/**").authenticated();
+                auth.requestMatchers(HttpMethod.POST, "/professors/**").hasRole("UNIVERSITY_ADMIN");
+                auth.requestMatchers(HttpMethod.PUT, "/professors/**").hasAnyRole("UNIVERSITY_ADMIN", "PROFESSOR");
                 auth.requestMatchers(HttpMethod.DELETE, "/professors/**").hasRole("UNIVERSITY_ADMIN");
 
                 auth.requestMatchers(HttpMethod.GET, "/projects/**").authenticated();
-                auth.requestMatchers(HttpMethod.POST, "/projects").hasRole("PROFESSOR");
+                auth.requestMatchers(HttpMethod.POST, "/projects/**").hasRole("PROFESSOR");
                 auth.requestMatchers(HttpMethod.PUT, "/projects/**").hasRole("PROFESSOR");
                 auth.requestMatchers(HttpMethod.DELETE, "/projects/**").hasRole("PROFESSOR");
+
+                auth.requestMatchers(HttpMethod.GET, "/applications/**").authenticated();
+                auth.requestMatchers(HttpMethod.POST, "/applications/**").hasRole("STUDENT");
+                auth.requestMatchers(HttpMethod.PUT, "/applications/**").hasRole("STUDENT");
+                auth.requestMatchers(HttpMethod.DELETE, "/applications/**").hasRole("STUDENT");
+
+                auth.requestMatchers(HttpMethod.GET, "/universities/**").authenticated();
+                auth.requestMatchers(HttpMethod.POST, "/universities/**").hasRole("DEVELOPER");
+                auth.requestMatchers(HttpMethod.PUT, "/universities/**").hasRole("DEVELOPER");
+                auth.requestMatchers(HttpMethod.DELETE, "/universities/**").hasRole("DEVELOPER");
+
 
                 auth.anyRequest().hasRole("DEVELOPER");
             })
