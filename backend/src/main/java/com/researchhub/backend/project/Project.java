@@ -7,6 +7,7 @@ import com.vladmihalcea.hibernate.type.json.JsonType;
 import org.hibernate.annotations.Type;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -47,7 +48,7 @@ public class Project {
 
     @Type(JsonType.class) //allows conversion between Java and JsonB
     @Column(columnDefinition = "jsonb") //using TEXT would lose JSON features - good practice
-    private Map<String, Object> interviewQuestions;
+    private List<Map<String, Object>> interviewQuestions;
 
     @Column(nullable = false)
     private OffsetDateTime createdAt = OffsetDateTime.now();

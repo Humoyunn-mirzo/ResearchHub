@@ -1,9 +1,8 @@
 package com.researchhub.backend.project;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
-import com.researchhub.backend.professor.Professor;
 
 public record ProjectResponse (
     UUID id,
@@ -20,5 +19,5 @@ public record ProjectResponse (
     int currentStudents,
 
     String status,
-    Map<String, Object> interviewQuestions
+    List<Map<String, Object>> interviewQuestions
 ) {}

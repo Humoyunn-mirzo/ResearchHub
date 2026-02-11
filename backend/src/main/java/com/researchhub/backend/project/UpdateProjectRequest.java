@@ -2,6 +2,7 @@ package com.researchhub.backend.project;
 
 import lombok.Data;
 
+import java.util.List;
 import java.util.Map;
 
 
@@ -14,5 +15,5 @@ public class UpdateProjectRequest {
     private String requirements;
     private Integer maxStudents;
     private String status;
-    private Map<String, Object> interviewQuestions;
+    private List<Map<String, Object>> interviewQuestions;
 }
