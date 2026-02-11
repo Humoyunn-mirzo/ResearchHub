@@ -490,6 +490,7 @@ components:
         - studentId
         - projectId
         - status
+        - cvFile
         - appliedAt
       properties:
         id:
