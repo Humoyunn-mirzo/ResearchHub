@@ -169,6 +169,7 @@ CREATE TABLE applications (
     student_id UUID NOT NULL,
     project_id UUID NOT NULL,
     status VARCHAR(50) NOT NULL DEFAULT 'PENDING',
+    cv_file BYTEA,
     cv_url TEXT,
     applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
