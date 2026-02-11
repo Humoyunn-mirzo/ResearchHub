@@ -18,6 +18,10 @@ servers:
 tags:
   - name: auth
   - name: students
+  - name: professors
+  - name: projects
+  - name: applications
+  - name: universities
     # description: Authentication endpoints
   # - name: students
   #   description: Student management endpoints
@@ -65,7 +69,6 @@ components:
       type: object
       required:
         - meta
-        - data
       properties:
         meta:
           $ref: '#/components/schemas/ResponseMeta'
@@ -75,7 +78,6 @@ components:
       required:
         - meta
         - pagination
-        - data
       properties:
         meta:
           $ref: '#/components/schemas/ResponseMeta'
@@ -261,11 +263,6 @@ components:
 
     StudentUpdateInput:
       type: object
-      required:
-        - name
-        - universityId
-        - fieldOfInterest
-        - bio
       properties:
         name:
           type: string
@@ -278,6 +275,7 @@ components:
           type: string
 
     ProfessorResponseBase:
+      type: object
       required:
         - id
         - name
@@ -313,6 +311,8 @@ components:
           type: integer
         acceptanceRate:
           type: number
+          minimum: 0
+          maximum: 1
 
     ProfessorCreateInput:
       type: object
@@ -341,11 +341,6 @@ components:
 
     ProfessorUpdateInput:
       type: object
-      required:
-        - name
-        - universityId
-        - fieldOfStudy
-        - bio
       properties:
         name:
           type: string
@@ -413,10 +408,9 @@ components:
             type: object
           description: Interview questions for students
 
-    ProjectInput:
+    ProjectCreateInput:
       type: object
       required:
-        - professorId
         - title
         - description
         - field
@@ -426,10 +420,6 @@ components:
         - status
         - interviewQuestions
       properties:
-        professorId:
-          type: string
-          format: uuid
-          description: ID of the professor leading the project
         title:
           type: string
           description: Project title
@@ -450,10 +440,45 @@ components:
           description: Maximum number of students allowed
         status:
           type: string
+          enum:
+            - OPEN
+            - CLOSED
           description: Project status, e.g., "open", "closed"
         interviewQuestions:
           type: array
-          # TODO: think about the "interview" object, and the concrete type
+          items:
+            type: object
+          description: Interview questions for students
+
+    ProjectUpdateInput:
+      type: object
+      properties:
+        title:
+          type: string
+          description: Project title
+        description:
+          type: string
+          description: Project description
+        field:
+          type: string
+          description: Research field/category
+        regionFocus:
+          type: string
+          description: Geographic focus or target region
+        requirements:
+          type: string
+          description: Requirements for students applying
+        maxStudents:
+          type: integer
+          description: Maximum number of students allowed
+        status:
+          type: string
+          enum:
+            - OPEN
+            - CLOSED
+          description: Project status, e.g., "open", "closed"
+        interviewQuestions:
+          type: array
           items:
             type: object
           description: Interview questions for students
@@ -485,17 +510,21 @@ components:
             - ACCEPTED
             - REJECTED
           description: Application status
-        # TODO: look into cv_url
+        cvFile:
+          type: string
+          format: byte
+          description: File associated with the application (e.g. pdf, docx)
         appliedAt:
           type: string
           format: date-time
           description: Timestamp when the application was submitted
 
-    ApplicationInput:
+    ApplicationCreateInput:
       type: object
       required:
         - studentId
         - projectId
+        - cvFile
       properties:
         studentId:
           type: string
@@ -505,6 +534,25 @@ components:
           type: string
           format: uuid
           description: ID of the project applied to
+        cvFile:
+          type: string
+          format: byte
+          description: File associated with the application (e.g. pdf, docx)
+
+    ApplicationUpdateInput:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - PENDING
+            - ACCEPTED
+            - REJECTED
+          description: Application status
+        cvFile:
+          type: string
+          format: byte
+          description: File associated with the application (e.g. pdf, docx)
 
     UniversityResponseBase:
       type: object
@@ -535,12 +583,25 @@ components:
           type: integer
           description: Total number of projects hosted by the university
 
-    UniversityInput:
+    UniversityCreateInput:
       type: object
       required:
         - name
         - country
         - rankingScore
+      properties:
+        name:
+          type: string
+          description: Name of the university
+        country:
+          type: string
+          description: Country where the university is located
+        rankingScore:
+          type: integer
+          description: University ranking score
+
+    UniversityUpdateInput:
+      type: object
       properties:
         name:
           type: string
@@ -739,10 +800,10 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-    put:
+    patch:
       tags: [students]
-      summary: Replace student by ID
-      operationId: replaceStudentById
+      summary: Update student by ID
+      operationId: updateStudentById
       requestBody:
         required: true
         content:
@@ -751,7 +812,7 @@ paths:
               $ref: '#/components/schemas/StudentUpdateInput'
       responses:
         '200':
-          description: Student replaced
+          description: Student updated
           content:
             application/json:
               schema:
@@ -832,10 +893,10 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-    put:
+    patch:
       tags: [professors]
-      summary: Replace professor by ID
-      operationId: replaceProfessorById
+      summary: Update professor by ID
+      operationId: updateProfessorById
       requestBody:
         required: true
         content:
@@ -844,7 +905,7 @@ paths:
               $ref: '#/components/schemas/ProfessorUpdateInput'
       responses:
         '200':
-          description: Professor replaced
+          description: Professor updated
           content:
             application/json:
               schema:
@@ -892,7 +953,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ProjectInput'
+              $ref: '#/components/schemas/ProjectCreateInput'
       responses:
         '201':
           description: Project created
@@ -925,19 +986,19 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-    put:
+    patch:
       tags: [projects]
-      summary: Replace project by ID
-      operationId: replaceProjectById
+      summary: Update project by ID
+      operationId: updateProjectById
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ProjectInput'
+              $ref: '#/components/schemas/ProjectUpdateInput'
       responses:
         '200':
-          description: Project replaced
+          description: Project updated
           content:
             application/json:
               schema:
@@ -985,7 +1046,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ApplicationInput'
+              $ref: '#/components/schemas/ApplicationCreateInput'
       responses:
         '201':
           description: Application created
@@ -1018,19 +1079,19 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-    put:
+    patch:
       tags: [applications]
-      summary: Replace application by ID
-      operationId: replaceApplicationById
+      summary: Update application by ID
+      operationId: updateApplicationById
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ApplicationInput'
+              $ref: '#/components/schemas/ApplicationUpdateInput'
       responses:
         '200':
-          description: Application replaced
+          description: Application updated
           content:
             application/json:
               schema:
@@ -1078,7 +1139,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UniversityInput'
+              $ref: '#/components/schemas/UniversityCreateInput'
       responses:
         '201':
           description: University created
@@ -1111,19 +1172,19 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-    put:
+    patch:
       tags: [universities]
-      summary: Replace university by ID
-      operationId: replaceUniversityById
+      summary: Update university by ID
+      operationId: updateUniversityById
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UniversityInput'
+              $ref: '#/components/schemas/UniversityUpdateInput'
       responses:
         '200':
-          description: University replaced
+          description: University updated
           content:
             application/json:
               schema:
