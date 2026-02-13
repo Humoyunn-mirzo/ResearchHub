@@ -48,6 +48,10 @@ The `.env` file's contents must be like so:
 DB_USER=admin
 DB_PASSWORD=password
 JWT_SECRET=SecretJwtKeyThatIsAtLeast32BytesLongInBase64
+
+# For subpath deployment (e.g. usp.uz/api)
+NEXT_PUBLIC_API_URL=/api
+NEXT_PUBLIC_DATA_MODE=real
 ```
 When running locally the user and password don't matter, but in production, a secret password will be used, which must not be leaked.
 When deploying to production, the JWT secret must be generated using the following command:
@@ -68,3 +72,15 @@ This command shuts down all the services running in the background:
 ```
 docker compose down
 ```
+
+### Subpath deployment (usp.uz)
+
+When deploying behind nginx on a shared domain (e.g. usp.uz):
+
+| Path | Service |
+|------|---------|
+| `usp.uz/` | ResearchHub frontend |
+| `usp.uz/api/` | ResearchHub backend |
+| `usp.uz/other-app/` | Another project (configure in nginx.conf) |
+
+Set `NEXT_PUBLIC_API_URL=/api` in `.env` so the frontend uses the same-origin API path. To add your other project, edit `nginx/nginx.conf` and replace the `/other-app/` placeholder with a proxy to your app's container.
