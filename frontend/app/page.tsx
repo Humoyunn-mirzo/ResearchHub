@@ -1,20 +1,22 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui'
 import { ArrowRight, BookOpen, Users, TrendingUp } from 'lucide-react'
+import { HomeHighlights } from '@/components/home/home-highlights'
 
 export default function HomePage() {
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
-      <section className="bg-gradient-to-b from-primary/10 to-background py-20">
+      <section className="relative overflow-hidden bg-gradient-to-b from-primary/10 to-background py-20">
         <div className="mx-auto max-w-7xl px-4 lg:px-8">
           <div className="mx-auto max-w-3xl text-center">
-            <h1 className="text-4xl font-bold tracking-tight sm:text-6xl">
-              Connect, Collaborate, Discover
+            <p className="text-sm font-medium text-primary">Research Collaboration Platform</p>
+            <h1 className="mt-3 text-4xl font-bold tracking-tight sm:text-6xl">
+              Connect students with real research.
             </h1>
             <p className="mt-6 text-lg leading-8 text-muted-foreground">
-              Join the premier platform connecting students and professors for groundbreaking
-              research opportunities. Transform your academic journey today.
+              Explore projects, apply in minutes, and collaborate across Central Asian and EU
+              universities—built for students, professors, and administrators.
             </p>
             <div className="mt-10 flex items-center justify-center gap-x-6">
               <Link href="/projects">
@@ -25,13 +27,17 @@ export default function HomePage() {
               </Link>
               <Link href="/register">
                 <Button variant="outline" size="lg">
-                  Get Started
+                  Sign Up
                 </Button>
               </Link>
             </div>
           </div>
         </div>
       </section>
+
+      <div className="-mt-10 pb-8">
+        <HomeHighlights />
+      </div>
 
       {/* Features Section */}
       <section className="py-20">

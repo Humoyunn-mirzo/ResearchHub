@@ -3,15 +3,21 @@
 import { useQuery } from '@tanstack/react-query'
 import { fetchProjects, type ProjectFilters } from '@/core/services'
 import { ProjectCard } from '@/components/shared/project-card'
-import { Button, Input } from '@/components/ui'
+import { Badge, Button, Input } from '@/components/ui'
 import { useState } from 'react'
 import { Search } from 'lucide-react'
+import Link from 'next/link'
+import { useAuthStore } from '@/lib/auth'
+import { env } from '@/lib/env'
+import { mockProjects } from '@/core/services/mock-db'
 
 export function ProjectsList() {
+  const { user, isAuthenticated } = useAuthStore()
   const [filters, setFilters] = useState<ProjectFilters>({
     page: 1,
     limit: 12,
     status: 'OPEN',
+    sort: 'newest',
   })
   const [searchInput, setSearchInput] = useState('')
 
@@ -25,6 +31,21 @@ export function ProjectsList() {
     setFilters((prev) => ({ ...prev, search: searchInput, page: 1 }))
   }
 
+  const tagOptions =
+    env.NEXT_PUBLIC_DATA_MODE === 'mock'
+      ? Array.from(new Set(mockProjects.flatMap((p) => p.tags))).sort()
+      : ['Machine Learning', 'NLP', 'Biology', 'Engineering', 'Security', 'HCI', 'Economics']
+
+  const selectedTags = filters.tags ?? []
+
+  const toggleTag = (tag: string) => {
+    setFilters((prev) => {
+      const tags = prev.tags ?? []
+      const next = tags.includes(tag) ? tags.filter((t) => t !== tag) : [...tags, tag]
+      return { ...prev, tags: next.length ? next : undefined, page: 1 }
+    })
+  }
+
   if (error) {
     return (
       <div className="rounded-lg bg-destructive/10 p-4 text-center text-destructive">
@@ -35,6 +56,26 @@ export function ProjectsList() {
 
   return (
     <div className="space-y-6">
+      {/* Header actions */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="text-sm text-muted-foreground">
+          {data ? (
+            <>
+              Showing <span className="font-medium text-foreground">{data.data.length}</span> of{' '}
+              <span className="font-medium text-foreground">{data.total}</span> projects
+            </>
+          ) : (
+            <span>Browse projects and filter by topic.</span>
+          )}
+        </div>
+
+        {isAuthenticated && user?.role === 'PROFESSOR' && (
+          <Link href="/dashboard/professor/projects/new">
+            <Button>+ Create project</Button>
+          </Link>
+        )}
+      </div>
+
       {/* Search Bar */}
       <form onSubmit={handleSearch} className="flex gap-2">
         <div className="relative flex-1">
@@ -51,29 +92,96 @@ export function ProjectsList() {
       </form>
 
       {/* Filters */}
-      <div className="flex gap-2">
-        <Button
-          variant={filters.status === 'OPEN' ? 'default' : 'outline'}
-          onClick={() => setFilters((prev) => ({ ...prev, status: 'OPEN', page: 1 }))}
-        >
-          Open
-        </Button>
-        <Button
-          variant={filters.status === 'CLOSED' ? 'default' : 'outline'}
-          onClick={() => setFilters((prev) => ({ ...prev, status: 'CLOSED', page: 1 }))}
-        >
-          Closed
-        </Button>
-        <Button
-          variant={filters.status === undefined ? 'default' : 'outline'}
-          onClick={() => {
-            const { status, ...rest } = filters
-            setFilters({ ...rest, page: 1 })
-          }}
-        >
-          All
-        </Button>
+      <div className="flex flex-col gap-4 rounded-lg border bg-card/40 p-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-sm font-medium text-muted-foreground">Status</span>
+          <div className="flex gap-2">
+            <Button
+              variant={filters.status === 'OPEN' ? 'default' : 'outline'}
+              onClick={() => setFilters((prev) => ({ ...prev, status: 'OPEN', page: 1 }))}
+            >
+              Open
+            </Button>
+            <Button
+              variant={filters.status === 'CLOSED' ? 'default' : 'outline'}
+              onClick={() => setFilters((prev) => ({ ...prev, status: 'CLOSED', page: 1 }))}
+            >
+              Closed
+            </Button>
+            <Button
+              variant={filters.status === undefined ? 'default' : 'outline'}
+              onClick={() => {
+                const { status, ...rest } = filters
+                setFilters({ ...rest, page: 1 })
+              }}
+            >
+              All
+            </Button>
+          </div>
+
+          <div className="ml-auto flex items-center gap-2">
+            <span className="text-sm font-medium text-muted-foreground">Sort</span>
+            <select
+              value={filters.sort ?? 'newest'}
+              onChange={(e) =>
+                setFilters((prev) => ({ ...prev, sort: e.target.value as 'newest' | 'oldest', page: 1 }))
+              }
+              className="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+            >
+              <option value="newest">Newest</option>
+              <option value="oldest">Oldest</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-sm font-medium text-muted-foreground">Topics</span>
+          <div className="flex flex-wrap gap-2">
+            {tagOptions.slice(0, 12).map((tag) => {
+              const active = selectedTags.includes(tag)
+              return (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={() => toggleTag(tag)}
+                  className={`rounded-full border px-3 py-1 text-sm transition ${
+                    active ? 'border-primary bg-primary/10 text-primary' : 'hover:bg-accent'
+                  }`}
+                >
+                  {tag}
+                </button>
+              )
+            })}
+          </div>
+
+          {selectedTags.length > 0 && (
+            <div className="ml-auto flex items-center gap-2">
+              <Badge variant="secondary">{selectedTags.length} selected</Badge>
+              <Button
+                variant="outline"
+                onClick={() => setFilters((prev) => ({ ...prev, tags: undefined, page: 1 }))}
+              >
+                Clear
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* Active filter chips */}
+      {(filters.search || (filters.tags && filters.tags.length > 0) || filters.status) && (
+        <div className="flex flex-wrap items-center gap-2">
+          {filters.search && <Badge variant="outline">Search: “{filters.search}”</Badge>}
+          {filters.status && <Badge variant="outline">Status: {filters.status}</Badge>}
+          {filters.tags?.map((t) => (
+            <button key={t} type="button" onClick={() => toggleTag(t)}>
+              <Badge variant="outline" className="hover:bg-accent">
+                {t} ×
+              </Badge>
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Projects Grid */}
       {isLoading ? (
@@ -92,7 +200,7 @@ export function ProjectsList() {
 
           {/* Pagination */}
           {data.total > data.limit && (
-            <div className="flex justify-center gap-2">
+            <div className="flex flex-wrap items-center justify-center gap-3">
               <Button
                 variant="outline"
                 disabled={filters.page === 1}
@@ -100,8 +208,11 @@ export function ProjectsList() {
               >
                 Previous
               </Button>
-              <span className="flex items-center px-4">
-                Page {data.page} of {Math.ceil(data.total / data.limit)}
+              <span className="flex items-center px-2 text-sm text-muted-foreground">
+                Page <span className="mx-1 font-medium text-foreground">{data.page}</span> of{' '}
+                <span className="ml-1 font-medium text-foreground">
+                  {Math.ceil(data.total / data.limit)}
+                </span>
               </span>
               <Button
                 variant="outline"

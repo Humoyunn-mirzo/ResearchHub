@@ -11,6 +11,8 @@ export function createApiClient(config: ApiClientConfig): AxiosInstance {
   const client = axios.create({
     baseURL: config.baseUrl,
     timeout: 30000,
+    // Needed so refresh-token cookies (if any) can be sent/received.
+    withCredentials: true,
     headers: {
       'Content-Type': 'application/json',
     },

@@ -6,7 +6,7 @@ export default function ProjectsPage() {
       <div className="mb-8">
         <h1 className="text-4xl font-bold">Research Projects</h1>
         <p className="mt-2 text-muted-foreground">
-          Explore cutting-edge research opportunities from top universities
+          Browse, search, and filter opportunities from professors across universities.
         </p>
       </div>
       <ProjectsList />

@@ -5,6 +5,9 @@ const nextConfig: NextConfig = {
   typedRoutes: false,
   poweredByHeader: false,
   compress: true,
+  // Hide the Next.js dev indicator ("N" button) during development.
+  // This is a Next.js overlay, not part of the app UI.
+  devIndicators: false,
   images: {
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [],

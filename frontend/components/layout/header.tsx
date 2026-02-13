@@ -6,6 +6,7 @@ import { Button } from '@/components/ui'
 import { useAuthStore } from '@/lib/auth'
 import { Menu, X } from 'lucide-react'
 import { useState } from 'react'
+import { logout } from '@/core/services'
 
 export function Header() {
   const pathname = usePathname()
@@ -13,6 +14,8 @@ export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const handleLogout = () => {
+    // Best-effort backend logout (clears refresh cookie), then clear local auth.
+    void logout().catch(() => null)
     clearAuth()
     window.location.href = '/login'
   }
@@ -20,6 +23,7 @@ export function Header() {
   const navigation = [
     { name: 'Projects', href: '/projects' },
     { name: 'Rankings', href: '/rankings' },
+    { name: 'About', href: '/about' },
   ]
 
   return (
@@ -60,8 +64,13 @@ export function Header() {
           {isAuthenticated && user ? (
             <>
               <Link href="/dashboard">
-                <Button variant="ghost">{user.name}</Button>
+                <Button variant="ghost">Dashboard</Button>
               </Link>
+              <div className="hidden items-center gap-2 rounded-md border px-3 py-2 text-sm text-muted-foreground lg:flex">
+                <span className="font-medium text-foreground">{user.name}</span>
+                <span className="text-muted-foreground">·</span>
+                <span>{user.role}</span>
+              </div>
               <Button variant="outline" onClick={handleLogout}>
                 Logout
               </Button>
