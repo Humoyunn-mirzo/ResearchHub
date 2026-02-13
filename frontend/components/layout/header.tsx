@@ -6,6 +6,8 @@ import { Button } from '@/components/ui'
 import { useAuthStore } from '@/lib/auth'
 import { Menu, X } from 'lucide-react'
 import { useState } from 'react'
+import { logout } from '@/core/services'
+import { ThemeToggle } from './theme-toggle'
 
 export function Header() {
   const pathname = usePathname()
@@ -13,6 +15,8 @@ export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const handleLogout = () => {
+    // Best-effort backend logout (clears refresh cookie), then clear local auth.
+    void logout().catch(() => null)
     clearAuth()
     window.location.href = '/login'
   }
@@ -57,12 +61,18 @@ export function Header() {
           ))}
         </div>
 
-        <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:gap-x-4">
+        <div className="hidden lg:flex lg:flex-1 lg:items-center lg:justify-end lg:gap-x-4">
+          <ThemeToggle />
           {isAuthenticated && user ? (
             <>
               <Link href="/dashboard">
-                <Button variant="ghost">{user.name}</Button>
+                <Button variant="ghost">Dashboard</Button>
               </Link>
+              <div className="hidden items-center gap-2 rounded-md border px-3 py-2 text-sm text-muted-foreground lg:flex">
+                <span className="font-medium text-foreground">{user.name}</span>
+                <span className="text-muted-foreground">·</span>
+                <span>{user.role}</span>
+              </div>
               <Button variant="outline" onClick={handleLogout}>
                 Logout
               </Button>
@@ -94,7 +104,10 @@ export function Header() {
                 {item.name}
               </Link>
             ))}
-            <div className="border-t pt-4">
+            <div className="flex flex-col gap-2 border-t pt-4">
+              <div className="flex justify-center">
+                <ThemeToggle />
+              </div>
               {isAuthenticated && user ? (
                 <>
                   <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)}>

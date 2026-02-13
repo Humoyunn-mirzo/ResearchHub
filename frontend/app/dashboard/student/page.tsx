@@ -117,7 +117,7 @@ export default function StudentDashboard() {
         {projects && projects.data.length > 0 ? (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {projects.data.map((project) => (
-              <Card key={project.id}>
+              <Card key={project.id} className="transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-lg">
                 <CardHeader>
                   <CardTitle className="line-clamp-2">{project.title}</CardTitle>
                 </CardHeader>

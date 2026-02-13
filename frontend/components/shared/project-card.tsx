@@ -11,7 +11,7 @@ type ProjectCardProps = {
 
 export function ProjectCard({ project, actionSlot }: ProjectCardProps) {
   return (
-    <Card className="flex h-full flex-col">
+    <Card className="flex h-full flex-col transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-lg">
       <CardHeader>
         <div className="flex items-start justify-between gap-2">
           <CardTitle className="line-clamp-2 text-xl">{project.title}</CardTitle>

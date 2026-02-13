@@ -29,7 +29,12 @@ export async function login(input: LoginInput): Promise<LoginResponse> {
 }
 
 export async function register(input: RegisterInput): Promise<LoginResponse> {
-  const response = await apiClient.post('/auth/register', input)
+  // Backend currently supports only {email,password,role} for registration.
+  const response = await apiClient.post('/auth/register', {
+    email: input.email,
+    password: input.password,
+    role: input.role,
+  })
   return LoginResponseSchema.parse(response.data)
 }
 
