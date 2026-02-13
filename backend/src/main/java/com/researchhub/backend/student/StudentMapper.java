@@ -1,6 +1,5 @@
 package com.researchhub.backend.student;
 
-import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -8,17 +7,12 @@ import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
-import org.mapstruct.Named;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
+import com.researchhub.backend.common.GlobalMapperConfig;
 import com.researchhub.backend.user.UserRole;
 
-@Mapper(componentModel = "spring")
+@Mapper(config = GlobalMapperConfig.class)
 public abstract class StudentMapper {
-    @Autowired
-    protected PasswordEncoder passwordEncoder;
-
     @Mapping(
         target = "universityId",
         expression = "java(student.getUniversity() != null ? student.getUniversity().getId() : null)"
@@ -31,13 +25,6 @@ public abstract class StudentMapper {
             .toList(); 
     }
 
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "roles", ignore = true)
-    @Mapping(target = "university", ignore = true)
-    @Mapping(target = "totalApplications", ignore = true)
-    @Mapping(target = "acceptedProjects", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "updatedAt", ignore = true)
     @Mapping(
         target = "passwordHash",
         source = "password",
@@ -50,22 +37,7 @@ public abstract class StudentMapper {
         student.setRoles(Set.of(UserRole.STUDENT));
     }
 
-
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "email", ignore = true)
-    @Mapping(target = "passwordHash", ignore = true)
-    @Mapping(target = "roles", ignore = true)
-    @Mapping(target = "university", ignore = true)
-    @Mapping(target = "totalApplications", ignore = true)
-    @Mapping(target = "acceptedProjects", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "updatedAt", ignore = true)
+    // @Mapping(target = "name", source = "name", conditionQualifiedByName = "isDefined")
     public abstract void toEntity(UpdateStudentRequest request, @MappingTarget Student student);
-
-
-    @Named("hashPassword")
-    protected String hashPassword(String password) {
-        return passwordEncoder.encode(password);
-    }
 }
 

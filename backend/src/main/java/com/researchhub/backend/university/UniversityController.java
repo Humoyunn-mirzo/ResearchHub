@@ -60,7 +60,7 @@ public class UniversityController {
         return ResponseEntity.ok(new ApiResponse<>(response));
     }
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<UniversityResponse>> updateUniversity(
             @PathVariable UUID id,
             @RequestBody UpdateUniversityRequest request

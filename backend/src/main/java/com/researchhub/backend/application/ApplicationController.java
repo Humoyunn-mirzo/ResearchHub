@@ -44,7 +44,7 @@ public class ApplicationController {
         return ResponseEntity.ok(new ApiResponse<>(response));
     }
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<ApplicationResponse>> updateApplication(
             @PathVariable UUID id,
             @RequestBody UpdateApplicationRequest request

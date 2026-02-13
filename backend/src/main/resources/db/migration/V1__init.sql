@@ -38,7 +38,7 @@ CREATE TABLE universities (
 
     name VARCHAR(255) NOT NULL,
     country VARCHAR(255) NOT NULL,
-    region VARCHAR(255) NOT NULL,
+    region VARCHAR(255), --NOT NULL, TODO: think about this, shuold it be gotten from country? maybe use coordinates? maybe not needed?
 
     ranking_score INTEGER NOT NULL DEFAULT 0,
     total_projects INTEGER NOT NULL DEFAULT 0,

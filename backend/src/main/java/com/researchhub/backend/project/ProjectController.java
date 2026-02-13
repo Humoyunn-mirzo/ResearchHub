@@ -48,7 +48,7 @@ public class ProjectController {
         return ResponseEntity.ok(new ApiResponse<>(response));
     }
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<ProjectResponse>> updateProject(@PathVariable UUID id, @RequestBody UpdateProjectRequest request) {
         ProjectResponse response = projectService.updateProject(id, request);
         return ResponseEntity.ok(new ApiResponse<>(response));

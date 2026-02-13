@@ -49,8 +49,6 @@ public class ProjectService {
 
     @Transactional
     public ProjectResponse createProject(CreateProjectRequest request) {
-        Project project = projectMapper.toEntity(request);
-
         String email = SecurityContextHolder.getContext()
             .getAuthentication()
             .getName();
@@ -58,6 +56,7 @@ public class ProjectService {
         Professor professor = professorRepository.findByEmail(email)
             .orElseThrow(() -> new IllegalArgumentException("Professor not found"));
 
+        Project project = projectMapper.toEntity(request);
         project.setProfessor(professor);
 
         project = projectRepository.save(project);

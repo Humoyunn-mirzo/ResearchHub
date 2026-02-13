@@ -523,14 +523,9 @@ components:
     ApplicationCreateInput:
       type: object
       required:
-        - studentId
         - projectId
         - cvFile
       properties:
-        studentId:
-          type: string
-          format: uuid
-          description: ID of the student who applied
         projectId:
           type: string
           format: uuid

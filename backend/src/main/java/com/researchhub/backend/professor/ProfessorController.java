@@ -51,7 +51,7 @@ public class ProfessorController {
         return ResponseEntity.ok(new ApiResponse<>(response));
     }
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<ProfessorResponse>> updateProfessor(@PathVariable UUID id, @RequestBody UpdateProfessorRequest request) {
     ProfessorResponse response = professorService.updateProfessor(id, request);
         return ResponseEntity.ok(new ApiResponse<>(response));

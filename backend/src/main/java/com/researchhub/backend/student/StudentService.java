@@ -1,26 +1,19 @@
 package com.researchhub.backend.student;
 
-import com.researchhub.backend.application.Application;
-import com.researchhub.backend.application.ApplicationRepository;
-import com.researchhub.backend.common.ApiResponse;
-import com.researchhub.backend.university.University;
-import com.researchhub.backend.university.UniversityRepository;
-import com.researchhub.backend.user.UserRole;
-
-import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import com.researchhub.backend.university.University;
+import com.researchhub.backend.university.UniversityRepository;
+
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -68,6 +61,12 @@ public class StudentService {
 
     @Transactional
     public StudentResponse updateStudent(UUID id, UpdateStudentRequest request) {
+        // DEBUG: Check if Jackson actually captured the field
+        System.out.println("Name present in JSON? " + request.getName().isPresent());
+        if (request.getName().isPresent()) {
+            System.out.println("Value in JSON: " + request.getName().get());
+        }
+
         Student student = studentRepository.findById(id)
             .orElseThrow(() -> new EntityNotFoundException("Student not found"));
 

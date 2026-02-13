@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -40,25 +41,25 @@ public class ApplicationService {
 
     @Transactional
     public ApplicationResponse createApplication(CreateApplicationRequest request) {
-        // 1. Verify student exists
-        Student student = studentRepository.findById(request.getStudentId())
-                .orElseThrow(() -> new EntityNotFoundException("Student not found with id: " + request.getStudentId()));
+        String email = SecurityContextHolder.getContext()
+            .getAuthentication()
+            .getName();
 
-        // 2. Verify project exists
+        Student student = studentRepository.findByEmail(email)
+            .orElseThrow(() -> new IllegalArgumentException("Student not found"));
+
         Project project = projectRepository.findById(request.getProjectId())
                 .orElseThrow(() -> new EntityNotFoundException("Project not found with id: " + request.getProjectId()));
 
-        // 3. Prevent duplicate application (optional but recommended)
-        if (applicationRepository.existsByStudentIdAndProjectId(request.getStudentId(), request.getProjectId())) {
+        if (applicationRepository.existsByStudentIdAndProjectId(student.getId(), project.getId())) {
             throw new IllegalStateException("Student has already applied to this project");
         }
 
-        // 4. Map request to entity and set relations
         Application application = applicationMapper.toEntity(request);
         application.setStudent(student);
         application.setProject(project);
+        application.setStatus(ApplicationStatus.PENDING);
 
-        // 5. Save
         application = applicationRepository.save(application);
 
         return applicationMapper.toResponse(application);

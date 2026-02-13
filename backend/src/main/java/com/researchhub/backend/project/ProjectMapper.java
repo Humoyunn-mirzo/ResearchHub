@@ -6,7 +6,9 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
-@Mapper(componentModel = "spring")
+import com.researchhub.backend.common.GlobalMapperConfig;
+
+@Mapper(config = GlobalMapperConfig.class)
 public abstract class ProjectMapper {
     @Mapping(
         target = "professorId",
