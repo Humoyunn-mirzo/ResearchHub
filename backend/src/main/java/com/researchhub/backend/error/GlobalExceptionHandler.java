@@ -13,7 +13,13 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<ErrorBody> handleResponseStatus(ResponseStatusException ex) {
-        String message = ex.getReason() != null ? ex.getReason() : ex.getStatus().getReasonPhrase();
+        String message = ex.getReason();
+        if (message == null && ex.getStatusCode() instanceof HttpStatus hs) {
+            message = hs.getReasonPhrase();
+        }
+        if (message == null) {
+            message = "Error";
+        }
         return ResponseEntity.status(ex.getStatusCode()).body(new ErrorBody(message));
     }
 
