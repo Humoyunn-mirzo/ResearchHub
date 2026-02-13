@@ -48,7 +48,12 @@ public class AuthController {
      * Allows STUDENT / PROFESSOR only.
      */
     @PostMapping("/register")
-    public ResponseEntity<LoginResponse> register(@RequestBody RegisterRequest req, HttpServletRequest httpReq) {
+    public ResponseEntity<?> register(@RequestBody RegisterRequest req, HttpServletRequest httpReq) {
+        if (req == null || req.getEmail() == null || req.getEmail().isBlank()
+                || req.getPassword() == null || req.getPassword().isBlank()
+                || req.getRole() == null || req.getRole().isBlank()) {
+            return ResponseEntity.badRequest().body(new ErrorBody("Email, password, and role are required"));
+        }
         // Only allow student/professor self-register in this endpoint.
         UserRole role;
         try {
@@ -60,7 +65,18 @@ public class AuthController {
             return ResponseEntity.status(403).build();
         }
 
-        userService.registerUser(req.getEmail(), req.getPassword(), req.getRole());
+        try {
+            userService.registerUser(req.getEmail(), req.getPassword(), req.getRole());
+        } catch (RuntimeException e) {
+            String msg = e.getMessage() != null ? e.getMessage() : "";
+            if (msg.contains("already exists") || msg.contains("Email already exists")) {
+                return ResponseEntity.status(409).body(new ErrorBody("Email already registered"));
+            }
+            if (msg.contains("Invalid role") || msg.contains("Cannot register")) {
+                return ResponseEntity.status(400).body(new ErrorBody(msg));
+            }
+            throw e;
+        }
 
         TokenPair newTokens = authService.login(req.getEmail(), req.getPassword());
         return getTokenResponse(newTokens, req.getEmail(), httpReq);
@@ -158,7 +174,10 @@ public class AuthController {
         userDto.setEmail(user.getEmail());
         userDto.setName(user.getEmail()); // backend doesn't store names yet
         // Map backend DEVELOPER to frontend PLATFORM_ADMIN for compatibility.
-        var role = user.getRoles().stream().findFirst().map(Enum::name).orElse("STUDENT");
+        var roles = user.getRoles();
+        var role = (roles != null && !roles.isEmpty())
+                ? roles.iterator().next().name()
+                : "STUDENT";
         if ("DEVELOPER".equals(role)) role = "PLATFORM_ADMIN";
         userDto.setRole(role);
         userDto.setUniversityId(null);

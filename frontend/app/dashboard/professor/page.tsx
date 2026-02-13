@@ -22,10 +22,14 @@ export default function ProfessorDashboard() {
     enabled: !!user,
   })
 
+  const myProjectIds = new Set(myProjects?.data.map((p) => p.id) ?? [])
+  const myApplications = applications?.data.filter((a) => myProjectIds.has(a.projectId)) ?? []
+  const pendingApplications = myApplications.filter((a) => a.status === 'PENDING').length
+
   const stats = {
     totalProjects: myProjects?.data.length || 0,
     openProjects: myProjects?.data.filter((p) => p.status === 'OPEN').length || 0,
-    pendingApplications: applications?.data.filter((a) => a.status === 'PENDING').length || 0,
+    pendingApplications,
   }
 
   return (
@@ -82,7 +86,7 @@ export default function ProfessorDashboard() {
         {myProjects && myProjects.data.length > 0 ? (
           <div className="grid gap-6 md:grid-cols-2">
             {myProjects.data.map((project) => (
-              <Card key={project.id}>
+              <Card key={project.id} className="transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-lg">
                 <CardHeader>
                   <CardTitle className="line-clamp-1">{project.title}</CardTitle>
                 </CardHeader>

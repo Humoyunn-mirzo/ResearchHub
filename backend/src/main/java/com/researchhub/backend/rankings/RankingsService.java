@@ -1,0 +1,104 @@
+package com.researchhub.backend.rankings;
+
+import com.researchhub.backend.application.ApplicationRepository;
+import com.researchhub.backend.application.ApplicationStatus;
+import com.researchhub.backend.project.ProjectRepository;
+import com.researchhub.backend.user.User;
+import com.researchhub.backend.user.UserRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+public class RankingsService {
+
+    private final ProjectRepository projectRepository;
+    private final ApplicationRepository applicationRepository;
+    private final UserRepository userRepository;
+
+    public RankingsService(ProjectRepository projectRepository,
+                          ApplicationRepository applicationRepository,
+                          UserRepository userRepository) {
+        this.projectRepository = projectRepository;
+        this.applicationRepository = applicationRepository;
+        this.userRepository = userRepository;
+    }
+
+    @Transactional(readOnly = true)
+    public List<RankingEntry> getTopStudents() {
+        var apps = applicationRepository.findAll();
+        var byStudent = apps.stream()
+                .filter(a -> a.getStatus() == ApplicationStatus.ACCEPTED)
+                .collect(Collectors.groupingBy(a -> a.getStudentId(), Collectors.counting()));
+        var sorted = byStudent.entrySet().stream()
+                .sorted((a, b) -> Long.compare(b.getValue(), a.getValue()))
+                .limit(10)
+                .toList();
+
+        List<RankingEntry> result = new ArrayList<>();
+        int rank = 1;
+        for (var e : sorted) {
+            User user = userRepository.findById(e.getKey()).orElse(null);
+            String name = user != null ? user.getEmail() : "Unknown";
+            result.add(new RankingEntry(rank++, name, null, "Accepted: " + e.getValue(), null));
+        }
+        return result;
+    }
+
+    @Transactional(readOnly = true)
+    public List<RankingEntry> getTopProfessors() {
+        var projects = projectRepository.findAll();
+        var byProfessor = projects.stream()
+                .collect(Collectors.groupingBy(p -> p.getProfessorId(), Collectors.counting()));
+        var sorted = byProfessor.entrySet().stream()
+                .sorted((a, b) -> Long.compare(b.getValue(), a.getValue()))
+                .limit(10)
+                .toList();
+
+        List<RankingEntry> result = new ArrayList<>();
+        int rank = 1;
+        for (var e : sorted) {
+            User user = userRepository.findById(e.getKey()).orElse(null);
+            String name = user != null ? user.getEmail() : "Unknown";
+            result.add(new RankingEntry(rank++, name, null, "Projects: " + e.getValue(), null));
+        }
+        return result;
+    }
+
+    @Transactional(readOnly = true)
+    public List<RankingEntry> getTopProjects() {
+        var apps = applicationRepository.findAll();
+        var byProject = apps.stream()
+                .collect(Collectors.groupingBy(a -> a.getProjectId(), Collectors.counting()));
+        var sorted = byProject.entrySet().stream()
+                .sorted((a, b) -> Long.compare(b.getValue(), a.getValue()))
+                .limit(10)
+                .toList();
+
+        List<RankingEntry> result = new ArrayList<>();
+        int rank = 1;
+        for (var e : sorted) {
+            var project = projectRepository.findById(e.getKey());
+            if (project.isEmpty()) continue;
+            var p = project.get();
+            long appCount = e.getValue();
+            result.add(new RankingEntry(rank++, p.getTitle(),
+                    "Applicants: " + appCount,
+                    "Openings: " + p.getSlots(),
+                    "/projects/" + p.getId()));
+        }
+        return result;
+    }
+
+    @Transactional(readOnly = true)
+    public List<RankingEntry> getTopUniversities() {
+        return List.of(
+                new RankingEntry(1, "Central Asia University", null, "Active Projects: 0", null),
+                new RankingEntry(2, "EU Tech Institute", null, "Active Projects: 0", null),
+                new RankingEntry(3, "Steppe State University", null, "Active Projects: 0", null)
+        );
+    }
+}

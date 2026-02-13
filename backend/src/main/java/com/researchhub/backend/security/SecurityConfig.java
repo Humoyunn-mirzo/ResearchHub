@@ -50,6 +50,16 @@ public class SecurityConfig {
                 auth.requestMatchers("/user/register").hasRole("UNIVERSITY_ADMIN");
                 auth.requestMatchers("/user/register-developer").hasRole("DEVELOPER");
 
+                auth.requestMatchers(HttpMethod.GET, "/projects", "/projects/*").permitAll();
+                auth.requestMatchers(HttpMethod.POST, "/projects").hasRole("PROFESSOR");
+                auth.requestMatchers(HttpMethod.PATCH, "/projects/*").authenticated();
+                auth.requestMatchers(HttpMethod.DELETE, "/projects/*").authenticated();
+                auth.requestMatchers(HttpMethod.POST, "/projects/*/close").authenticated();
+
+                auth.requestMatchers("/applications", "/applications/**").authenticated();
+
+                auth.requestMatchers(HttpMethod.GET, "/rankings").permitAll();
+
                 auth.anyRequest().denyAll();
             })
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
@@ -57,11 +67,10 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // TEMP (local dev): allow frontend dev server to call backend directly.
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:3000"));
+        config.setAllowedOriginPatterns(List.of("*"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);

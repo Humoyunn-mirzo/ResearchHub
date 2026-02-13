@@ -35,7 +35,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <div className="-mt-10 pb-8">
+      <div className="-mt-4 pb-8">
         <HomeHighlights />
       </div>
 

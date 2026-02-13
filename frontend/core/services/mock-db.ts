@@ -39,48 +39,48 @@ export const mockProjects: Project[] = [
     title: 'Machine Learning for Climate Prediction',
     description:
       'Build and evaluate ML models to forecast regional climate anomalies. Focus on feature engineering, uncertainty, and interpretability.',
-    professorId: professors[0].id,
+    professorId: professors[0]!.id,
     status: 'OPEN',
     slots: 3,
     tags: ['Machine Learning', 'Climate', 'Forecasting', 'Python'],
     createdAt: daysAgo(2),
-    professor: professors[0],
+    professor: professors[0]!,
   },
   {
     id: 'proj-2',
     title: 'Natural Language Processing for Policy Analysis',
     description:
       'Analyze policy documents using topic modeling and retrieval. Work on dataset curation, evaluation, and a lightweight demo UI.',
-    professorId: professors[1].id,
+    professorId: professors[1]!.id,
     status: 'OPEN',
     slots: 2,
     tags: ['NLP', 'IR', 'Policy', 'Transformers'],
     createdAt: daysAgo(6),
-    professor: professors[1],
+    professor: professors[1]!,
   },
   {
     id: 'proj-3',
     title: 'Computer Vision for Urban Mobility',
     description:
       'Detect traffic patterns and estimate flow from camera footage. Emphasis on privacy and robust deployment constraints.',
-    professorId: professors[2].id,
+    professorId: professors[2]!.id,
     status: 'CLOSED',
     slots: 1,
     tags: ['Computer Vision', 'Mobility', 'Edge', 'Optimization'],
     createdAt: daysAgo(18),
-    professor: professors[2],
+    professor: professors[2]!,
   },
   {
     id: 'proj-4',
     title: 'Data Visualization for Regional Research Impact',
     description:
       'Design interactive visualizations and dashboards to showcase collaborations, publications, and project outcomes across institutions.',
-    professorId: professors[3].id,
+    professorId: professors[3]!.id,
     status: 'OPEN',
     slots: 4,
     tags: ['Visualization', 'Dashboards', 'D3', 'UX'],
     createdAt: daysAgo(1),
-    professor: professors[3],
+    professor: professors[3]!,
   },
 ]
 
@@ -98,17 +98,17 @@ const extraTags = [
 ]
 
 for (let i = 0; i < 18; i++) {
-  const prof = professors[i % professors.length]
+  const prof = professors[i % professors.length]!
   const status: Project['status'] = i % 4 === 0 ? 'CLOSED' : 'OPEN'
   mockProjects.push({
     id: `proj-${5 + i}`,
-    title: `Research Project ${5 + i}: ${extraTags[i % extraTags.length]}`,
+    title: `Research Project ${5 + i}: ${extraTags[i % extraTags.length]!}`,
     description:
       'A sample project used for local development. Replace with real backend data when available.',
     professorId: prof.id,
     status,
     slots: 1 + ((i + 2) % 5),
-    tags: unique([extraTags[i % extraTags.length], 'Collaboration', 'Research']),
+    tags: unique([extraTags[i % extraTags.length]!, 'Collaboration', 'Research']),
     createdAt: daysAgo(3 + i),
     professor: prof,
   })
@@ -118,12 +118,12 @@ export const mockApplications: Application[] = [
   {
     id: 'app-1',
     projectId: 'proj-1',
-    studentId: students[0].id,
+    studentId: students[0]!.id,
     status: 'PENDING',
     motivation: 'I have strong Python skills and have worked with time-series forecasting models.',
     createdAt: daysAgo(1),
     updatedAt: daysAgo(1),
-    student: students[0],
+    student: students[0]!,
     project: { id: 'proj-1', title: 'Machine Learning for Climate Prediction' },
   },
 ]

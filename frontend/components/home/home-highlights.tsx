@@ -24,18 +24,28 @@ export function HomeHighlights() {
   return (
     <div className="space-y-16">
       {/* Stats */}
-      <section aria-label="Platform stats" className="mx-auto max-w-7xl px-4 lg:px-8">
+      <section aria-label="Platform stats" className="mx-auto max-w-7xl px-4 pt-2 lg:px-8">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {stats.map((s) => {
+          {stats.map((s, i) => {
             const Icon = s.icon
             return (
-              <Card key={s.label} className="border bg-card">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">{s.label}</CardTitle>
-                  <Icon className="h-4 w-4 text-muted-foreground" />
+              <Card
+                key={s.label}
+                className="group overflow-visible border bg-card opacity-0 transition-all duration-300 ease-out hover:-translate-y-1.5 hover:scale-[1.02] hover:border-primary/40 hover:shadow-lg animate-fade-in-up"
+                style={{ animationDelay: `${i * 80}ms` }}
+              >
+                <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0 px-6 pb-2 pt-6">
+                  <CardTitle className="min-h-[2.5rem] text-sm font-medium leading-normal text-foreground/80">
+                    {s.label}
+                  </CardTitle>
+                  <div className="rounded-lg bg-primary/10 p-2 transition-transform duration-300 group-hover:scale-110 group-hover:bg-primary/20">
+                    <Icon className="h-4 w-4 shrink-0 text-primary" />
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{s.value}</div>
+                  <div className="text-2xl font-bold tracking-tight transition-colors duration-200 group-hover:text-primary">
+                    {s.value}
+                  </div>
                 </CardContent>
               </Card>
             )
@@ -59,7 +69,7 @@ export function HomeHighlights() {
 
         <div className="grid gap-6 md:grid-cols-3">
           {featured.map((p) => (
-            <Card key={p.id} className="group overflow-hidden">
+            <Card key={p.id} className="group overflow-hidden transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-lg">
               <CardHeader>
                 <div className="flex items-start justify-between gap-2">
                   <CardTitle className="line-clamp-2 text-lg">{p.title}</CardTitle>

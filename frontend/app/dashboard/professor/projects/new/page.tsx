@@ -94,7 +94,11 @@ export default function CreateProjectPage() {
                 id="slots"
                 type="number"
                 value={formData.slots}
-                onChange={(e) => setFormData({ ...formData, slots: parseInt(e.target.value) })}
+                onChange={(e) => {
+                  const n = parseInt(e.target.value, 10)
+                  const slots = Number.isNaN(n) ? 1 : Math.max(1, Math.min(20, n))
+                  setFormData({ ...formData, slots })
+                }}
                 min={1}
                 max={20}
                 required

@@ -111,7 +111,7 @@ export function ProjectsList() {
             <Button
               variant={filters.status === undefined ? 'default' : 'outline'}
               onClick={() => {
-                const { status, ...rest } = filters
+                const { status: _status, ...rest } = filters
                 setFilters({ ...rest, page: 1 })
               }}
             >
