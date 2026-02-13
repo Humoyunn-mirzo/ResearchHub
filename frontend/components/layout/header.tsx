@@ -7,6 +7,7 @@ import { useAuthStore } from '@/lib/auth'
 import { Menu, X } from 'lucide-react'
 import { useState } from 'react'
 import { logout } from '@/core/services'
+import { ThemeToggle } from './theme-toggle'
 
 export function Header() {
   const pathname = usePathname()
@@ -60,7 +61,8 @@ export function Header() {
           ))}
         </div>
 
-        <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:gap-x-4">
+        <div className="hidden lg:flex lg:flex-1 lg:items-center lg:justify-end lg:gap-x-4">
+          <ThemeToggle />
           {isAuthenticated && user ? (
             <>
               <Link href="/dashboard">
@@ -102,7 +104,10 @@ export function Header() {
                 {item.name}
               </Link>
             ))}
-            <div className="border-t pt-4">
+            <div className="flex flex-col gap-2 border-t pt-4">
+              <div className="flex justify-center">
+                <ThemeToggle />
+              </div>
               {isAuthenticated && user ? (
                 <>
                   <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)}>

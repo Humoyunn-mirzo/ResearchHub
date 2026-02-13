@@ -29,7 +29,7 @@ export function HomeHighlights() {
           {stats.map((s) => {
             const Icon = s.icon
             return (
-              <Card key={s.label} className="border bg-card/60">
+              <Card key={s.label} className="border bg-card">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">{s.label}</CardTitle>
                   <Icon className="h-4 w-4 text-muted-foreground" />

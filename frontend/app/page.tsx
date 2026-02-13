@@ -7,7 +7,7 @@ export default function HomePage() {
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-primary/10 to-background py-20">
+      <section className="relative overflow-hidden bg-gradient-to-b from-primary/15 via-primary/5 to-background py-20">
         <div className="mx-auto max-w-7xl px-4 lg:px-8">
           <div className="mx-auto max-w-3xl text-center">
             <p className="text-sm font-medium text-primary">Research Collaboration Platform</p>

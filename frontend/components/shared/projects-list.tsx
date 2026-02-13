@@ -92,7 +92,7 @@ export function ProjectsList() {
       </form>
 
       {/* Filters */}
-      <div className="flex flex-col gap-4 rounded-lg border bg-card/40 p-4">
+      <div className="flex flex-col gap-4 rounded-lg border bg-muted/30 p-4">
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-sm font-medium text-muted-foreground">Status</span>
           <div className="flex gap-2">

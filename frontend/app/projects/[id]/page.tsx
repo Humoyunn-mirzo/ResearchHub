@@ -109,7 +109,7 @@ export default function ProjectDetailPage() {
       <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
         {/* Main */}
         <div className="space-y-6">
-          <div className="rounded-xl border bg-card/60 p-6">
+          <div className="rounded-xl border bg-card p-6">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{project.title}</h1>
