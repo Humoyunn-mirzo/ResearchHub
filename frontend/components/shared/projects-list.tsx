@@ -1,6 +1,6 @@
 'use client'
 
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { fetchProjects, type ProjectFilters } from '@/core/services'
 import { ProjectCard } from '@/components/shared/project-card'
 import { Badge, Button, Input } from '@/components/ui'
@@ -13,7 +13,6 @@ import { mockProjects } from '@/core/services/mock-db'
 
 export function ProjectsList() {
   const { user, isAuthenticated } = useAuthStore()
-  const queryClient = useQueryClient()
   const [filters, setFilters] = useState<ProjectFilters>({
     page: 1,
     limit: 12,
@@ -75,7 +74,7 @@ export function ProjectsList() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => queryClient.invalidateQueries({ queryKey: ['projects'] })}
+            onClick={() => refetch()}
             disabled={isFetching}
           >
             <RefreshCw className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
