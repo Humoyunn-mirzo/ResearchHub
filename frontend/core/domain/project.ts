@@ -19,6 +19,7 @@ export const ProjectSchema = z.object({
       name: z.string(),
       email: z.string(),
     })
+    .nullable()
     .optional(),
 })
 
