@@ -84,3 +84,11 @@ When deploying behind nginx on a shared domain (e.g. usp.uz):
 | `usp.uz/other-app/` | Another project (configure in nginx.conf) |
 
 Set `NEXT_PUBLIC_API_URL=/api` in `.env` so the frontend uses the same-origin API path. To add your other project, edit `nginx/nginx.conf` and replace the `/other-app/` placeholder with a proxy to your app's container.
+
+### Demo data
+
+On first run, the database is seeded with 3 demo projects and a demo professor account:
+- **Email:** demo@researchhub.local
+- **Password:** password
+
+Professors can create new projects; they appear for all users. Students see projects on the projects page and dashboard. Use the **Refresh** button to fetch the latest projects.
