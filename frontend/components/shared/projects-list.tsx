@@ -48,9 +48,14 @@ export function ProjectsList() {
   }
 
   if (error) {
+    const errMsg = error instanceof Error ? error.message : 'Unknown error'
     return (
       <div className="rounded-lg bg-destructive/10 p-4 text-center text-destructive">
-        Failed to load projects. Please try again.
+        <p className="font-medium">Failed to load projects. Please try again.</p>
+        <p className="mt-2 text-sm opacity-90">{errMsg}</p>
+        <Button variant="outline" size="sm" className="mt-3" onClick={() => refetch()}>
+          Retry
+        </Button>
       </div>
     )
   }

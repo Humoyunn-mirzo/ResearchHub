@@ -10,16 +10,22 @@ import { BookOpen, Users, FileText, Plus } from 'lucide-react'
 export default function ProfessorDashboard() {
   const { user } = useAuthStore()
 
-  const { data: myProjects } = useQuery({
-    queryKey: ['projects', 'my'],
-    queryFn: () => fetchProjects({ professorId: user?.id || '' }),
-    enabled: !!user,
+  const {
+    data: myProjects,
+    error: projectsError,
+    refetch: refetchProjects,
+    isError: isProjectsError,
+  } = useQuery({
+    queryKey: ['projects', 'my', user?.id],
+    queryFn: () =>
+      fetchProjects(user?.id ? { professorId: user.id, limit: 50 } : {}),
+    enabled: !!user?.id,
   })
 
   const { data: applications } = useQuery({
-    queryKey: ['applications', 'for-my-projects'],
+    queryKey: ['applications', 'for-my-projects', user?.id],
     queryFn: () => fetchApplications({ limit: 100 }),
-    enabled: !!user,
+    enabled: !!user?.id,
   })
 
   const myProjectIds = new Set(myProjects?.data.map((p) => p.id) ?? [])
@@ -83,6 +89,18 @@ export default function ProfessorDashboard() {
       {/* My Projects */}
       <div className="mb-8">
         <h2 className="mb-4 text-2xl font-semibold">My Projects</h2>
+        {isProjectsError && (
+          <Card className="mb-4 border-destructive/50 bg-destructive/10">
+            <CardContent className="py-4">
+              <p className="text-sm text-destructive">
+                Failed to load projects. {projectsError instanceof Error ? projectsError.message : 'Please try again.'}
+              </p>
+              <Button variant="outline" size="sm" className="mt-2" onClick={() => refetchProjects()}>
+                Retry
+              </Button>
+            </CardContent>
+          </Card>
+        )}
         {myProjects && myProjects.data.length > 0 ? (
           <div className="grid gap-6 md:grid-cols-2">
             {myProjects.data.map((project) => (
