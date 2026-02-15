@@ -105,7 +105,9 @@ public class ProjectService {
     }
 
     private Pageable toPageable(int page, int limit, String sort) {
-        int safePage = Math.max(0, page);
+        // Frontend uses 1-based pages; Spring Pageable uses 0-based
+        int zeroBasedPage = page <= 1 ? 0 : page - 1;
+        int safePage = Math.max(0, zeroBasedPage);
         int safeLimit = Math.min(50, Math.max(1, limit));
         Sort s = "oldest".equalsIgnoreCase(sort)
                 ? Sort.by(Sort.Direction.ASC, "createdAt")
