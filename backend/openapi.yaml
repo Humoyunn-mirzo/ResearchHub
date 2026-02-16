@@ -676,6 +676,14 @@ components:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
 
+    # 409
+    Conflict:
+      description: Resource already exists
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
 paths:
   /api/auth/login:
     post:
@@ -703,17 +711,16 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                required:
-                  - meta
-                  - data
-                properties:
-                  meta:
-                    $ref: '#/components/schemas/ResponseMeta'
-                  data:
-                    $ref: '#/components/schemas/AccessToken'
-        '400':
-          $ref: '#/components/responses/BadRequest'
+                allOf:
+                  - $ref: '#/components/schemas/GenericResponse'
+                  - type: object
+                    required:
+                      - data
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/AccessToken'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
   /api/auth/refresh:
     post:
@@ -728,15 +735,14 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                required:
-                  - meta
-                  - data
-                properties:
-                  meta:
-                    $ref: '#/components/schemas/ResponseMeta'
-                  data:
-                    $ref: '#/components/schemas/AccessToken'
+                allOf:
+                  - $ref: '#/components/schemas/GenericResponse'
+                  - type: object
+                    required:
+                      - data
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/AccessToken'
         '401':
           $ref: '#/components/responses/Unauthorized'
 
@@ -779,6 +785,8 @@ paths:
                 $ref: '#/components/schemas/StudentResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
 
   /api/students/{id}:
     security:
@@ -871,6 +879,8 @@ paths:
                 $ref: '#/components/schemas/ProfessorResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
 
 
   /api/professors/{id}:
@@ -964,6 +974,8 @@ paths:
                 $ref: '#/components/schemas/ProjectResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
 
 
   /api/projects/{id}:
@@ -1057,6 +1069,8 @@ paths:
                 $ref: '#/components/schemas/ApplicationResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
 
 
   /api/applications/{id}:
@@ -1150,6 +1164,8 @@ paths:
                 $ref: '#/components/schemas/UniversityResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
 
 
   /api/universities/{id}:
