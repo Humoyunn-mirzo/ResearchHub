@@ -8,10 +8,12 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.researchhub.backend.student.exception.StudentAlreadyExistsException;
+import com.researchhub.backend.student.exception.StudentNotFoundException;
 import com.researchhub.backend.university.University;
 import com.researchhub.backend.university.UniversityRepository;
+import com.researchhub.backend.university.exception.UniversityNotFoundException;
 
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
@@ -32,14 +34,14 @@ public class StudentService {
 
     public StudentResponse getStudentById(UUID id) {
         Student student = studentRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Student not found"));
+            .orElseThrow(() -> new StudentNotFoundException(id));
         return studentMapper.toResponse(student);
     }
 
     @Transactional
     public StudentResponse createStudent(CreateStudentRequest request) {
         if (studentRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already exists");
+            throw new StudentAlreadyExistsException(request.getEmail());
         }
 
         Student student = studentMapper.toEntity(request);
@@ -47,9 +49,7 @@ public class StudentService {
         University university = null;
         if (request.getUniversityId() != null) {
             university = universityRepository.findById(request.getUniversityId())
-            .orElseThrow(() -> new EntityNotFoundException(
-                "University not found: " + request.getUniversityId()
-            ));
+            .orElseThrow(() -> new UniversityNotFoundException(request.getUniversityId()));
         }
 
         student.setUniversity(university);
@@ -61,14 +61,8 @@ public class StudentService {
 
     @Transactional
     public StudentResponse updateStudent(UUID id, UpdateStudentRequest request) {
-        // DEBUG: Check if Jackson actually captured the field
-        System.out.println("Name present in JSON? " + request.getName().isPresent());
-        if (request.getName().isPresent()) {
-            System.out.println("Value in JSON: " + request.getName().get());
-        }
-
         Student student = studentRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Student not found"));
+            .orElseThrow(() -> new StudentNotFoundException(id));
 
         studentMapper.toEntity(request, student);
 
@@ -80,7 +74,7 @@ public class StudentService {
     @Transactional
     public void deleteStudent(UUID id) {
         if (!studentRepository.existsById(id)) {
-            throw new EntityNotFoundException("Student not found");
+            throw new StudentNotFoundException(id);
         }
 
         studentRepository.deleteById(id);

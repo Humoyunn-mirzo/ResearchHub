@@ -88,14 +88,19 @@ components:
     ErrorResponse:
       type: object
       required:
-        - timestamp
-        - message
+        - meta
+        - error
       properties:
-        timestamp:
-          type: string
-          format: date-time
-        message:
-          type: string
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+        error:
+          type: object
+          required:
+            - message
+          properties:
+            message:
+              type: string
+
 
     AccessToken:
       type: object
