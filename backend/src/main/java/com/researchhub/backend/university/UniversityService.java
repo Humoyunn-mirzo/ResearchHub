@@ -1,16 +1,18 @@
 package com.researchhub.backend.university;
 
-import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.UUID;
+import com.researchhub.backend.university.exception.UniversityAlreadyExistsException;
+import com.researchhub.backend.university.exception.UniversityNotFoundException;
+
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +32,7 @@ public class UniversityService {
 
     public UniversityResponse getUniversityById(UUID id) {
         University university = universityRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("University not found"));
+                .orElseThrow(() -> new UniversityNotFoundException(id));
 
         return universityMapper.toResponse(university);
     }
@@ -39,7 +41,7 @@ public class UniversityService {
     public UniversityResponse createUniversity(CreateUniversityRequest request) {
 
         if (universityRepository.existsByName(request.getName())) {
-            throw new RuntimeException("University already exists");
+            throw new UniversityAlreadyExistsException(request.getName());
         }
 
         University university = universityMapper.toEntity(request);
@@ -52,7 +54,7 @@ public class UniversityService {
     public UniversityResponse updateUniversity(UUID id, UpdateUniversityRequest request) {
 
         University university = universityRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("University not found"));
+                .orElseThrow(() -> new UniversityNotFoundException(id));
 
         universityMapper.toEntity(request, university);
 
@@ -64,7 +66,7 @@ public class UniversityService {
     @Transactional
     public void deleteUniversity(UUID id) {
         if (!universityRepository.existsById(id)) {
-            throw new EntityNotFoundException("University not found");
+            throw new UniversityNotFoundException(id);
         }
 
         universityRepository.deleteById(id);

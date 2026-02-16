@@ -1,9 +1,14 @@
 package com.researchhub.backend.application;
 
+import com.researchhub.backend.application.exception.ApplicationAlreadyExistsException;
+import com.researchhub.backend.application.exception.ApplicationNotFoundException;
 import com.researchhub.backend.project.Project;
 import com.researchhub.backend.project.ProjectRepository;
+import com.researchhub.backend.project.exception.ProjectNotFoundException;
 import com.researchhub.backend.student.Student;
 import com.researchhub.backend.student.StudentRepository;
+import com.researchhub.backend.student.exception.StudentNotFoundException;
+
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -25,8 +30,6 @@ public class ApplicationService {
     private final ProjectRepository projectRepository;
     private final ApplicationMapper applicationMapper;
 
-    // ========== Basic CRUD ==========
-
     public Page<ApplicationResponse> getApplications(Pageable pageable) {
         Page<Application> page = applicationRepository.findAll(pageable);
         List<ApplicationResponse> content = applicationMapper.toResponseList(page.getContent());
@@ -35,7 +38,7 @@ public class ApplicationService {
 
     public ApplicationResponse getApplicationById(UUID id) {
         Application application = applicationRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Application not found with id: " + id));
+            .orElseThrow(() -> new ApplicationNotFoundException(id));
         return applicationMapper.toResponse(application);
     }
 
@@ -46,13 +49,13 @@ public class ApplicationService {
             .getName();
 
         Student student = studentRepository.findByEmail(email)
-            .orElseThrow(() -> new IllegalArgumentException("Student not found"));
+            .orElseThrow(() -> new StudentNotFoundException(email));
 
         Project project = projectRepository.findById(request.getProjectId())
-                .orElseThrow(() -> new EntityNotFoundException("Project not found with id: " + request.getProjectId()));
+            .orElseThrow(() -> new ProjectNotFoundException(request.getProjectId()));
 
         if (applicationRepository.existsByStudentIdAndProjectId(student.getId(), project.getId())) {
-            throw new IllegalStateException("Student has already applied to this project");
+            throw new ApplicationAlreadyExistsException(student.getId(), project.getId());
         }
 
         Application application = applicationMapper.toEntity(request);
@@ -68,7 +71,7 @@ public class ApplicationService {
     @Transactional
     public ApplicationResponse updateApplication(UUID id, UpdateApplicationRequest request) {
         Application application = applicationRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Application not found with id: " + id));
+                .orElseThrow(() -> new ApplicationNotFoundException(id));
 
         // Only status can be updated (others are immutable)
         applicationMapper.toEntity(request, application);
@@ -90,7 +93,7 @@ public class ApplicationService {
     public Page<ApplicationResponse> getApplicationsByStudent(UUID studentId, ApplicationStatus status, Pageable pageable) {
         // Verify student exists (optional, but good practice)
         if (!studentRepository.existsById(studentId)) {
-            throw new EntityNotFoundException("Student not found with id: " + studentId);
+            throw new StudentNotFoundException(studentId);
         }
 
         Page<Application> page;
@@ -106,7 +109,7 @@ public class ApplicationService {
 
     public Page<ApplicationResponse> getApplicationsByProject(UUID projectId, ApplicationStatus status, Pageable pageable) {
         if (!projectRepository.existsById(projectId)) {
-            throw new EntityNotFoundException("Project not found with id: " + projectId);
+            throw new ProjectNotFoundException(projectId);
         }
 
         Page<Application> page;

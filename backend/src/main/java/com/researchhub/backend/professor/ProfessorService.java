@@ -1,7 +1,10 @@
 package com.researchhub.backend.professor;
 
+import com.researchhub.backend.professor.exception.ProfessorAlreadyExistsException;
+import com.researchhub.backend.professor.exception.ProfessorNotFoundException;
 import com.researchhub.backend.university.University;
 import com.researchhub.backend.university.UniversityRepository;
+import com.researchhub.backend.university.exception.UniversityNotFoundException;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -40,14 +43,14 @@ public class ProfessorService {
 
     public ProfessorResponse getProfessorById(UUID id) {
         Professor professor = professorRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Professor not found"));
+            .orElseThrow(() -> new ProfessorNotFoundException(id));
         return professorMapper.toResponse(professor);
     }
 
     @Transactional
     public ProfessorResponse createProfessor(CreateProfessorRequest request) {
         if (professorRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already exists");
+            throw new ProfessorAlreadyExistsException(request.getEmail());
         }
 
         Professor professor = professorMapper.toEntity(request);
@@ -55,9 +58,7 @@ public class ProfessorService {
         University university = null;
         if (request.getUniversityId() != null) {
             university = universityRepository.findById(request.getUniversityId())
-            .orElseThrow(() -> new EntityNotFoundException(
-                "University not found: " + request.getUniversityId()
-            ));
+            .orElseThrow(() -> new UniversityNotFoundException(request.getUniversityId()));
         }
 
         professor.setUniversity(university);
@@ -70,7 +71,7 @@ public class ProfessorService {
     @Transactional
     public ProfessorResponse updateProfessor(UUID id, UpdateProfessorRequest request) {
         Professor professor = professorRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Professor not found"));
+            .orElseThrow(() -> new ProfessorNotFoundException(id));
 
         professorMapper.toEntity(request, professor);
 
@@ -82,7 +83,7 @@ public class ProfessorService {
     @Transactional
     public void deleteProfessor(UUID id) {
         if (!professorRepository.existsById(id)) {
-            throw new EntityNotFoundException("Professor not found");
+            throw new ProfessorNotFoundException(id);
         }
 
         professorRepository.deleteById(id);
