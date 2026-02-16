@@ -416,6 +416,7 @@ components:
     ProjectCreateInput:
       type: object
       required:
+        - professorId
         - title
         - description
         - field
@@ -425,6 +426,10 @@ components:
         - status
         - interviewQuestions
       properties:
+        professorId:
+          type: string
+          format: uuid
+          description: ID of the professor leading the project
         title:
           type: string
           description: Project title
