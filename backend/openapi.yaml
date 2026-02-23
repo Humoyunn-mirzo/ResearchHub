@@ -1,0 +1,1227 @@
+openapi: 3.0.3
+
+info:
+  title: Research Hub API
+  description: >
+    REST API for managing resources in the Research Hub Backend system.
+  version: 1.0.0
+  contact:
+    name: Komil Tokhirov
+    email: komil.tokhirov@gmail.com
+
+servers:
+  - url: http://localhost
+    description: Local development
+  # - url: https://example.com
+  #   description: Production
+
+tags:
+  - name: auth
+  - name: students
+  - name: professors
+  - name: projects
+  - name: applications
+  - name: universities
+    # description: Authentication endpoints
+  # - name: students
+  #   description: Student management endpoints
+
+components:
+  securitySchemes:
+    refreshTokenCookie:
+      type: apiKey
+      in: cookie
+      name: refreshToken
+
+    accessTokenBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    ResponseMeta:
+      type: object
+      required:
+        - timestamp
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+
+    ResponsePagination:
+      type: object
+      required:
+        - page
+        - size
+        - totalElements
+      properties:
+        page:
+          type: integer
+          example: 0
+        size:
+          type: integer
+          example: 20
+        totalElements:
+          type: integer
+          example: 124
+
+    GenericResponse:
+      type: object
+      required:
+        - meta
+      properties:
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+
+    GenericListResponse:
+      type: object
+      required:
+        - meta
+        - pagination
+      properties:
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+        pagination:
+          $ref: '#/components/schemas/ResponsePagination'
+
+
+    ErrorResponse:
+      type: object
+      required:
+        - meta
+        - error
+      properties:
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+        error:
+          type: object
+          required:
+            - message
+          properties:
+            message:
+              type: string
+
+
+    AccessToken:
+      type: object
+      required:
+        - accessToken
+      properties:
+        accessToken:
+          type: string
+          format: jwt
+
+    Password:
+      type: string
+      format: password
+      minLength: 8
+      maxLength: 128
+      # TODO: maybe enforce some conditions
+      # pattern: '^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&]).+$'
+      description: Must be 8-128 characters
+
+
+    StudentResponse:
+      allOf:
+        - $ref: '#/components/schemas/GenericResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/StudentResponseBase'
+
+    StudentListResponse:
+      allOf:
+        - $ref: '#/components/schemas/GenericListResponse'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/StudentResponseBase'
+
+    ProfessorResponse:
+      allOf:
+        - $ref: '#/components/schemas/GenericResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/ProfessorResponseBase'
+
+    ProfessorListResponse:
+      allOf:
+        - $ref: '#/components/schemas/GenericListResponse'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/ProfessorResponseBase'
+
+    ProjectResponse:
+      allOf:
+        - $ref: '#/components/schemas/GenericResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/ProjectResponseBase'
+
+    ProjectListResponse:
+      allOf:
+        - $ref: '#/components/schemas/GenericListResponse'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/ProjectResponseBase'
+
+    ApplicationResponse:
+      allOf:
+        - $ref: '#/components/schemas/GenericResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/ApplicationResponseBase'
+
+    ApplicationListResponse:
+      allOf:
+        - $ref: '#/components/schemas/GenericListResponse'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/ApplicationResponseBase'
+
+    UniversityResponse:
+      allOf:
+        - $ref: '#/components/schemas/GenericResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/UniversityResponseBase'
+
+    UniversityListResponse:
+      allOf:
+        - $ref: '#/components/schemas/GenericListResponse'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/UniversityResponseBase'
+
+    StudentResponseBase:
+      type: object
+      required:
+        - id
+        - name
+        - email
+        - universityId
+        - fieldOfInterest
+        - bio
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        universityId:
+          type: string
+          format: uuid
+        fieldOfInterest:
+          type: string
+        bio:
+          type: string
+        totalApplications:
+          type: integer
+        acceptedProjects:
+          type: integer
+
+    StudentCreateInput:
+      type: object
+      required:
+        - email
+        - password
+        - name
+        - universityId
+        - fieldOfInterest
+        - bio
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          $ref: '#/components/schemas/Password'
+        name:
+          type: string
+        universityId:
+          type: string
+          format: uuid
+        fieldOfInterest:
+          type: string
+        bio:
+          type: string
+
+    StudentUpdateInput:
+      type: object
+      properties:
+        name:
+          type: string
+        universityId:
+          type: string
+          format: uuid
+        fieldOfInterest:
+          type: string
+        bio:
+          type: string
+
+    ProfessorResponseBase:
+      type: object
+      required:
+        - id
+        - name
+        - email
+        - universityId
+        - fieldOfStudy
+        - bio
+        - rankingScore
+        - totalProjects
+        - studentsSupervised
+        - acceptanceRate
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        universityId:
+          type: string
+          format: uuid
+        fieldOfStudy:
+          type: string
+        bio:
+          type: string
+        rankingScore:
+          type: integer
+        totalProjects:
+          type: integer
+        studentsSupervised:
+          type: integer
+        acceptanceRate:
+          type: number
+          minimum: 0
+          maximum: 1
+
+    ProfessorCreateInput:
+      type: object
+      required:
+        - email
+        - password
+        - name
+        - universityId
+        - fieldOfStudy
+        - bio
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          $ref: '#/components/schemas/Password'
+        name:
+          type: string
+        universityId:
+          type: string
+          format: uuid
+        fieldOfStudy:
+          type: string
+        bio:
+          type: string
+
+    ProfessorUpdateInput:
+      type: object
+      properties:
+        name:
+          type: string
+        universityId:
+          type: string
+          format: uuid
+        fieldOfStudy:
+          type: string
+        bio:
+          type: string
+
+    ProjectResponseBase:
+      type: object
+      required:
+        - id
+        - professorId
+        - title
+        - description
+        - field
+        - regionFocus
+        - requirements
+        - maxStudents
+        - currentStudents
+        - status
+        - interviewQuestions
+      properties:
+        id:
+          type: string
+          format: uuid
+        professorId:
+          type: string
+          format: uuid
+          description: ID of the professor leading the project
+        title:
+          type: string
+          description: Project title
+        description:
+          type: string
+          description: Project description
+        field:
+          type: string
+          description: Research field/category
+        regionFocus:
+          type: string
+          description: Geographic focus or target region
+        requirements:
+          type: string
+          description: Requirements for students applying
+        maxStudents:
+          type: integer
+          description: Maximum number of students allowed
+        currentStudents:
+          type: integer
+          description: Current number of students enrolled
+        status:
+          type: string
+          enum:
+            - OPEN
+            - CLOSED
+          description: Project status
+        interviewQuestions:
+          type: array
+          # TODO: think about the "interview" object, and the concrete type
+          items:
+            type: object
+          description: Interview questions for students
+
+    ProjectCreateInput:
+      type: object
+      required:
+        - professorId
+        - title
+        - description
+        - field
+        - regionFocus
+        - requirements
+        - maxStudents
+        - status
+        - interviewQuestions
+      properties:
+        professorId:
+          type: string
+          format: uuid
+          description: ID of the professor leading the project
+        title:
+          type: string
+          description: Project title
+        description:
+          type: string
+          description: Project description
+        field:
+          type: string
+          description: Research field/category
+        regionFocus:
+          type: string
+          description: Geographic focus or target region
+        requirements:
+          type: string
+          description: Requirements for students applying
+        maxStudents:
+          type: integer
+          description: Maximum number of students allowed
+        status:
+          type: string
+          enum:
+            - OPEN
+            - CLOSED
+          description: Project status, e.g., "open", "closed"
+        interviewQuestions:
+          type: array
+          items:
+            type: object
+          description: Interview questions for students
+
+    ProjectUpdateInput:
+      type: object
+      properties:
+        title:
+          type: string
+          description: Project title
+        description:
+          type: string
+          description: Project description
+        field:
+          type: string
+          description: Research field/category
+        regionFocus:
+          type: string
+          description: Geographic focus or target region
+        requirements:
+          type: string
+          description: Requirements for students applying
+        maxStudents:
+          type: integer
+          description: Maximum number of students allowed
+        status:
+          type: string
+          enum:
+            - OPEN
+            - CLOSED
+          description: Project status, e.g., "open", "closed"
+        interviewQuestions:
+          type: array
+          items:
+            type: object
+          description: Interview questions for students
+
+    ApplicationResponseBase:
+      type: object
+      required:
+        - id
+        - studentId
+        - projectId
+        - status
+        - cvFile
+        - appliedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        studentId:
+          type: string
+          format: uuid
+          description: ID of the student who applied
+        projectId:
+          type: string
+          format: uuid
+          description: ID of the project applied to
+        status:
+          type: string
+          enum:
+            - PENDING
+            - ACCEPTED
+            - REJECTED
+          description: Application status
+        cvFile:
+          type: string
+          format: byte
+          description: File associated with the application (e.g. pdf, docx)
+        appliedAt:
+          type: string
+          format: date-time
+          description: Timestamp when the application was submitted
+
+    ApplicationCreateInput:
+      type: object
+      required:
+        - projectId
+        - cvFile
+      properties:
+        projectId:
+          type: string
+          format: uuid
+          description: ID of the project applied to
+        cvFile:
+          type: string
+          format: byte
+          description: File associated with the application (e.g. pdf, docx)
+
+    ApplicationUpdateInput:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - PENDING
+            - ACCEPTED
+            - REJECTED
+          description: Application status
+        cvFile:
+          type: string
+          format: byte
+          description: File associated with the application (e.g. pdf, docx)
+
+    UniversityResponseBase:
+      type: object
+      required:
+        - id
+        - name
+        - country
+        - region
+        - rankingScore
+        - totalProjects
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          description: Name of the university
+        country:
+          type: string
+          description: Country where the university is located
+        region:
+          type: string
+          description: Geographic region of the university
+        rankingScore:
+          type: integer
+          description: University ranking score
+        totalProjects:
+          type: integer
+          description: Total number of projects hosted by the university
+
+    UniversityCreateInput:
+      type: object
+      required:
+        - name
+        - country
+        - rankingScore
+      properties:
+        name:
+          type: string
+          description: Name of the university
+        country:
+          type: string
+          description: Country where the university is located
+        rankingScore:
+          type: integer
+          description: University ranking score
+
+    UniversityUpdateInput:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the university
+        country:
+          type: string
+          description: Country where the university is located
+        rankingScore:
+          type: integer
+          description: University ranking score
+
+  parameters:
+    ID:
+      name: id
+      in: path
+      required: true
+      description: ID of object
+      schema:
+        type: string
+        format: uuid
+
+    PageNumber:
+      name: page
+      in: query
+      description: Zero-based page index
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+
+    PageSize:
+      name: size
+      in: query
+      description: Number of items per page
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+
+  responses:
+    # 400
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    # 401
+    Unauthorized:
+      description: Authentication required or invalid token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    # 403
+    Forbidden:
+      description: Authenticated but not allowed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    # 404
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    # 409
+    Conflict:
+      description: Resource already exists
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+paths:
+  /api/auth/login:
+    post:
+      tags: [auth]
+      summary: Login
+      operationId: authLogin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  $ref: '#/components/schemas/Password'
+      responses:
+        '200':
+          description: Successfully logged in (and received access token)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/GenericResponse'
+                  - type: object
+                    required:
+                      - data
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/AccessToken'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/auth/refresh:
+    post:
+      tags: [auth]
+      summary: Refresh access token
+      operationId: authRefresh
+      security:
+        - refreshTokenCookie: []
+      responses:
+        '200':
+          description: Successfully refresh access token
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/GenericResponse'
+                  - type: object
+                    required:
+                      - data
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/AccessToken'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+
+  /api/students:
+    security:
+      - accessTokenBearer: []
+
+    get:
+      tags: [students]
+      summary: Get students
+      operationId: getStudents
+      parameters:
+        - $ref: '#/components/parameters/PageNumber'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: List of students
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentListResponse'
+
+    post:
+      tags: [students]
+      summary: Create a new student
+      operationId: createStudent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentCreateInput'
+      responses:
+        '201':
+          description: Student created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /api/students/{id}:
+    security:
+      - accessTokenBearer: []
+
+    parameters:
+      - $ref: '#/components/parameters/ID'
+
+    get:
+      tags: [students]
+      summary: Get student by ID
+      operationId: getStudentById
+      responses:
+        '200':
+          description: Student found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags: [students]
+      summary: Update student by ID
+      operationId: updateStudentById
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentUpdateInput'
+      responses:
+        '200':
+          description: Student updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [students]
+      summary: Delete student
+      operationId: deleteStudentById
+      responses:
+        '204':
+          description: Student deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/professors:
+    security:
+      - accessTokenBearer: []
+
+    get:
+      tags: [professors]
+      summary: Get professors
+      operationId: getProfessors
+      parameters:
+        - $ref: '#/components/parameters/PageNumber'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: List of professors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfessorListResponse'
+
+    post:
+      tags: [professors]
+      summary: Create a new professor
+      operationId: createProfessor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProfessorCreateInput'
+      responses:
+        '201':
+          description: Professor created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfessorResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+
+  /api/professors/{id}:
+    security:
+      - accessTokenBearer: []
+
+    parameters:
+      - $ref: '#/components/parameters/ID'
+
+    get:
+      tags: [professors]
+      summary: Get professor by ID
+      operationId: getProfessorById
+      responses:
+        '200':
+          description: Professor found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfessorResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags: [professors]
+      summary: Update professor by ID
+      operationId: updateProfessorById
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProfessorUpdateInput'
+      responses:
+        '200':
+          description: Professor updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfessorResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [professors]
+      summary: Delete professor
+      operationId: deleteProfessorById
+      responses:
+        '204':
+          description: Professor deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/projects:
+    security:
+      - accessTokenBearer: []
+
+    get:
+      tags: [projects]
+      summary: Get projects
+      operationId: getProjects
+      parameters:
+        - $ref: '#/components/parameters/PageNumber'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: List of projects
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectListResponse'
+
+    post:
+      tags: [projects]
+      summary: Create a new project
+      operationId: createProject
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectCreateInput'
+      responses:
+        '201':
+          description: Project created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+
+  /api/projects/{id}:
+    security:
+      - accessTokenBearer: []
+
+    parameters:
+      - $ref: '#/components/parameters/ID'
+
+    get:
+      tags: [projects]
+      summary: Get project by ID
+      operationId: getProjectById
+      responses:
+        '200':
+          description: Project found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags: [projects]
+      summary: Update project by ID
+      operationId: updateProjectById
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectUpdateInput'
+      responses:
+        '200':
+          description: Project updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [projects]
+      summary: Delete project
+      operationId: deleteProjectById
+      responses:
+        '204':
+          description: Project deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/applications:
+    security:
+      - accessTokenBearer: []
+
+    get:
+      tags: [applications]
+      summary: Get applications
+      operationId: getApplications
+      parameters:
+        - $ref: '#/components/parameters/PageNumber'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: List of applications
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationListResponse'
+
+    post:
+      tags: [applications]
+      summary: Create a new application
+      operationId: createApplication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplicationCreateInput'
+      responses:
+        '201':
+          description: Application created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+
+  /api/applications/{id}:
+    security:
+      - accessTokenBearer: []
+
+    parameters:
+      - $ref: '#/components/parameters/ID'
+
+    get:
+      tags: [applications]
+      summary: Get application by ID
+      operationId: getApplicationById
+      responses:
+        '200':
+          description: Application found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags: [applications]
+      summary: Update application by ID
+      operationId: updateApplicationById
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplicationUpdateInput'
+      responses:
+        '200':
+          description: Application updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [applications]
+      summary: Delete application
+      operationId: deleteApplicationById
+      responses:
+        '204':
+          description: Application deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/universities:
+    security:
+      - accessTokenBearer: []
+
+    get:
+      tags: [universities]
+      summary: Get universities
+      operationId: getUniversities
+      parameters:
+        - $ref: '#/components/parameters/PageNumber'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: List of universities
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UniversityListResponse'
+
+    post:
+      tags: [universities]
+      summary: Create a new university
+      operationId: createUniversity
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UniversityCreateInput'
+      responses:
+        '201':
+          description: University created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UniversityResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+
+  /api/universities/{id}:
+    security:
+      - accessTokenBearer: []
+
+    parameters:
+      - $ref: '#/components/parameters/ID'
+
+    get:
+      tags: [universities]
+      summary: Get university by ID
+      operationId: getUniversityById
+      responses:
+        '200':
+          description: University found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UniversityResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags: [universities]
+      summary: Update university by ID
+      operationId: updateUniversityById
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UniversityUpdateInput'
+      responses:
+        '200':
+          description: University updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UniversityResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [universities]
+      summary: Delete university
+      operationId: deleteUniversityById
+      responses:
+        '204':
+          description: University deleted
+        '404':
+          $ref: '#/components/responses/NotFound'

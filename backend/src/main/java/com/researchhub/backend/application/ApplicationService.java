@@ -1,150 +1,125 @@
 package com.researchhub.backend.application;
 
+import com.researchhub.backend.application.exception.ApplicationAlreadyExistsException;
+import com.researchhub.backend.application.exception.ApplicationNotFoundException;
 import com.researchhub.backend.project.Project;
 import com.researchhub.backend.project.ProjectRepository;
-import com.researchhub.backend.project.ProjectStatus;
-import com.researchhub.backend.user.User;
-import com.researchhub.backend.user.UserRepository;
-import com.researchhub.backend.user.UserRole;
-import org.springframework.data.domain.PageRequest;
+import com.researchhub.backend.project.exception.ProjectNotFoundException;
+import com.researchhub.backend.student.Student;
+import com.researchhub.backend.student.StudentRepository;
+import com.researchhub.backend.student.exception.StudentNotFoundException;
+
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class ApplicationService {
 
     private final ApplicationRepository applicationRepository;
+    private final StudentRepository studentRepository;
     private final ProjectRepository projectRepository;
-    private final UserRepository userRepository;
+    private final ApplicationMapper applicationMapper;
 
-    public ApplicationService(ApplicationRepository applicationRepository,
-                              ProjectRepository projectRepository,
-                              UserRepository userRepository) {
-        this.applicationRepository = applicationRepository;
-        this.projectRepository = projectRepository;
-        this.userRepository = userRepository;
+    public Page<ApplicationResponse> getApplications(Pageable pageable) {
+        Page<Application> page = applicationRepository.findAll(pageable);
+        List<ApplicationResponse> content = applicationMapper.toResponseList(page.getContent());
+        return new PageImpl<>(content, pageable, page.getTotalElements());
     }
 
-    @Transactional(readOnly = true)
-    public ApplicationsPage list(UUID projectId, UUID studentId, ApplicationStatus status, int page, int limit) {
-        Pageable pageable = PageRequest.of(Math.max(0, page), Math.min(50, Math.max(1, limit)),
-                Sort.by(Sort.Direction.DESC, "createdAt"));
-        var result = applicationRepository.findFiltered(projectId, studentId, status, pageable);
-        List<ApplicationDto> dtos = result.getContent().stream()
-                .map(this::toDto)
-                .toList();
-        return new ApplicationsPage(dtos, (int) result.getTotalElements(), page, limit);
-    }
-
-    @Transactional(readOnly = true)
-    public ApplicationDto getById(UUID id, UUID currentUserId) {
-        Application app = applicationRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Application not found"));
-        Project project = projectRepository.findById(app.getProjectId()).orElse(null);
-        boolean isOwner = app.getStudentId().equals(currentUserId);
-        boolean isProfessor = project != null && project.getProfessorId().equals(currentUserId);
-        if (!isOwner && !isProfessor) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
-        }
-        return toDtoWithRelations(app);
+    public ApplicationResponse getApplicationById(UUID id) {
+        Application application = applicationRepository.findById(id)
+            .orElseThrow(() -> new ApplicationNotFoundException(id));
+        return applicationMapper.toResponse(application);
     }
 
     @Transactional
-    public ApplicationDto create(UUID userId, CreateApplicationRequest req) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-        if (!user.getRoles().contains(UserRole.STUDENT)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only students can apply to projects");
+    public ApplicationResponse createApplication(CreateApplicationRequest request) {
+        String email = SecurityContextHolder.getContext()
+            .getAuthentication()
+            .getName();
+
+        Student student = studentRepository.findByEmail(email)
+            .orElseThrow(() -> new StudentNotFoundException(email));
+
+        Project project = projectRepository.findById(request.getProjectId())
+            .orElseThrow(() -> new ProjectNotFoundException(request.getProjectId()));
+
+        if (applicationRepository.existsByStudentIdAndProjectId(student.getId(), project.getId())) {
+            throw new ApplicationAlreadyExistsException(student.getId(), project.getId());
         }
 
-        Project project = projectRepository.findById(req.getProjectId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found"));
-        if (project.getStatus() != ProjectStatus.OPEN) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project is not open for applications");
-        }
+        Application application = applicationMapper.toEntity(request);
+        application.setStudent(student);
+        application.setProject(project);
+        application.setStatus(ApplicationStatus.PENDING);
 
-        if (applicationRepository.existsByProjectIdAndStudentId(req.getProjectId(), userId)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "You have already applied to this project");
-        }
+        application = applicationRepository.save(application);
 
-        Application app = new Application();
-        app.setProjectId(req.getProjectId());
-        app.setStudentId(userId);
-        app.setStatus(ApplicationStatus.PENDING);
-        app.setMotivation(req.getMotivation());
-        app = applicationRepository.save(app);
-        return toDtoWithRelations(app);
+        return applicationMapper.toResponse(application);
     }
 
     @Transactional
-    public ApplicationDto updateStatus(UUID id, UUID userId, ApplicationStatus status) {
-        Application app = applicationRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Application not found"));
+    public ApplicationResponse updateApplication(UUID id, UpdateApplicationRequest request) {
+        Application application = applicationRepository.findById(id)
+                .orElseThrow(() -> new ApplicationNotFoundException(id));
 
-        Project project = projectRepository.findById(app.getProjectId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found"));
-        if (!project.getProfessorId().equals(userId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only the project owner can update application status");
-        }
+        // Only status can be updated (others are immutable)
+        applicationMapper.toEntity(request, application);
 
-        if (status != ApplicationStatus.ACCEPTED && status != ApplicationStatus.REJECTED) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Status must be ACCEPTED or REJECTED");
-        }
-
-        app.setStatus(status);
-        app = applicationRepository.save(app);
-        return toDtoWithRelations(app);
+        application = applicationRepository.save(application);
+        return applicationMapper.toResponse(application);
     }
 
     @Transactional
-    public void withdraw(UUID id, UUID userId) {
-        Application app = applicationRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Application not found"));
-        if (!app.getStudentId().equals(userId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only the applicant can withdraw");
+    public void deleteApplication(UUID id) {
+        if (!applicationRepository.existsById(id)) {
+            throw new EntityNotFoundException("Application not found with id: " + id);
         }
-        applicationRepository.delete(app);
+        applicationRepository.deleteById(id);
     }
 
-    private ApplicationDto toDto(Application a) {
-        ApplicationDto dto = new ApplicationDto();
-        dto.setId(a.getId());
-        dto.setProjectId(a.getProjectId());
-        dto.setStudentId(a.getStudentId());
-        dto.setStatus(a.getStatus());
-        dto.setMotivation(a.getMotivation());
-        dto.setCreatedAt(a.getCreatedAt());
-        dto.setUpdatedAt(a.getUpdatedAt());
-        return dto;
-    }
+    // ========== Custom queries ==========
 
-    private ApplicationDto toDtoWithRelations(Application a) {
-        ApplicationDto dto = toDto(a);
-        if (a.getStudent() != null) {
-            dto.setStudent(ApplicationDto.toStudentInfo(a.getStudent()));
+    public Page<ApplicationResponse> getApplicationsByStudent(UUID studentId, ApplicationStatus status, Pageable pageable) {
+        // Verify student exists (optional, but good practice)
+        if (!studentRepository.existsById(studentId)) {
+            throw new StudentNotFoundException(studentId);
+        }
+
+        Page<Application> page;
+        if (status == null) {
+            page = applicationRepository.findByStudentId(studentId, pageable);
         } else {
-            userRepository.findById(a.getStudentId()).ifPresent(u -> dto.setStudent(ApplicationDto.toStudentInfo(u)));
+            page = applicationRepository.findByStudentIdAndStatus(studentId, status, pageable);
         }
-        if (a.getProject() != null) {
-            dto.setProject(ApplicationDto.toProjectInfo(a.getProject()));
-        } else {
-            projectRepository.findById(a.getProjectId()).ifPresent(p -> dto.setProject(ApplicationDto.toProjectInfo(p)));
-        }
-        return dto;
+
+        List<ApplicationResponse> content = applicationMapper.toResponseList(page.getContent());
+        return new PageImpl<>(content, pageable, page.getTotalElements());
     }
 
-    @lombok.Data
-    public static class ApplicationsPage {
-        private final List<ApplicationDto> data;
-        private final int total;
-        private final int page;
-        private final int limit;
+    public Page<ApplicationResponse> getApplicationsByProject(UUID projectId, ApplicationStatus status, Pageable pageable) {
+        if (!projectRepository.existsById(projectId)) {
+            throw new ProjectNotFoundException(projectId);
+        }
+
+        Page<Application> page;
+        if (status == null) {
+            page = applicationRepository.findByProjectId(projectId, pageable);
+        } else {
+            page = applicationRepository.findByProjectIdAndStatus(projectId, status, pageable);
+        }
+
+        List<ApplicationResponse> content = applicationMapper.toResponseList(page.getContent());
+        return new PageImpl<>(content, pageable, page.getTotalElements());
     }
 }

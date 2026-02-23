@@ -1,144 +1,73 @@
 package com.researchhub.backend.project;
 
-import com.researchhub.backend.user.User;
-import com.researchhub.backend.user.UserRepository;
-import com.researchhub.backend.user.UserRole;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
-
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
+import com.researchhub.backend.professor.Professor;
+import com.researchhub.backend.professor.ProfessorRepository;
+import com.researchhub.backend.professor.exception.ProfessorNotFoundException;
+import com.researchhub.backend.project.exception.ProjectNotFoundException;
+
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class ProjectService {
-
     private final ProjectRepository projectRepository;
-    private final UserRepository userRepository;
+    private final ProfessorRepository professorRepository;
+    private final ProjectMapper projectMapper;
 
-    public ProjectService(ProjectRepository projectRepository, UserRepository userRepository) {
-        this.projectRepository = projectRepository;
-        this.userRepository = userRepository;
+    public Page<ProjectResponse> getProjects(Pageable pageable) {
+        Page<Project> page = projectRepository.findAll(pageable);
+
+        List<ProjectResponse> content = projectMapper.toResponseList(page.getContent());
+
+        return new PageImpl<>(content, pageable, page.getTotalElements());
     }
 
-    @Transactional(readOnly = true)
-    public ProjectsPage list(String search, List<String> tags, ProjectStatus status, UUID professorId,
-                             int page, int limit, String sort) {
-        Pageable pageable = toPageable(page, limit, sort);
-        var result = (tags != null && !tags.isEmpty())
-                ? projectRepository.searchWithTags(search, status, professorId, tags, pageable)
-                : projectRepository.search(search, status, professorId, pageable);
-
-        List<ProjectDto> dtos = result.getContent().stream()
-                .map(this::toDto)
-                .toList();
-
-        return new ProjectsPage(dtos, (int) result.getTotalElements(), page, limit);
-    }
-
-    @Transactional(readOnly = true)
-    public ProjectDto getById(UUID id) {
+    public ProjectResponse getProjectById(UUID id) {
         Project project = projectRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found"));
-        return toDtoWithProfessor(project);
+            .orElseThrow(() -> new ProjectNotFoundException(id));
+        return projectMapper.toResponse(project);
     }
 
     @Transactional
-    public ProjectDto create(UUID userId, CreateProjectRequest req) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-        if (!user.getRoles().contains(UserRole.PROFESSOR)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only professors can create projects");
-        }
+    public ProjectResponse createProject(CreateProjectRequest request) {
+        Professor professor = professorRepository.findById(request.getProfessorId())
+            .orElseThrow(() -> new ProfessorNotFoundException(request.getProfessorId()));
 
-        Project project = new Project();
-        project.setTitle(req.getTitle());
-        project.setDescription(req.getDescription());
-        project.setProfessorId(userId);
-        project.setStatus(ProjectStatus.OPEN);
-        project.setSlots(req.getSlots());
-        project.setTags(req.getTags() != null ? new java.util.HashSet<>(req.getTags()) : new java.util.HashSet<>());
+        Project project = projectMapper.toEntity(request);
+        project.setProfessor(professor);
+
         project = projectRepository.save(project);
-        return toDtoWithProfessor(project);
+
+        return projectMapper.toResponse(project);
     }
 
     @Transactional
-    public ProjectDto update(UUID id, UUID userId, UpdateProjectRequest req) {
+    public ProjectResponse updateProject(UUID id, UpdateProjectRequest request) {
         Project project = projectRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found"));
-        if (!project.getProfessorId().equals(userId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only the project owner can update it");
-        }
+            .orElseThrow(() -> new ProjectNotFoundException(id));
 
-        if (req.getTitle() != null) project.setTitle(req.getTitle());
-        if (req.getDescription() != null) project.setDescription(req.getDescription());
-        if (req.getSlots() != null) project.setSlots(req.getSlots());
-        if (req.getTags() != null) project.setTags(new java.util.HashSet<>(req.getTags()));
+        projectMapper.toEntity(request, project);
+
         project = projectRepository.save(project);
-        return toDtoWithProfessor(project);
+
+        return projectMapper.toResponse(project);
     }
 
     @Transactional
-    public void delete(UUID id, UUID userId) {
-        Project project = projectRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found"));
-        if (!project.getProfessorId().equals(userId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only the project owner can delete it");
+    public void deleteProject(UUID id) {
+        if (!projectRepository.existsById(id)) {
+            throw new ProjectNotFoundException(id);
         }
-        projectRepository.delete(project);
-    }
 
-    @Transactional
-    public ProjectDto close(UUID id, UUID userId) {
-        Project project = projectRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found"));
-        if (!project.getProfessorId().equals(userId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only the project owner can close it");
-        }
-        project.setStatus(ProjectStatus.CLOSED);
-        project = projectRepository.save(project);
-        return toDtoWithProfessor(project);
-    }
-
-    private Pageable toPageable(int page, int limit, String sort) {
-        int safePage = Math.max(0, page);
-        int safeLimit = Math.min(50, Math.max(1, limit));
-        Sort s = "oldest".equalsIgnoreCase(sort)
-                ? Sort.by(Sort.Direction.ASC, "createdAt")
-                : Sort.by(Sort.Direction.DESC, "createdAt");
-        return PageRequest.of(safePage, safeLimit, s);
-    }
-
-    private ProjectDto toDto(Project p) {
-        ProjectDto dto = new ProjectDto();
-        dto.setId(p.getId());
-        dto.setTitle(p.getTitle());
-        dto.setDescription(p.getDescription());
-        dto.setProfessorId(p.getProfessorId());
-        dto.setStatus(p.getStatus());
-        dto.setSlots(p.getSlots());
-        dto.setTags(p.getTags() != null ? List.copyOf(p.getTags()) : List.of());
-        dto.setCreatedAt(p.getCreatedAt());
-        dto.setProfessor(null); // not loaded in list
-        return dto;
-    }
-
-    private ProjectDto toDtoWithProfessor(Project p) {
-        ProjectDto dto = toDto(p);
-        userRepository.findById(p.getProfessorId())
-                .ifPresent(u -> dto.setProfessor(ProjectDto.toProfessorInfo(u)));
-        return dto;
-    }
-
-    @lombok.Data
-    public static class ProjectsPage {
-        private final List<ProjectDto> data;
-        private final int total;
-        private final int page;
-        private final int limit;
+        projectRepository.deleteById(id);
     }
 }

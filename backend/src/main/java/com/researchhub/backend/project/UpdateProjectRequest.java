@@ -1,22 +1,21 @@
 package com.researchhub.backend.project;
 
-import jakarta.validation.constraints.*;
 import lombok.Data;
 
 import java.util.List;
+import java.util.Map;
+
+import org.openapitools.jackson.nullable.JsonNullable;
+
 
 @Data
 public class UpdateProjectRequest {
-    @Size(min = 5, max = 200)
-    private String title;
-
-    @Size(min = 20, max = 2000)
-    private String description;
-
-    @Min(1)
-    @Max(20)
-    private Integer slots;
-
-    @Size(min = 1, max = 10)
-    private List<@Size(max = 100) String> tags;
+    private JsonNullable<String> title = JsonNullable.undefined();
+    private JsonNullable<String> description = JsonNullable.undefined();
+    private JsonNullable<String> field = JsonNullable.undefined();
+    private JsonNullable<String> regionFocus = JsonNullable.undefined();
+    private JsonNullable<String> requirements = JsonNullable.undefined();
+    private JsonNullable<Integer> maxStudents = JsonNullable.undefined();
+    private JsonNullable<String> status = JsonNullable.undefined();
+    private JsonNullable<List<Map<String, Object>>> interviewQuestions = JsonNullable.undefined();
 }

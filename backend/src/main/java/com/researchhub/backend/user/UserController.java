@@ -17,15 +17,13 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    @PreAuthorize("hasRole('UNIVERSITY_ADMIN')")
     public String registerUser(@RequestBody RegisterRequest req) {
         userService.registerUser(req.getEmail(), req.getPassword(), req.getRole());
         return "Successfully created user";
     }
 
     @PostMapping("/register-developer")
-    @PreAuthorize("hasRole('DEVELOPER')")
-    public String registerDeveloper(@RequestBody RegisterRequest req) {
+    public String registerDeveloper(@RequestBody RegisterDeveloperRequest req) {
         userService.registerDeveloper(req.getEmail(), req.getPassword());
         return "Successfully created developer user";
     }

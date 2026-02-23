@@ -1,22 +1,28 @@
 package com.researchhub.backend.project;
 
+import com.researchhub.backend.professor.Professor;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
+import com.vladmihalcea.hibernate.type.json.JsonType;
+import org.hibernate.annotations.Type;
 
-import java.time.Instant;
-import java.util.HashSet;
-import java.util.Set;
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
-@Data
 @Entity
 @Table(name = "projects")
+@Getter
+@Setter
 public class Project {
-
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(columnDefinition = "uuid")
+    @GeneratedValue
     private UUID id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "professor_id")
+    private Professor professor;  //professor -> many projects
 
     @Column(nullable = false)
     private String title;
@@ -24,21 +30,34 @@ public class Project {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "professor_id", nullable = false)
-    private UUID professorId;
-
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private ProjectStatus status = ProjectStatus.OPEN;
+    private String field;
 
     @Column(nullable = false)
-    private int slots;
+    private String regionFocus;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Instant createdAt = Instant.now();
+    private String requirements;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "project_tags", joinColumns = @JoinColumn(name = "project_id"))
-    @Column(name = "tag")
-    private Set<String> tags = new HashSet<>();
+    private Integer maxStudents;
+
+    @Column(nullable = false)
+    private int currentStudents;
+
+    @Column(nullable = false)
+    private String status;
+
+    @Type(JsonType.class) //allows conversion between Java and JsonB
+    @Column(columnDefinition = "jsonb") //using TEXT would lose JSON features - good practice
+    private List<Map<String, Object>> interviewQuestions;
+
+    @Column(nullable = false)
+    private OffsetDateTime createdAt = OffsetDateTime.now();
+
+    @Column(nullable = false)
+    private OffsetDateTime updatedAt = OffsetDateTime.now();
+
+    @PreUpdate
+    public void preUpdate() {
+        this.updatedAt = OffsetDateTime.now();
+    }
 }

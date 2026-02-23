@@ -8,7 +8,13 @@ import java.util.UUID;
 
 @Data
 @Entity
-@Table(name = "users")
+@Table(
+    name = "users",
+    indexes = {
+        @Index(name = "idx_users_email", columnList = "email", unique = true)
+    }
+)
+@Inheritance(strategy = InheritanceType.JOINED)
 public class User {
 
     @Id
@@ -21,6 +27,9 @@ public class User {
 
     @Column(nullable = false)
     private String passwordHash;
+
+    @Column(nullable = false)
+    private String name;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(

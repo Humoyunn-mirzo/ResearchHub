@@ -1,26 +1,21 @@
 package com.researchhub.backend.project;
 
-import jakarta.validation.constraints.*;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
 import lombok.Data;
 
-import java.util.List;
 
 @Data
 public class CreateProjectRequest {
-    @NotBlank
-    @Size(min = 5, max = 200)
+    private UUID professorId;
     private String title;
-
-    @NotBlank
-    @Size(min = 20, max = 2000)
     private String description;
-
-    @NotNull
-    @Min(1)
-    @Max(20)
-    private Integer slots;
-
-    @NotNull
-    @Size(min = 1, max = 10)
-    private List<@NotBlank @Size(max = 100) String> tags;
+    private String field;
+    private String regionFocus;
+    private String requirements;
+    private Integer maxStudents;
+    private String status;
+    private List<Map<String, Object>> interviewQuestions;
 }

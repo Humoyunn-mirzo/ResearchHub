@@ -1,52 +1,47 @@
 package com.researchhub.backend.application;
 
 import com.researchhub.backend.project.Project;
-import com.researchhub.backend.user.User;
+import com.researchhub.backend.student.Student;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
-@Data
 @Entity
 @Table(name = "applications")
+@Getter
+@Setter
 public class Application {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(columnDefinition = "uuid")
     private UUID id;
 
-    @Column(name = "project_id", nullable = false)
-    private UUID projectId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "student_id", nullable = false)
+    private Student student;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "project_id", insertable = false, updatable = false)
+    @JoinColumn(name = "project_id", nullable = false)
     private Project project;
 
-    @Column(name = "student_id", nullable = false)
-    private UUID studentId;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "student_id", insertable = false, updatable = false)
-    private User student;
-
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 50)
     private ApplicationStatus status = ApplicationStatus.PENDING;
 
-    @Column(columnDefinition = "TEXT")
-    private String motivation;
+    @Column(name = "cv_file", columnDefinition = "BYTEA")
+    private byte[] cvFile;                 // 👈 ADDED: maps to cv_file BYTEA column
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Instant createdAt = Instant.now();
+    @Column(name = "applied_at", nullable = false)
+    private OffsetDateTime appliedAt = OffsetDateTime.now();
 
     @Column(name = "updated_at", nullable = false)
-    private Instant updatedAt = Instant.now();
+    private OffsetDateTime updatedAt = OffsetDateTime.now();
 
     @PreUpdate
     public void preUpdate() {
-        this.updatedAt = Instant.now();
+        this.updatedAt = OffsetDateTime.now();
     }
 }
