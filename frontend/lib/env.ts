@@ -1,7 +1,8 @@
 import { z } from 'zod'
 
 const envSchema = z.object({
-  NEXT_PUBLIC_API_URL: z.string().url(),
+  // Full URL (e.g. https://usp.uz/api) or relative path (e.g. /api) for same-origin
+  NEXT_PUBLIC_API_URL: z.string().min(1),
   NEXT_PUBLIC_DATA_MODE: z.enum(['mock', 'real']).default('mock'),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 })

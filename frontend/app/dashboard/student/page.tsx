@@ -12,12 +12,18 @@ export default function StudentDashboard() {
   const { user } = useAuthStore()
 
   const { data: applications } = useQuery({
-    queryKey: ['applications', 'my'],
-    queryFn: () => fetchApplications({ studentId: user?.id || '' }),
-    enabled: !!user,
+    queryKey: ['applications', 'my', user?.id],
+    queryFn: () =>
+      fetchApplications(user?.id ? { studentId: user.id, limit: 50 } : {}),
+    enabled: !!user?.id,
   })
 
-  const { data: projects } = useQuery({
+  const {
+    data: projects,
+    error: projectsError,
+    refetch: refetchProjects,
+    isError: isProjectsError,
+  } = useQuery({
     queryKey: ['projects', 'open'],
     queryFn: () => fetchProjects({ status: 'OPEN', limit: 6 }),
   })
@@ -106,7 +112,7 @@ export default function StudentDashboard() {
         )}
       </div>
 
-      {/* Recommended Projects */}
+      {/* Available Projects */}
       <div>
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-2xl font-semibold">Available Projects</h2>
@@ -114,6 +120,18 @@ export default function StudentDashboard() {
             <Button variant="outline">View All</Button>
           </Link>
         </div>
+        {isProjectsError && (
+          <Card className="mb-4 border-destructive/50 bg-destructive/10">
+            <CardContent className="py-4">
+              <p className="text-sm text-destructive">
+                Failed to load projects. {projectsError instanceof Error ? projectsError.message : 'Please try again.'}
+              </p>
+              <Button variant="outline" size="sm" className="mt-2" onClick={() => refetchProjects()}>
+                Retry
+              </Button>
+            </CardContent>
+          </Card>
+        )}
         {projects && projects.data.length > 0 ? (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {projects.data.map((project) => (

@@ -35,11 +35,19 @@ const ProjectsResponseSchema = z.object({
   limit: z.number(),
 })
 
+function cleanParams<T extends Record<string, unknown>>(params: T): T {
+  return Object.fromEntries(
+    Object.entries(params).filter(
+      ([, v]) => v !== undefined && v !== null && v !== ''
+    )
+  ) as T
+}
+
 export async function fetchProjects(filters: ProjectFilters = {}): Promise<ProjectsResponse> {
   if (env.NEXT_PUBLIC_DATA_MODE === 'mock') {
     return mockFetchProjects(filters)
   }
-  const response = await apiClient.get('/projects', { params: filters })
+  const response = await apiClient.get('/projects', { params: cleanParams(filters) })
   return ProjectsResponseSchema.parse(response.data)
 }
 

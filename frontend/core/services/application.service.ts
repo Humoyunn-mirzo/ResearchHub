@@ -32,13 +32,21 @@ export type ApplicationFilters = {
   limit?: number
 }
 
+function cleanParams<T extends Record<string, unknown>>(params: T): T {
+  return Object.fromEntries(
+    Object.entries(params).filter(
+      ([, v]) => v !== undefined && v !== null && v !== ''
+    )
+  ) as T
+}
+
 export async function fetchApplications(
   filters: ApplicationFilters = {}
 ): Promise<ApplicationsResponse> {
   if (env.NEXT_PUBLIC_DATA_MODE === 'mock') {
     return mockFetchApplications(filters)
   }
-  const response = await apiClient.get('/applications', { params: filters })
+  const response = await apiClient.get('/applications', { params: cleanParams(filters) })
   return ApplicationsResponseSchema.parse(response.data)
 }
 

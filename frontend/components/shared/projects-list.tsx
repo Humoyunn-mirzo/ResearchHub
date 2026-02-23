@@ -5,7 +5,7 @@ import { fetchProjects, type ProjectFilters } from '@/core/services'
 import { ProjectCard } from '@/components/shared/project-card'
 import { Badge, Button, Input } from '@/components/ui'
 import { useState } from 'react'
-import { Search } from 'lucide-react'
+import { Search, RefreshCw } from 'lucide-react'
 import Link from 'next/link'
 import { useAuthStore } from '@/lib/auth'
 import { env } from '@/lib/env'
@@ -21,9 +21,10 @@ export function ProjectsList() {
   })
   const [searchInput, setSearchInput] = useState('')
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch, isFetching } = useQuery({
     queryKey: ['projects', filters],
     queryFn: () => fetchProjects(filters),
+    staleTime: 15 * 1000,
   })
 
   const handleSearch = (e: React.FormEvent) => {
@@ -34,7 +35,7 @@ export function ProjectsList() {
   const tagOptions =
     env.NEXT_PUBLIC_DATA_MODE === 'mock'
       ? Array.from(new Set(mockProjects.flatMap((p) => p.tags))).sort()
-      : ['Machine Learning', 'NLP', 'Biology', 'Engineering', 'Security', 'HCI', 'Economics']
+      : ['Machine Learning', 'Climate', 'NLP', 'Policy', 'Data Visualization', 'Research Impact', 'Biology', 'Engineering', 'Security', 'HCI', 'Economics']
 
   const selectedTags = filters.tags ?? []
 
@@ -47,9 +48,14 @@ export function ProjectsList() {
   }
 
   if (error) {
+    const errMsg = error instanceof Error ? error.message : 'Unknown error'
     return (
       <div className="rounded-lg bg-destructive/10 p-4 text-center text-destructive">
-        Failed to load projects. Please try again.
+        <p className="font-medium">Failed to load projects. Please try again.</p>
+        <p className="mt-2 text-sm opacity-90">{errMsg}</p>
+        <Button variant="outline" size="sm" className="mt-3" onClick={() => refetch()}>
+          Retry
+        </Button>
       </div>
     )
   }
@@ -69,11 +75,22 @@ export function ProjectsList() {
           )}
         </div>
 
-        {isAuthenticated && user?.role === 'PROFESSOR' && (
-          <Link href="/dashboard/professor/projects/new">
-            <Button>+ Create project</Button>
-          </Link>
-        )}
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => refetch()}
+            disabled={isFetching}
+          >
+            <RefreshCw className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+          {isAuthenticated && user?.role === 'PROFESSOR' && (
+            <Link href="/dashboard/professor/projects/new">
+              <Button>+ Create project</Button>
+            </Link>
+          )}
+        </div>
       </div>
 
       {/* Search Bar */}
