@@ -4,7 +4,7 @@ services:
     build:
       context: ./frontend
       args:
-        NEXT_PUBLIC_API_URL: http://usp.uz:8080/api
+        NEXT_PUBLIC_API_URL: /api
         NEXT_PUBLIC_DATA_MODE: real
     container_name: frontend
     depends_on:
