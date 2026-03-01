@@ -6,8 +6,9 @@ WORKDIR /app
 # Disable Next.js telemetry
 ENV NEXT_TELEMETRY_DISABLED=1
 
-COPY package.json package-lock.json* ./
-RUN npm ci
+# Copy lock file if it exists, otherwise use package.json
+COPY package*.json ./
+RUN npm ci --legacy-peer-deps || npm install
 
 COPY . .
 
