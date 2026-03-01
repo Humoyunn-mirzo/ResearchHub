@@ -3,7 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useParams } from 'next/navigation'
 import { fetchProjectById, createApplication, closeProject } from '@/core/services'
-import { Button, Badge, Card, CardContent, Textarea, Label } from '@/components/ui'
+import { Button, Badge, Card, CardContent } from '@/components/ui'
 import { Calendar, User, Users, ArrowLeft, Mail, Settings } from 'lucide-react'
 import { format } from 'date-fns'
 import Link from 'next/link'
@@ -14,7 +14,6 @@ export default function ProjectDetailPage() {
   const params = useParams()
   const queryClient = useQueryClient()
   const { isAuthenticated, user } = useAuthStore()
-  const [motivation, setMotivation] = useState('')
   const [showApplicationForm, setShowApplicationForm] = useState(false)
 
   const { data: project, isLoading, error } = useQuery({
@@ -27,7 +26,6 @@ export default function ProjectDetailPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['project', params.id] })
       setShowApplicationForm(false)
-      setMotivation('')
       alert('Application submitted successfully!')
     },
     onError: (error: Error) => {
@@ -50,7 +48,6 @@ export default function ProjectDetailPage() {
     if (!project) return
     applyMutation.mutate({
       projectId: project.id,
-      motivation,
     })
   }
 
@@ -146,22 +143,6 @@ export default function ProjectDetailPage() {
             <Card>
               <CardContent className="pt-6">
                 <form onSubmit={handleApply} className="space-y-4">
-                  <div>
-                    <Label htmlFor="motivation">Motivation statement</Label>
-                    <p className="mb-2 text-sm text-muted-foreground">
-                      Explain why you are interested in this project (50–1000 characters).
-                    </p>
-                    <Textarea
-                      id="motivation"
-                      value={motivation}
-                      onChange={(e) => setMotivation(e.target.value)}
-                      placeholder="Describe your background, skills, and why this project interests you…"
-                      rows={8}
-                      required
-                      minLength={50}
-                      maxLength={1000}
-                    />
-                  </div>
                   <div className="flex gap-2">
                     <Button type="submit" disabled={applyMutation.isPending} className="flex-1">
                       {applyMutation.isPending ? 'Submitting…' : 'Submit application'}
@@ -226,7 +207,7 @@ export default function ProjectDetailPage() {
 
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Users className="h-5 w-5" />
-                  <span>{project.slots} slot(s) available</span>
+                  <span>{project.maxStudents ? `${project.currentStudents}/${project.maxStudents} spots` : 'Open'}</span>
                 </div>
 
                 <div className="flex items-center gap-2 text-muted-foreground">
@@ -243,7 +224,6 @@ export default function ProjectDetailPage() {
               <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-muted-foreground">
                 <li>Highlight relevant coursework and projects.</li>
                 <li>Be specific about your skills and availability.</li>
-                <li>Keep your motivation concise and factual.</li>
               </ul>
             </CardContent>
           </Card>

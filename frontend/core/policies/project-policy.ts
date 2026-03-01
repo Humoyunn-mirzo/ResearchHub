@@ -3,11 +3,11 @@ import { ForbiddenError } from '@/core/domain'
 
 export class ProjectPolicy {
   static canCreate(user: User): boolean {
-    return user.role === 'PROFESSOR' || user.role === 'PLATFORM_ADMIN'
+    return user.role === 'PROFESSOR' || user.role === 'DEVELOPER'
   }
 
   static canUpdate(user: User, project: Project): boolean {
-    if (user.role === 'PLATFORM_ADMIN') return true
+    if (user.role === 'DEVELOPER') return true
     if (user.role === 'PROFESSOR' && project.professorId === user.id) return true
     return false
   }

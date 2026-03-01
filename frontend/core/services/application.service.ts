@@ -68,7 +68,6 @@ export async function createApplication(input: CreateApplicationInput): Promise<
     return ApplicationSchema.parse(
       mockCreateApplication({
         projectId: input.projectId,
-        motivation: input.motivation,
         studentId: user.id,
         student: { id: user.id, name: user.name, email: user.email },
       })

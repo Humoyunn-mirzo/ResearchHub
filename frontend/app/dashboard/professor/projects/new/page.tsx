@@ -15,7 +15,7 @@ export default function CreateProjectPage() {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    slots: 1,
+    maxStudents: 1,
   })
 
   const createMutation = useMutation({
@@ -89,15 +89,15 @@ export default function CreateProjectPage() {
             </div>
 
             <div>
-              <Label htmlFor="slots">Available Slots</Label>
+              <Label htmlFor="maxStudents">Maximum Students</Label>
               <Input
-                id="slots"
+                id="maxStudents"
                 type="number"
-                value={formData.slots}
+                value={formData.maxStudents}
                 onChange={(e) => {
                   const n = parseInt(e.target.value, 10)
-                  const slots = Number.isNaN(n) ? 1 : Math.max(1, Math.min(20, n))
-                  setFormData({ ...formData, slots })
+                  const maxStudents = Number.isNaN(n) ? 1 : Math.max(1, Math.min(20, n))
+                  setFormData({ ...formData, maxStudents })
                 }}
                 min={1}
                 max={20}

@@ -45,7 +45,7 @@ export function ProjectCard({ project, actionSlot }: ProjectCardProps) {
           )}
           <div className="flex items-center gap-2">
             <Users className="h-4 w-4" />
-            <span>{project.slots} slots available</span>
+            <span>{project.maxStudents ? `${project.currentStudents}/${project.maxStudents} spots` : 'Open'}</span>
           </div>
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4" />

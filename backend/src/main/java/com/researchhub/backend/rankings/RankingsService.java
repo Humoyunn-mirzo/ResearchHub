@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,7 +33,7 @@ public class RankingsService {
         var apps = applicationRepository.findAll();
         var byStudent = apps.stream()
                 .filter(a -> a.getStatus() == ApplicationStatus.ACCEPTED)
-                .collect(Collectors.groupingBy(a -> a.getStudentId(), Collectors.counting()));
+                .collect(Collectors.groupingBy(a -> a.getStudent().getId(), Collectors.counting()));
         var sorted = byStudent.entrySet().stream()
                 .sorted((a, b) -> Long.compare(b.getValue(), a.getValue()))
                 .limit(10)
@@ -41,7 +42,7 @@ public class RankingsService {
         List<RankingEntry> result = new ArrayList<>();
         int rank = 1;
         for (var e : sorted) {
-            User user = userRepository.findById(e.getKey()).orElse(null);
+            User user = userRepository.findById((UUID) e.getKey()).orElse(null);
             String name = user != null ? user.getEmail() : "Unknown";
             result.add(new RankingEntry(rank++, name, null, "Accepted: " + e.getValue(), null));
         }
@@ -52,7 +53,7 @@ public class RankingsService {
     public List<RankingEntry> getTopProfessors() {
         var projects = projectRepository.findAll();
         var byProfessor = projects.stream()
-                .collect(Collectors.groupingBy(p -> p.getProfessorId(), Collectors.counting()));
+                .collect(Collectors.groupingBy(p -> p.getProfessor().getId(), Collectors.counting()));
         var sorted = byProfessor.entrySet().stream()
                 .sorted((a, b) -> Long.compare(b.getValue(), a.getValue()))
                 .limit(10)
@@ -61,7 +62,7 @@ public class RankingsService {
         List<RankingEntry> result = new ArrayList<>();
         int rank = 1;
         for (var e : sorted) {
-            User user = userRepository.findById(e.getKey()).orElse(null);
+            User user = userRepository.findById((UUID) e.getKey()).orElse(null);
             String name = user != null ? user.getEmail() : "Unknown";
             result.add(new RankingEntry(rank++, name, null, "Projects: " + e.getValue(), null));
         }
@@ -72,7 +73,7 @@ public class RankingsService {
     public List<RankingEntry> getTopProjects() {
         var apps = applicationRepository.findAll();
         var byProject = apps.stream()
-                .collect(Collectors.groupingBy(a -> a.getProjectId(), Collectors.counting()));
+                .collect(Collectors.groupingBy(a -> a.getProject().getId(), Collectors.counting()));
         var sorted = byProject.entrySet().stream()
                 .sorted((a, b) -> Long.compare(b.getValue(), a.getValue()))
                 .limit(10)
@@ -81,13 +82,13 @@ public class RankingsService {
         List<RankingEntry> result = new ArrayList<>();
         int rank = 1;
         for (var e : sorted) {
-            var project = projectRepository.findById(e.getKey());
+            var project = projectRepository.findById((UUID) e.getKey());
             if (project.isEmpty()) continue;
             var p = project.get();
             long appCount = e.getValue();
             result.add(new RankingEntry(rank++, p.getTitle(),
                     "Applicants: " + appCount,
-                    "Openings: " + p.getSlots(),
+                    "Openings: " + p.getMaxStudents(),
                     "/projects/" + p.getId()));
         }
         return result;

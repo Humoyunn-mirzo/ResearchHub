@@ -10,8 +10,10 @@ export const ProjectSchema = z.object({
   description: z.string(),
   professorId: z.string(),
   status: ProjectStatusSchema,
-  slots: z.number().int().positive(),
+  maxStudents: z.number().int().nullable(),
+  currentStudents: z.number().int(),
   tags: z.array(z.string()),
+  interviewQuestions: z.array(z.record(z.string(), z.unknown())).optional(),
   createdAt: z.coerce.date(),
   professor: z
     .object({
@@ -28,7 +30,7 @@ export type Project = z.infer<typeof ProjectSchema>
 export const CreateProjectInputSchema = z.object({
   title: z.string().min(5).max(200),
   description: z.string().min(20).max(2000),
-  slots: z.number().int().min(1).max(20),
+  maxStudents: z.number().int().min(1).max(20).nullable(),
   tags: z.array(z.string()).min(1).max(10),
 })
 

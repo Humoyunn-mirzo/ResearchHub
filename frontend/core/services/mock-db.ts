@@ -41,7 +41,8 @@ export const mockProjects: Project[] = [
       'Build and evaluate ML models to forecast regional climate anomalies. Focus on feature engineering, uncertainty, and interpretability.',
     professorId: professors[0]!.id,
     status: 'OPEN',
-    slots: 3,
+    maxStudents: 3,
+    currentStudents: 1,
     tags: ['Machine Learning', 'Climate', 'Forecasting', 'Python'],
     createdAt: daysAgo(2),
     professor: professors[0]!,
@@ -53,7 +54,8 @@ export const mockProjects: Project[] = [
       'Analyze policy documents using topic modeling and retrieval. Work on dataset curation, evaluation, and a lightweight demo UI.',
     professorId: professors[1]!.id,
     status: 'OPEN',
-    slots: 2,
+    maxStudents: 2,
+    currentStudents: 0,
     tags: ['NLP', 'IR', 'Policy', 'Transformers'],
     createdAt: daysAgo(6),
     professor: professors[1]!,
@@ -65,7 +67,8 @@ export const mockProjects: Project[] = [
       'Detect traffic patterns and estimate flow from camera footage. Emphasis on privacy and robust deployment constraints.',
     professorId: professors[2]!.id,
     status: 'CLOSED',
-    slots: 1,
+    maxStudents: 1,
+    currentStudents: 1,
     tags: ['Computer Vision', 'Mobility', 'Edge', 'Optimization'],
     createdAt: daysAgo(18),
     professor: professors[2]!,
@@ -77,7 +80,8 @@ export const mockProjects: Project[] = [
       'Design interactive visualizations and dashboards to showcase collaborations, publications, and project outcomes across institutions.',
     professorId: professors[3]!.id,
     status: 'OPEN',
-    slots: 4,
+    maxStudents: 4,
+    currentStudents: 0,
     tags: ['Visualization', 'Dashboards', 'D3', 'UX'],
     createdAt: daysAgo(1),
     professor: professors[3]!,
@@ -107,7 +111,8 @@ for (let i = 0; i < 18; i++) {
       'A sample project used for local development. Replace with real backend data when available.',
     professorId: prof.id,
     status,
-    slots: 1 + ((i + 2) % 5),
+    maxStudents: 1 + ((i + 2) % 5),
+    currentStudents: Math.floor((i % 3)),
     tags: unique([extraTags[i % extraTags.length]!, 'Collaboration', 'Research']),
     createdAt: daysAgo(3 + i),
     professor: prof,
@@ -120,7 +125,6 @@ export const mockApplications: Application[] = [
     projectId: 'proj-1',
     studentId: students[0]!.id,
     status: 'PENDING',
-    motivation: 'I have strong Python skills and have worked with time-series forecasting models.',
     createdAt: daysAgo(1),
     updatedAt: daysAgo(1),
     student: students[0]!,
@@ -188,7 +192,7 @@ export function mockFetchProjectById(id: string) {
 export function mockCreateProject(input: {
   title: string
   description: string
-  slots: number
+  maxStudents: number | null
   tags: string[]
   professorId: string
   professor: Professor
@@ -199,7 +203,8 @@ export function mockCreateProject(input: {
     description: input.description,
     professorId: input.professorId,
     status: 'OPEN',
-    slots: input.slots,
+    maxStudents: input.maxStudents,
+    currentStudents: 0,
     tags: input.tags,
     createdAt: new Date(),
     professor: input.professor,
@@ -243,7 +248,6 @@ export function mockCreateApplication(input: {
   projectId: string
   studentId: string
   student: Student
-  motivation: string
 }) {
   const project = mockFetchProjectById(input.projectId)
   if (!project) {
@@ -263,7 +267,6 @@ export function mockCreateApplication(input: {
     projectId: input.projectId,
     studentId: input.studentId,
     status: 'PENDING',
-    motivation: input.motivation,
     createdAt: now,
     updatedAt: now,
     student: input.student,

@@ -150,11 +150,6 @@ export default function ProjectApplicationsPage() {
                     {app.status}
                   </Badge>
                 </div>
-                {app.motivation && (
-                  <p className="mt-3 whitespace-pre-wrap rounded bg-muted/50 p-3 text-sm">
-                    {app.motivation}
-                  </p>
-                )}
               </div>
             ))}
           </CardContent>

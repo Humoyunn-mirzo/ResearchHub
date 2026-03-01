@@ -43,7 +43,7 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     Permission.MODERATE_CONTENT,
     Permission.VIEW_ANALYTICS,
   ],
-  PLATFORM_ADMIN: [
+  DEVELOPER: [
     Permission.BROWSE_PROJECTS,
     Permission.CREATE_PROJECT,
     Permission.UPDATE_PROJECT,
