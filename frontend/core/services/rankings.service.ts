@@ -43,7 +43,7 @@ export async function fetchRankings(category: RankingCategory): Promise<RankingE
   }
 
   const response = await apiClient.get('/rankings', { params: { category } })
-  // If/when backend implements this endpoint, validate properly.
-  return response.data as RankingEntry[]
+  const body = response.data as RankingEntry[] | { data?: RankingEntry[] }
+  return Array.isArray(body) ? body : (body.data ?? [])
 }
 

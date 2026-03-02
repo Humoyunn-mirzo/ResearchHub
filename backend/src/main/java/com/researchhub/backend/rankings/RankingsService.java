@@ -32,7 +32,7 @@ public class RankingsService {
     public List<RankingEntry> getTopStudents() {
         var apps = applicationRepository.findAll();
         var byStudent = apps.stream()
-                .filter(a -> a.getStatus() == ApplicationStatus.ACCEPTED)
+                .filter(a -> a.getStatus() == ApplicationStatus.ACCEPTED && a.getStudent() != null)
                 .collect(Collectors.groupingBy(a -> a.getStudent().getId(), Collectors.counting()));
         var sorted = byStudent.entrySet().stream()
                 .sorted((a, b) -> Long.compare(b.getValue(), a.getValue()))
@@ -43,7 +43,7 @@ public class RankingsService {
         int rank = 1;
         for (var e : sorted) {
             User user = userRepository.findById((UUID) e.getKey()).orElse(null);
-            String name = user != null ? user.getEmail() : "Unknown";
+            String name = user != null ? (user.getName() != null ? user.getName() : user.getEmail()) : "Unknown";
             result.add(new RankingEntry(rank++, name, null, "Accepted: " + e.getValue(), null));
         }
         return result;
@@ -53,6 +53,7 @@ public class RankingsService {
     public List<RankingEntry> getTopProfessors() {
         var projects = projectRepository.findAll();
         var byProfessor = projects.stream()
+                .filter(p -> p.getProfessor() != null)
                 .collect(Collectors.groupingBy(p -> p.getProfessor().getId(), Collectors.counting()));
         var sorted = byProfessor.entrySet().stream()
                 .sorted((a, b) -> Long.compare(b.getValue(), a.getValue()))
@@ -63,7 +64,7 @@ public class RankingsService {
         int rank = 1;
         for (var e : sorted) {
             User user = userRepository.findById((UUID) e.getKey()).orElse(null);
-            String name = user != null ? user.getEmail() : "Unknown";
+            String name = user != null ? (user.getName() != null ? user.getName() : user.getEmail()) : "Unknown";
             result.add(new RankingEntry(rank++, name, null, "Projects: " + e.getValue(), null));
         }
         return result;
@@ -73,6 +74,7 @@ public class RankingsService {
     public List<RankingEntry> getTopProjects() {
         var apps = applicationRepository.findAll();
         var byProject = apps.stream()
+                .filter(a -> a.getProject() != null)
                 .collect(Collectors.groupingBy(a -> a.getProject().getId(), Collectors.counting()));
         var sorted = byProject.entrySet().stream()
                 .sorted((a, b) -> Long.compare(b.getValue(), a.getValue()))

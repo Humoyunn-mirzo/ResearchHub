@@ -106,7 +106,20 @@ export async function createProject(input: CreateProjectInput): Promise<Project>
       interviewQuestions: input.interviewQuestions,
     })
   }
-  const response = await apiClient.post('/projects', input)
+  const user = useAuthStore.getState().user
+  if (!user) throw new Error('You must be signed in to create a project')
+  if (user.role !== 'PROFESSOR') throw new Error('Only professors can create projects')
+
+  const payload = {
+    title: input.title,
+    description: input.description,
+    maxStudents: input.maxStudents,
+    field: input.tags?.[0] ?? 'General',
+    regionFocus: 'Central Asia',
+    status: 'OPEN',
+    interviewQuestions: input.interviewQuestions,
+  }
+  const response = await apiClient.post('/projects', payload)
   const body = response.data as { data?: Record<string, unknown> }
   const raw = body.data ?? response.data
   return mapBackendProjectToFrontend(raw as Record<string, unknown>)

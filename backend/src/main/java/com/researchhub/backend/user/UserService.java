@@ -5,14 +5,26 @@ import java.util.Set;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.researchhub.backend.professor.Professor;
+import com.researchhub.backend.professor.ProfessorRepository;
+import com.researchhub.backend.student.Student;
+import com.researchhub.backend.student.StudentRepository;
+
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
+    private final ProfessorRepository professorRepository;
+    private final StudentRepository studentRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository,
+                       ProfessorRepository professorRepository,
+                       StudentRepository studentRepository,
+                       PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.professorRepository = professorRepository;
+        this.studentRepository = studentRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -21,7 +33,6 @@ public class UserService {
     }
 
     public void registerUser(String email, String password, String role, String name) {
-        // check if role is valid
         UserRole userRole;
         try {
             userRole = UserRole.valueOf(role);
@@ -37,13 +48,32 @@ public class UserService {
             throw new RuntimeException("Email already exists");
         }
 
-        User user = new User();
-        user.setEmail(email);
-        user.setPasswordHash(passwordEncoder.encode(password));
-        user.setRoles(Set.of(UserRole.valueOf(role)));
-        user.setName(name != null && !name.isBlank() ? name : email);
+        String displayName = name != null && !name.isBlank() ? name : email;
+        String encodedPassword = passwordEncoder.encode(password);
 
-        userRepository.save(user);
+        if (userRole == UserRole.PROFESSOR) {
+            Professor professor = new Professor();
+            professor.setEmail(email);
+            professor.setPasswordHash(encodedPassword);
+            professor.setName(displayName);
+            professor.setRoles(Set.of(UserRole.PROFESSOR));
+            professor.setFieldOfStudy("General");
+            professorRepository.save(professor);
+        } else if (userRole == UserRole.STUDENT) {
+            Student student = new Student();
+            student.setEmail(email);
+            student.setPasswordHash(encodedPassword);
+            student.setName(displayName);
+            student.setRoles(Set.of(UserRole.STUDENT));
+            studentRepository.save(student);
+        } else {
+            User user = new User();
+            user.setEmail(email);
+            user.setPasswordHash(encodedPassword);
+            user.setRoles(Set.of(userRole));
+            user.setName(displayName);
+            userRepository.save(user);
+        }
     }
 
     public void registerDeveloper(String email, String password) {

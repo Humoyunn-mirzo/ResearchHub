@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.researchhub.backend.professor.Professor;
@@ -39,11 +40,21 @@ public class ProjectService {
 
     @Transactional
     public ProjectResponse createProject(CreateProjectRequest request) {
-        Professor professor = professorRepository.findById(request.getProfessorId())
-            .orElseThrow(() -> new ProfessorNotFoundException(request.getProfessorId()));
+        String email = SecurityContextHolder.getContext()
+            .getAuthentication()
+            .getName();
+        Professor professor = professorRepository.findByEmail(email)
+            .orElseThrow(() -> new ProfessorNotFoundException(email));
 
         Project project = projectMapper.toEntity(request);
         project.setProfessor(professor);
+
+        if (project.getField() == null || project.getField().isBlank()) {
+            project.setField("General");
+        }
+        if (project.getRegionFocus() == null || project.getRegionFocus().isBlank()) {
+            project.setRegionFocus("Central Asia");
+        }
 
         project = projectRepository.save(project);
 

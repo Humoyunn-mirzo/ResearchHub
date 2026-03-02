@@ -13,4 +13,11 @@ public class ProfessorNotFoundException extends ApiException  {
             "Professor not found with id: " + id
         );
     }
+
+    public ProfessorNotFoundException(String email) {
+        super(
+            HttpStatus.NOT_FOUND,
+            "Professor not found for email: " + email
+        );
+    }
 }
