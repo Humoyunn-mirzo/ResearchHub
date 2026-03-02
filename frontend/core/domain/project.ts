@@ -27,11 +27,23 @@ export const ProjectSchema = z.object({
 
 export type Project = z.infer<typeof ProjectSchema>
 
+export const ScreeningQuestionTypeSchema = z.enum(['text', 'yesno', 'choice'])
+export type ScreeningQuestionType = z.infer<typeof ScreeningQuestionTypeSchema>
+
+export const ScreeningQuestionSchema = z.object({
+  question: z.string().min(1).max(500),
+  type: ScreeningQuestionTypeSchema,
+  options: z.array(z.string().min(1).max(200)).optional(),
+})
+
+export type ScreeningQuestion = z.infer<typeof ScreeningQuestionSchema>
+
 export const CreateProjectInputSchema = z.object({
   title: z.string().min(5).max(200),
   description: z.string().min(20).max(2000),
   maxStudents: z.number().int().min(1).max(20).nullable(),
   tags: z.array(z.string()).min(1).max(10),
+  interviewQuestions: z.array(ScreeningQuestionSchema).optional(),
 })
 
 export type CreateProjectInput = z.infer<typeof CreateProjectInputSchema>

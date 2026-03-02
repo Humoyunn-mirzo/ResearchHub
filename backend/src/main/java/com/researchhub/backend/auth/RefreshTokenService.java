@@ -34,5 +34,9 @@ public class RefreshTokenService {
 
         return rt;
     }
+
+    public void invalidate(String token) {
+        repo.findByToken(token).ifPresent(repo::delete);
+    }
 }
 

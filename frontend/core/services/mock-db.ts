@@ -44,6 +44,15 @@ export const mockProjects: Project[] = [
     maxStudents: 3,
     currentStudents: 1,
     tags: ['Machine Learning', 'Climate', 'Forecasting', 'Python'],
+    interviewQuestions: [
+      { question: 'Explain your understanding of quantum entanglement and superposition.', type: 'text' },
+      { question: 'Do you have experience with Qiskit or any quantum computing SDK?', type: 'yesno' },
+      {
+        question: 'What is your mathematics background?',
+        type: 'choice',
+        options: ['Linear Algebra only', 'Linear Algebra + Number Theory', 'Full Mathematics Major', 'Physics Major with Math'],
+      },
+    ],
     createdAt: daysAgo(2),
     professor: professors[0]!,
   },
@@ -196,6 +205,7 @@ export function mockCreateProject(input: {
   tags: string[]
   professorId: string
   professor: Professor
+  interviewQuestions?: Project['interviewQuestions']
 }) {
   const project: Project = {
     id: `proj-${projectSeq++}`,
@@ -206,6 +216,7 @@ export function mockCreateProject(input: {
     maxStudents: input.maxStudents,
     currentStudents: 0,
     tags: input.tags,
+    interviewQuestions: input.interviewQuestions,
     createdAt: new Date(),
     professor: input.professor,
   }
@@ -248,6 +259,7 @@ export function mockCreateApplication(input: {
   projectId: string
   studentId: string
   student: Student
+  screeningAnswers?: string[]
 }) {
   const project = mockFetchProjectById(input.projectId)
   if (!project) {
@@ -267,6 +279,7 @@ export function mockCreateApplication(input: {
     projectId: input.projectId,
     studentId: input.studentId,
     status: 'PENDING',
+    screeningAnswers: input.screeningAnswers,
     createdAt: now,
     updatedAt: now,
     student: input.student,

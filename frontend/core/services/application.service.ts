@@ -70,6 +70,7 @@ export async function createApplication(input: CreateApplicationInput): Promise<
         projectId: input.projectId,
         studentId: user.id,
         student: { id: user.id, name: user.name, email: user.email },
+        screeningAnswers: input.screeningAnswers,
       })
     )
   }

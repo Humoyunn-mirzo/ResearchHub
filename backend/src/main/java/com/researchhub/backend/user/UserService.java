@@ -17,6 +17,10 @@ public class UserService {
     }
 
     public void registerUser(String email, String password, String role) {
+        registerUser(email, password, role, email);
+    }
+
+    public void registerUser(String email, String password, String role, String name) {
         // check if role is valid
         UserRole userRole;
         try {
@@ -37,6 +41,7 @@ public class UserService {
         user.setEmail(email);
         user.setPasswordHash(passwordEncoder.encode(password));
         user.setRoles(Set.of(UserRole.valueOf(role)));
+        user.setName(name != null && !name.isBlank() ? name : email);
 
         userRepository.save(user);
     }

@@ -3,18 +3,21 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useParams } from 'next/navigation'
 import { fetchProjectById, createApplication, closeProject } from '@/core/services'
-import { Button, Badge, Card, CardContent } from '@/components/ui'
+import { Button, Badge, Card, CardContent, Label, Textarea } from '@/components/ui'
 import { Calendar, User, Users, ArrowLeft, Mail, Settings } from 'lucide-react'
 import { format } from 'date-fns'
 import Link from 'next/link'
 import { useAuthStore } from '@/lib/auth'
 import { useState } from 'react'
 
+type ScreeningQuestion = { question?: string; type?: string; options?: string[] }
+
 export default function ProjectDetailPage() {
   const params = useParams()
   const queryClient = useQueryClient()
   const { isAuthenticated, user } = useAuthStore()
   const [showApplicationForm, setShowApplicationForm] = useState(false)
+  const [screeningAnswers, setScreeningAnswers] = useState<string[]>([])
 
   const { data: project, isLoading, error } = useQuery({
     queryKey: ['project', params.id],
@@ -43,11 +46,38 @@ export default function ProjectDetailPage() {
     },
   })
 
+  const questions = (project?.interviewQuestions ?? []) as ScreeningQuestion[]
+  const hasScreeningQuestions = questions.length > 0
+
   const handleApply = (e: React.FormEvent) => {
     e.preventDefault()
     if (!project) return
+    if (hasScreeningQuestions) {
+      const allAnswered = questions.every((_, i) => {
+        const a = screeningAnswers[i]
+        return a != null && a.trim() !== ''
+      })
+      if (!allAnswered) {
+        alert('Please answer all screening questions.')
+        return
+      }
+    }
     applyMutation.mutate({
       projectId: project.id,
+      screeningAnswers: hasScreeningQuestions ? screeningAnswers : undefined,
+    })
+  }
+
+  const handleOpenApplyForm = () => {
+    setScreeningAnswers(questions.map(() => ''))
+    setShowApplicationForm(true)
+  }
+
+  const setAnswer = (index: number, value: string) => {
+    setScreeningAnswers((prev) => {
+      const next = [...prev]
+      next[index] = value
+      return next
     })
   }
 
@@ -134,7 +164,7 @@ export default function ProjectDetailPage() {
 
           {/* Apply section */}
           {canApply && !showApplicationForm && (
-            <Button size="lg" className="w-full" onClick={() => setShowApplicationForm(true)}>
+            <Button size="lg" className="w-full" onClick={handleOpenApplyForm}>
               Apply to join
             </Button>
           )}
@@ -142,7 +172,72 @@ export default function ProjectDetailPage() {
           {canApply && showApplicationForm && (
             <Card>
               <CardContent className="pt-6">
-                <form onSubmit={handleApply} className="space-y-4">
+                <form onSubmit={handleApply} className="space-y-6">
+                  {hasScreeningQuestions && (
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold">Screening Questions</h3>
+                      {questions.map((q, idx) => (
+                        <div key={idx} className="space-y-2">
+                          <Label htmlFor={`screening-${idx}`}>
+                            {q.question ?? `Question ${idx + 1}`}
+                          </Label>
+                          {q.type === 'text' && (
+                            <Textarea
+                              id={`screening-${idx}`}
+                              value={screeningAnswers[idx] ?? ''}
+                              onChange={(e) => setAnswer(idx, e.target.value)}
+                              placeholder="Your answer..."
+                              rows={4}
+                              required
+                              className="resize-none"
+                            />
+                          )}
+                          {q.type === 'yesno' && (
+                            <div className="flex gap-4">
+                              <label className="flex items-center gap-2">
+                                <input
+                                  type="radio"
+                                  name={`screening-${idx}`}
+                                  value="Yes"
+                                  checked={(screeningAnswers[idx] ?? '') === 'Yes'}
+                                  onChange={() => setAnswer(idx, 'Yes')}
+                                  className="h-4 w-4"
+                                />
+                                <span>Yes</span>
+                              </label>
+                              <label className="flex items-center gap-2">
+                                <input
+                                  type="radio"
+                                  name={`screening-${idx}`}
+                                  value="No"
+                                  checked={(screeningAnswers[idx] ?? '') === 'No'}
+                                  onChange={() => setAnswer(idx, 'No')}
+                                  className="h-4 w-4"
+                                />
+                                <span>No</span>
+                              </label>
+                            </div>
+                          )}
+                          {q.type === 'choice' && (
+                            <select
+                              id={`screening-${idx}`}
+                              value={screeningAnswers[idx] ?? ''}
+                              onChange={(e) => setAnswer(idx, e.target.value)}
+                              required
+                              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                            >
+                              <option value="">Select an option</option>
+                              {(q.options ?? []).filter(Boolean).map((opt) => (
+                                <option key={opt} value={opt}>
+                                  {opt}
+                                </option>
+                              ))}
+                            </select>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                   <div className="flex gap-2">
                     <Button type="submit" disabled={applyMutation.isPending} className="flex-1">
                       {applyMutation.isPending ? 'Submitting…' : 'Submit application'}

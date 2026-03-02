@@ -5,7 +5,8 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createProject } from '@/core/services'
 import { Button, Input, Label, Textarea, Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
-import { X } from 'lucide-react'
+import { X, Plus, Trash2 } from 'lucide-react'
+import type { ScreeningQuestion, ScreeningQuestionType } from '@/core/domain'
 
 export default function CreateProjectPage() {
   const router = useRouter()
@@ -17,6 +18,7 @@ export default function CreateProjectPage() {
     description: '',
     maxStudents: 1,
   })
+  const [screeningQuestions, setScreeningQuestions] = useState<ScreeningQuestion[]>([])
 
   const createMutation = useMutation({
     mutationFn: createProject,
@@ -41,13 +43,75 @@ export default function CreateProjectPage() {
     setTags(tags.filter((tag) => tag !== tagToRemove))
   }
 
+  const addScreeningQuestion = () => {
+    setScreeningQuestions((prev) => [...prev, { question: '', type: 'text' }])
+  }
+
+  const removeScreeningQuestion = (index: number) => {
+    setScreeningQuestions((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  const updateScreeningQuestion = (index: number, updates: Partial<ScreeningQuestion>) => {
+    setScreeningQuestions((prev) =>
+      prev.map((q, i) => (i === index ? { ...q, ...updates } : q))
+    )
+  }
+
+  const addOption = (questionIndex: number) => {
+    setScreeningQuestions((prev) =>
+      prev.map((q, i) =>
+        i === questionIndex
+          ? { ...q, options: [...(q.options ?? []), ''] }
+          : q
+      )
+    )
+  }
+
+  const updateOption = (questionIndex: number, optionIndex: number, value: string) => {
+    setScreeningQuestions((prev) =>
+      prev.map((q, i) =>
+        i === questionIndex
+          ? {
+              ...q,
+              options: (q.options ?? []).map((o, j) =>
+                j === optionIndex ? value : o
+              ),
+            }
+          : q
+      )
+    )
+  }
+
+  const removeOption = (questionIndex: number, optionIndex: number) => {
+    setScreeningQuestions((prev) =>
+      prev.map((q, i) =>
+        i === questionIndex
+          ? { ...q, options: (q.options ?? []).filter((_, j) => j !== optionIndex) }
+          : q
+      )
+    )
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (tags.length === 0) {
       alert('Please add at least one tag')
       return
     }
-    createMutation.mutate({ ...formData, tags })
+    const validQuestions = screeningQuestions.filter(
+      (q) => q.question.trim() && (q.type !== 'choice' || (q.options?.length ?? 0) > 0)
+    )
+    const questionsWithOptions = validQuestions.map((q) => {
+      if (q.type === 'choice' && q.options) {
+        return { ...q, options: q.options.filter((o) => o.trim()) }
+      }
+      return q
+    }).filter((q) => q.type !== 'choice' || (q.options?.length ?? 0) > 0)
+    createMutation.mutate({
+      ...formData,
+      tags,
+      interviewQuestions: questionsWithOptions.length > 0 ? questionsWithOptions : undefined,
+    })
   }
 
   return (
@@ -148,6 +212,100 @@ export default function CreateProjectPage() {
                   ))}
                 </div>
               )}
+            </div>
+
+            <div>
+              <Label>Screening Questions</Label>
+              <p className="mb-3 text-sm text-muted-foreground">
+                Add questions applicants must answer when applying (text, yes/no, or multiple choice).
+              </p>
+              {screeningQuestions.map((q, idx) => (
+                <div
+                  key={idx}
+                  className="mb-4 rounded-lg border bg-muted/30 p-4"
+                >
+                  <div className="mb-3 flex items-start justify-between gap-2">
+                    <span className="text-sm font-medium text-muted-foreground">
+                      Question {idx + 1}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => removeScreeningQuestion(idx)}
+                      className="rounded p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                      aria-label="Remove question"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <Input
+                    value={q.question}
+                    onChange={(e) =>
+                      updateScreeningQuestion(idx, { question: e.target.value })
+                    }
+                    placeholder="e.g., Explain your understanding of quantum entanglement."
+                    className="mb-3"
+                  />
+                  <div className="mb-2">
+                    <Label className="text-xs">Type</Label>
+                    <select
+                      value={q.type}
+                      onChange={(e) =>
+                        updateScreeningQuestion(idx, {
+                          type: e.target.value as ScreeningQuestionType,
+                          options: e.target.value === 'choice' ? [''] : undefined,
+                        })
+                      }
+                      className="mt-1 flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
+                    >
+                      <option value="text">Text</option>
+                      <option value="yesno">Yes / No</option>
+                      <option value="choice">Multiple choice</option>
+                    </select>
+                  </div>
+                  {q.type === 'choice' && (
+                    <div className="mt-3 space-y-2">
+                      <Label className="text-xs">Options</Label>
+                      {(q.options ?? ['']).map((opt, optIdx) => (
+                        <div key={optIdx} className="flex gap-2">
+                          <Input
+                            value={opt}
+                            onChange={(e) =>
+                              updateOption(idx, optIdx, e.target.value)
+                            }
+                            placeholder={`Option ${optIdx + 1}`}
+                            className="flex-1"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeOption(idx, optIdx)}
+                            className="rounded p-1 text-muted-foreground hover:text-destructive"
+                            aria-label="Remove option"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ))}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => addOption(idx)}
+                      >
+                        Add option
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              ))}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={addScreeningQuestion}
+                className="w-full"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Add Screening Question
+              </Button>
             </div>
 
             <div className="flex gap-4">

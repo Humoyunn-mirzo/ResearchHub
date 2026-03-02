@@ -1,7 +1,10 @@
 package com.researchhub.backend.auth;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.researchhub.backend.user.User;
 import lombok.Data;
+
+import java.time.Instant;
 
 /**
  * DTO that matches the frontend's expected User shape (loosely).
@@ -16,5 +19,22 @@ public class AuthUserDto {
     private String role;
     private String universityId;
     private String createdAt;
+
+    public static AuthUserDto fromUser(User user) {
+        if (user == null) return null;
+        AuthUserDto dto = new AuthUserDto();
+        dto.setId(user.getId().toString());
+        dto.setEmail(user.getEmail());
+        dto.setName(user.getName() != null ? user.getName() : user.getEmail());
+        var roles = user.getRoles();
+        var role = (roles != null && !roles.isEmpty())
+                ? roles.iterator().next().name()
+                : "STUDENT";
+        if ("DEVELOPER".equals(role)) role = "PLATFORM_ADMIN";
+        dto.setRole(role);
+        dto.setUniversityId(null);
+        dto.setCreatedAt(Instant.now().toString());
+        return dto;
+    }
 }
 

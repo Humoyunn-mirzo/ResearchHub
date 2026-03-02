@@ -31,6 +31,7 @@ public class SecurityConfig {
                 auth.requestMatchers("/test/db").permitAll();
                 auth.requestMatchers("/test/student-auth").hasRole("STUDENT");
 
+                auth.requestMatchers("/auth/me").authenticated();
                 auth.requestMatchers("/auth/**").permitAll();
 
                 auth.requestMatchers("/user/register").hasRole("UNIVERSITY_ADMIN");

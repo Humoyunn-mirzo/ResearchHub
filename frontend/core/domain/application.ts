@@ -10,6 +10,7 @@ export const ApplicationSchema = z.object({
   studentId: z.string(),
   status: ApplicationStatusSchema,
   cvFile: z.string().optional(),
+  screeningAnswers: z.array(z.string()).optional(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
   student: z
@@ -33,4 +34,5 @@ export type CreateApplicationInput = z.infer<typeof CreateApplicationInputSchema
 
 export const CreateApplicationInputSchema = z.object({
   projectId: z.string(),
+  screeningAnswers: z.array(z.string()).optional(),
 })

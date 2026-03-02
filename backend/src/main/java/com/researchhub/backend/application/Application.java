@@ -2,11 +2,14 @@ package com.researchhub.backend.application;
 
 import com.researchhub.backend.project.Project;
 import com.researchhub.backend.student.Student;
+import com.vladmihalcea.hibernate.type.json.JsonType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.Type;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -32,7 +35,11 @@ public class Application {
     private ApplicationStatus status = ApplicationStatus.PENDING;
 
     @Column(name = "cv_file", columnDefinition = "BYTEA")
-    private byte[] cvFile;                 // 👈 ADDED: maps to cv_file BYTEA column
+    private byte[] cvFile;
+
+    @Type(JsonType.class)
+    @Column(name = "screening_answers", columnDefinition = "jsonb")
+    private List<String> screeningAnswers;
 
     @Column(name = "applied_at", nullable = false)
     private OffsetDateTime appliedAt = OffsetDateTime.now();

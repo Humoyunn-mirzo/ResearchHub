@@ -68,7 +68,12 @@ export async function createProject(input: CreateProjectInput): Promise<Project>
     if (user.role !== 'PROFESSOR') throw new Error('Only professors can create projects')
 
     const professor = { id: user.id, name: user.name, email: user.email }
-    return mockCreateProject({ ...input, professorId: user.id, professor })
+    return mockCreateProject({
+      ...input,
+      professorId: user.id,
+      professor,
+      interviewQuestions: input.interviewQuestions,
+    })
   }
   const response = await apiClient.post('/projects', input)
   return ProjectSchema.parse(response.data)
