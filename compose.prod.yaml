@@ -1,0 +1,64 @@
+# Production: pull pre-built images from GHCR (no build on server)
+# Requires: GITHUB_OWNER in .env (your GitHub username or org)
+# Login first: echo $GITHUB_TOKEN | docker login ghcr.io -u YOUR_USERNAME --password-stdin
+
+services:
+  frontend:
+    image: ghcr.io/${GITHUB_OWNER}/researchhub-frontend:latest
+    container_name: frontend
+    depends_on:
+      - backend
+    networks:
+      - appnet
+
+  backend:
+    image: ghcr.io/${GITHUB_OWNER}/researchhub-backend:latest
+    container_name: backend
+    env_file: .env
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/appdb
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - appnet
+
+  db:
+    image: postgres:16
+    container_name: db
+    environment:
+      POSTGRES_DB: appdb
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d appdb"]
+      interval: 3s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "5432:5432"
+    networks:
+      - appnet
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - appnet
+
+volumes:
+  postgres_data:
+
+networks:
+  appnet:

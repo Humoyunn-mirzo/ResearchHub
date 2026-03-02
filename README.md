@@ -68,3 +68,26 @@ This command shuts down all the services running in the background:
 ```
 docker compose down
 ```
+
+### Production: Use pre-built images (saves disk space on server)
+Instead of building on the server, pull images from GitHub Container Registry:
+
+1. Add to `.env`:
+   ```
+   GITHUB_OWNER=your-github-username
+   ```
+
+2. Create a [GitHub Personal Access Token](https://github.com/settings/tokens) with `read:packages` scope.
+
+3. Log in to GHCR on the server:
+   ```
+   echo YOUR_TOKEN | docker login ghcr.io -u YOUR_USERNAME --password-stdin
+   ```
+
+4. Pull and run:
+   ```
+   docker compose -f compose.prod.yaml pull
+   docker compose -f compose.prod.yaml up -d
+   ```
+
+> Images are built by GitHub Actions on push to `main`. Ensure at least one push has completed before pulling.
