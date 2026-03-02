@@ -61,6 +61,7 @@ public class SecurityConfig {
                 auth.requestMatchers(HttpMethod.PATCH, "/universities/**").hasRole("DEVELOPER");
                 auth.requestMatchers(HttpMethod.DELETE, "/universities/**").hasRole("DEVELOPER");
 
+                auth.requestMatchers(HttpMethod.GET, "/rankings/**").permitAll();
 
                 auth.anyRequest().hasRole("DEVELOPER");
             })
