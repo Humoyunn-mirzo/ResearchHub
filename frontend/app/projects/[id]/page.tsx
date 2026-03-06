@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useParams } from 'next/navigation'
-import { fetchProjectById, createApplication, closeProject } from '@/core/services'
+import { fetchProjectById, createApplication, closeProject, fetchApplications } from '@/core/services'
 import { Button, Badge, Card, CardContent, Label, Textarea } from '@/components/ui'
 import { Calendar, User, Users, ArrowLeft, Mail, Settings } from 'lucide-react'
 import { format } from 'date-fns'
@@ -24,10 +24,17 @@ export default function ProjectDetailPage() {
     queryFn: () => fetchProjectById(params.id as string),
   })
 
+  const { data: myApplications } = useQuery({
+    queryKey: ['applications', 'my', user?.id],
+    queryFn: () => fetchApplications({ studentId: user!.id, limit: 50 }),
+    enabled: !!user?.id && user?.role === 'STUDENT',
+  })
+
   const applyMutation = useMutation({
     mutationFn: createApplication,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['project', params.id] })
+      queryClient.invalidateQueries({ queryKey: ['applications', 'my', user?.id] })
       setShowApplicationForm(false)
       alert('Application submitted successfully!')
     },
@@ -105,7 +112,10 @@ export default function ProjectDetailPage() {
   const isStudent = isAuthenticated && user?.role === 'STUDENT'
   const isProfessorOwner =
     isAuthenticated && user?.role === 'PROFESSOR' && user?.id && project.professorId === user.id
-  const canApply = isStudent && project.status === 'OPEN'
+  const hasAppliedToThisProject = (myApplications?.data ?? []).some(
+    (a) => a.projectId === project.id
+  )
+  const canApply = isStudent && project.status === 'OPEN' && !hasAppliedToThisProject
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-12 lg:px-8">
@@ -270,6 +280,14 @@ export default function ProjectDetailPage() {
             <Card className="bg-muted/50">
               <CardContent className="pt-6 text-center text-sm text-muted-foreground">
                 Only students can apply to projects.
+              </CardContent>
+            </Card>
+          )}
+
+          {isStudent && project.status === 'OPEN' && hasAppliedToThisProject && (
+            <Card className="bg-muted/50">
+              <CardContent className="pt-6 text-center text-sm text-muted-foreground">
+                You have already applied to this project. Check your dashboard for the status.
               </CardContent>
             </Card>
           )}

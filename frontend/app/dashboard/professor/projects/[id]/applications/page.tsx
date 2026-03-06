@@ -107,10 +107,9 @@ export default function ProjectApplicationsPage() {
       </div>
 
       {appsLoading ? (
-        <div className="space-y-3">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-24 animate-pulse rounded-lg bg-muted" />
-          ))}
+        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+          <p className="mt-4 text-sm text-muted-foreground">Loading applications…</p>
         </div>
       ) : applications.length > 0 ? (
         <Card>
@@ -158,7 +157,7 @@ export default function ProjectApplicationsPage() {
         <Card>
           <CardContent className="py-12 text-center">
             <FileText className="mx-auto h-12 w-12 text-muted-foreground" />
-            <p className="mt-4 text-muted-foreground">No applications yet</p>
+            <p className="mt-4 font-medium text-muted-foreground">No applications found</p>
             <p className="mt-1 text-sm text-muted-foreground">
               Applications will appear here when students apply to this project.
             </p>

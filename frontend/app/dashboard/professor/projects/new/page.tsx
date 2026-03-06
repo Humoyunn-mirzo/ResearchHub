@@ -18,6 +18,7 @@ export default function CreateProjectPage() {
     description: '',
     maxStudents: 1,
   })
+  const [maxStudentsInput, setMaxStudentsInput] = useState('1')
   const [screeningQuestions, setScreeningQuestions] = useState<ScreeningQuestion[]>([])
 
   const createMutation = useMutation({
@@ -98,6 +99,9 @@ export default function CreateProjectPage() {
       alert('Please add at least one tag')
       return
     }
+    const parsedMax = parseInt(maxStudentsInput, 10)
+    const maxStudents = Number.isNaN(parsedMax) || parsedMax < 1 ? 1 : Math.min(20, parsedMax)
+    setFormData((prev) => ({ ...prev, maxStudents }))
     const validQuestions = screeningQuestions.filter(
       (q) => q.question.trim() && (q.type !== 'choice' || (q.options?.length ?? 0) > 0)
     )
@@ -109,6 +113,7 @@ export default function CreateProjectPage() {
     }).filter((q) => q.type !== 'choice' || (q.options?.length ?? 0) > 0)
     createMutation.mutate({
       ...formData,
+      maxStudents,
       tags,
       interviewQuestions: questionsWithOptions.length > 0 ? questionsWithOptions : undefined,
     })
@@ -156,17 +161,27 @@ export default function CreateProjectPage() {
               <Label htmlFor="maxStudents">Maximum Students</Label>
               <Input
                 id="maxStudents"
-                type="number"
-                value={formData.maxStudents}
+                type="text"
+                inputMode="numeric"
+                autoComplete="off"
+                value={maxStudentsInput}
                 onChange={(e) => {
-                  const n = parseInt(e.target.value, 10)
+                  const raw = e.target.value.replace(/\D/g, '')
+                  setMaxStudentsInput(raw)
+                  const n = raw === '' ? 1 : parseInt(raw, 10)
                   const maxStudents = Number.isNaN(n) ? 1 : Math.max(1, Math.min(20, n))
-                  setFormData({ ...formData, maxStudents })
+                  setFormData((prev) => ({ ...prev, maxStudents }))
                 }}
-                min={1}
-                max={20}
+                onBlur={() => {
+                  const n = parseInt(maxStudentsInput, 10)
+                  const valid = Number.isNaN(n) || n < 1 ? 1 : Math.min(20, n)
+                  setMaxStudentsInput(String(valid))
+                  setFormData((prev) => ({ ...prev, maxStudents: valid }))
+                }}
+                placeholder="1–20"
                 required
               />
+              <p className="mt-1 text-xs text-muted-foreground">Type a number between 1 and 20</p>
             </div>
 
             <div>

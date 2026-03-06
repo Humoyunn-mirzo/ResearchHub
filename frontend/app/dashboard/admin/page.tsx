@@ -1,11 +1,37 @@
 'use client'
 
+import { useQuery } from '@tanstack/react-query'
 import { useAuthStore } from '@/lib/auth'
+import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import { Users, BookOpen, Building2, TrendingUp } from 'lucide-react'
+import Link from 'next/link'
+import { fetchUsers } from '@/core/services'
 
 export default function AdminDashboard() {
-  const { user } = useAuthStore()
+  const { user, isAuthenticated } = useAuthStore()
+  const router = useRouter()
+  const isAdmin = isAuthenticated && (user?.role === 'UNIVERSITY_ADMIN' || user?.role === 'DEVELOPER')
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push('/login')
+      return
+    }
+    if (!isAdmin) {
+      router.push('/dashboard')
+      return
+    }
+  }, [isAuthenticated, isAdmin, router])
+
+  const { data: usersData } = useQuery({
+    queryKey: ['users', 'admin', 'count'],
+    queryFn: () => fetchUsers({ page: 1, limit: 1 }),
+    enabled: !!isAdmin,
+  })
+
+  const totalUsers = usersData?.total ?? 0
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 lg:px-8">
@@ -22,8 +48,8 @@ export default function AdminDashboard() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">1,234</div>
-            <p className="text-xs text-muted-foreground">+20% from last month</p>
+            <div className="text-2xl font-bold">{totalUsers}</div>
+            <p className="text-xs text-muted-foreground">Registered on platform</p>
           </CardContent>
         </Card>
 
@@ -63,16 +89,18 @@ export default function AdminDashboard() {
 
       {/* Admin Actions */}
       <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>User Management</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Manage user accounts, roles, and permissions across the platform.
-            </p>
-          </CardContent>
-        </Card>
+        <Link href="/dashboard/admin/users">
+          <Card className="transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-lg">
+            <CardHeader>
+              <CardTitle>User Management</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Manage user accounts, roles, and permissions across the platform.
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
 
         <Card>
           <CardHeader>

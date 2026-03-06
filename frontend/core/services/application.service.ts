@@ -67,15 +67,18 @@ export async function fetchApplications(
   }
   const page = filters.page ?? 1
   const limit = filters.limit ?? 20
-  const response = await apiClient.get('/applications', {
-    params: cleanParams({
-      page: page - 1,
-      size: limit,
-      ...(filters.projectId && { projectId: filters.projectId }),
-      ...(filters.studentId && { studentId: filters.studentId }),
-      ...(filters.status && { status: filters.status }),
-    }),
+  const params = cleanParams({
+    page: page - 1,
+    size: limit,
+    ...(filters.status && { status: filters.status }),
   })
+  const url =
+    filters.studentId != null
+      ? `/applications/students/${filters.studentId}`
+      : filters.projectId != null
+        ? `/applications/projects/${filters.projectId}`
+        : '/applications'
+  const response = await apiClient.get(url, { params })
   return mapBackendResponseToFrontend(response.data as Parameters<typeof mapBackendResponseToFrontend>[0])
 }
 

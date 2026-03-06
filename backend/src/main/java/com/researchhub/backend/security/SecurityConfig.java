@@ -63,6 +63,11 @@ public class SecurityConfig {
 
                 auth.requestMatchers(HttpMethod.GET, "/rankings/**").permitAll();
 
+                auth.requestMatchers(HttpMethod.GET, "/users/**").hasAnyRole("UNIVERSITY_ADMIN", "DEVELOPER");
+                auth.requestMatchers(HttpMethod.POST, "/users/**").hasAnyRole("UNIVERSITY_ADMIN", "DEVELOPER");
+                auth.requestMatchers(HttpMethod.PATCH, "/users/**").hasAnyRole("UNIVERSITY_ADMIN", "DEVELOPER");
+                auth.requestMatchers(HttpMethod.DELETE, "/users/**").hasAnyRole("UNIVERSITY_ADMIN", "DEVELOPER");
+
                 auth.anyRequest().hasRole("DEVELOPER");
             })
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
