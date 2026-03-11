@@ -94,3 +94,12 @@ Instead of building on the server, pull images from GitHub Container Registry:
 
 ### First-time setup (production)
 On a fresh deployment with no users, go to `/login` and click **Create first admin**. Enter email and password (min 8 characters) to create the initial admin account. This option is only available when no developers exist and is disabled after the first admin is created.
+
+### Add admin via script (no hash needed)
+To create or reset an admin without manually handling BCrypt hashes:
+
+```bash
+./backend/scripts/create_admin.sh admin@yourdomain.com yourPassword123
+```
+
+Requires Python 3 with bcrypt (`pip install bcrypt`). The script generates the hash and inserts the user.
