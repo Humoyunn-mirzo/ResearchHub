@@ -9,6 +9,7 @@ spring:
             client-id: ${GOOGLE_CLIENT_ID:}
             client-secret: ${GOOGLE_CLIENT_SECRET:}
             scope: email, profile
+            redirect-uri: "${FRONTEND_URL:https://usp.uz}/api/login/oauth2/code/google"
   jpa:
     hibernate:
       ddl-auto: validate
