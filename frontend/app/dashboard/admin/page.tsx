@@ -12,7 +12,7 @@ import { fetchUsers } from '@/core/services'
 export default function AdminDashboard() {
   const { user, isAuthenticated } = useAuthStore()
   const router = useRouter()
-  const isAdmin = isAuthenticated && (user?.role === 'UNIVERSITY_ADMIN' || user?.role === 'DEVELOPER')
+  const isAdmin = isAuthenticated && (user?.role === 'UNIVERSITY_ADMIN' || user?.role === 'DEVELOPER' || user?.role === 'PLATFORM_ADMIN')
 
   useEffect(() => {
     if (!isAuthenticated) {

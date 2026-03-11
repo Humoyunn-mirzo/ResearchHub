@@ -24,6 +24,7 @@ export default function DashboardPage() {
         break
       case 'UNIVERSITY_ADMIN':
       case 'DEVELOPER':
+      case 'PLATFORM_ADMIN':
         router.push('/dashboard/admin')
         break
       default:

@@ -28,14 +28,17 @@ export default function ProjectApplicationsPage() {
   })
 
   const applications = applicationsData?.data ?? []
-  const isOwner = isAuthenticated && user?.role === 'PROFESSOR' && project?.professorId === user?.id
+  const isAdmin = user?.role === 'DEVELOPER' || user?.role === 'PLATFORM_ADMIN'
+  const isOwner =
+    isAuthenticated &&
+    (isAdmin || (user?.role === 'PROFESSOR' && project?.professorId === user?.id))
 
   useEffect(() => {
     if (!isAuthenticated) {
       router.push('/login')
       return
     }
-    if (user?.role !== 'PROFESSOR') {
+    if (!isAdmin && user?.role !== 'PROFESSOR') {
       router.push('/dashboard')
       return
     }

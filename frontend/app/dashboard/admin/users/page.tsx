@@ -58,7 +58,7 @@ export default function AdminUsersPage() {
 
   const debouncedSearch = useDebounce(searchInput, 300)
 
-  const isAdmin = isAuthenticated && (user?.role === 'UNIVERSITY_ADMIN' || user?.role === 'DEVELOPER')
+  const isAdmin = isAuthenticated && (user?.role === 'UNIVERSITY_ADMIN' || user?.role === 'DEVELOPER' || user?.role === 'PLATFORM_ADMIN')
 
   useEffect(() => {
     if (!isAuthenticated) {

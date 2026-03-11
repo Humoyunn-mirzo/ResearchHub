@@ -55,6 +55,18 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     Permission.MODERATE_CONTENT,
     Permission.VIEW_ANALYTICS,
   ],
+  PLATFORM_ADMIN: [
+    Permission.BROWSE_PROJECTS,
+    Permission.CREATE_PROJECT,
+    Permission.UPDATE_PROJECT,
+    Permission.DELETE_PROJECT,
+    Permission.VIEW_APPLICATIONS,
+    Permission.MANAGE_APPLICATIONS,
+    Permission.VIEW_USERS,
+    Permission.MANAGE_USERS,
+    Permission.MODERATE_CONTENT,
+    Permission.VIEW_ANALYTICS,
+  ],
 }
 
 export function hasPermission(role: Role, permission: Permission): boolean {
