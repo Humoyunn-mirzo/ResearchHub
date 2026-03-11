@@ -1,5 +1,7 @@
 package com.researchhub.backend.security;
 
+import com.researchhub.backend.auth.OAuth2AuthenticationFailureHandler;
+import com.researchhub.backend.auth.OAuth2AuthenticationSuccessHandler;
 import org.springframework.context.annotation.*;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.*;
@@ -17,9 +19,15 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtFilter;
+    private final OAuth2AuthenticationSuccessHandler oauth2SuccessHandler;
+    private final OAuth2AuthenticationFailureHandler oauth2FailureHandler;
 
-    public SecurityConfig(JwtAuthenticationFilter filter) {
+    public SecurityConfig(JwtAuthenticationFilter filter,
+                          OAuth2AuthenticationSuccessHandler oauth2SuccessHandler,
+                          OAuth2AuthenticationFailureHandler oauth2FailureHandler) {
         this.jwtFilter = filter;
+        this.oauth2SuccessHandler = oauth2SuccessHandler;
+        this.oauth2FailureHandler = oauth2FailureHandler;
     }
 
     @Bean
@@ -30,6 +38,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> {
                 auth.requestMatchers("/test/db").permitAll();
                 auth.requestMatchers("/test/student-auth").hasRole("STUDENT");
+
+                auth.requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll();
 
                 auth.requestMatchers("/auth/me").authenticated();
                 auth.requestMatchers("/auth/**").permitAll();
@@ -71,6 +81,10 @@ public class SecurityConfig {
 
                 auth.anyRequest().hasRole("DEVELOPER");
             })
+            .oauth2Login(oauth2 -> oauth2
+                .successHandler(oauth2SuccessHandler)
+                .failureHandler(oauth2FailureHandler)
+            )
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

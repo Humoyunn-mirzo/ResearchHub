@@ -1,21 +1,30 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { login, register, bootstrap, checkBootstrapAvailable, type LoginInput, type RegisterInput } from '@/core/services'
+import { login, register, bootstrap, checkBootstrapAvailable, getCurrentUser, type LoginInput, type RegisterInput } from '@/core/services'
 import { useAuthStore } from '@/lib/auth'
 import { Button, Input, Label, Card, CardContent, CardHeader, CardTitle, Badge } from '@/components/ui'
 import { env } from '@/lib/env'
 
 type Mode = 'login' | 'register' | 'bootstrap'
 
+function getOAuthUrl(): string {
+  const base = env.NEXT_PUBLIC_API_URL.startsWith('http')
+    ? env.NEXT_PUBLIC_API_URL
+    : (typeof window !== 'undefined' ? window.location.origin : '') + env.NEXT_PUBLIC_API_URL
+  return `${base}/oauth2/authorization/google`
+}
+
 export function AuthShell({ mode }: { mode: Mode }) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const from = searchParams.get('from')
-  const { setAuth } = useAuthStore()
+  const oauthSuccess = searchParams.get('oauth') === 'success'
+  const oauthError = searchParams.get('error')
+  const { setAuth, setAuthFromCookies } = useAuthStore()
 
   const [loginData, setLoginData] = useState<LoginInput>({ email: '', password: '' })
 
@@ -39,6 +48,39 @@ export function AuthShell({ mode }: { mode: Mode }) {
     // Default post-auth route per spec: students → projects, professors/admins → dashboard
     return from || '/dashboard'
   }, [from])
+
+  const { refetch: fetchUserForOAuth } = useQuery({
+    queryKey: ['auth', 'me'],
+    queryFn: getCurrentUser,
+    enabled: false,
+  })
+
+  useEffect(() => {
+    if (oauthSuccess) {
+      fetchUserForOAuth()
+        .then((result) => {
+          if (result.data) {
+            setAuthFromCookies(result.data)
+            router.replace(redirectTo)
+          } else {
+            router.replace('/login?error=oauth_failed')
+          }
+        })
+        .catch(() => {
+          router.replace('/login?error=oauth_failed')
+        })
+    }
+  }, [oauthSuccess, fetchUserForOAuth, setAuthFromCookies, router, redirectTo])
+
+  useEffect(() => {
+    if (oauthError === 'oauth_failed') {
+      alert('Google sign-in failed. Please try again.')
+      router.replace('/login')
+    } else if (oauthError === 'oauth_email_missing') {
+      alert('Could not get email from Google. Please try another account or sign up with email.')
+      router.replace('/login')
+    }
+  }, [oauthError, router])
 
   const loginMutation = useMutation({
     mutationFn: login,
@@ -72,6 +114,17 @@ export function AuthShell({ mode }: { mode: Mode }) {
       alert(error.message || 'Bootstrap failed. Please try again.')
     },
   })
+
+  if (oauthSuccess) {
+    return (
+      <div className="flex min-h-[calc(100vh-200px)] items-center justify-center px-4 py-12">
+        <div className="text-center">
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto" />
+          <p className="mt-4 text-muted-foreground">Signing you in...</p>
+        </div>
+      </div>
+    )
+  }
 
   const onSwitch = (next: Mode) => {
     if (next === 'bootstrap') {
@@ -197,6 +250,24 @@ export function AuthShell({ mode }: { mode: Mode }) {
 
               <Button type="submit" className="w-full" disabled={loginMutation.isPending}>
                 {loginMutation.isPending ? 'Signing in…' : 'Sign in'}
+              </Button>
+
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+                </div>
+              </div>
+
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={() => { window.location.href = getOAuthUrl() }}
+              >
+                Sign in with Google
               </Button>
 
               <p className="text-center text-sm text-muted-foreground">

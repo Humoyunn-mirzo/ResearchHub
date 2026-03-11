@@ -170,6 +170,26 @@ public class UserService {
         }
     }
 
+    /**
+     * Find existing user by email, or create a new Student for OAuth sign-in.
+     * Uses a placeholder password since OAuth users never log in with password.
+     */
+    @Transactional
+    public User findOrCreateFromOAuth(String email, String name) {
+        var existing = userRepository.findByEmail(email);
+        if (existing.isPresent()) {
+            return existing.get();
+        }
+        String displayName = name != null && !name.isBlank() ? name : email;
+        String placeholderPassword = passwordEncoder.encode(UUID.randomUUID().toString());
+        Student student = new Student();
+        student.setEmail(email);
+        student.setPasswordHash(placeholderPassword);
+        student.setName(displayName);
+        student.setRoles(Set.of(UserRole.STUDENT));
+        return studentRepository.save(student);
+    }
+
     public void registerDeveloper(String email, String password) {
         if (userRepository.findByEmail(email).isPresent()) {
             throw new RuntimeException("Email already exists");
