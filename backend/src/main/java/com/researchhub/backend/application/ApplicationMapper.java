@@ -40,6 +40,7 @@ public abstract class ApplicationMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "student", ignore = true)
     @Mapping(target = "project", ignore = true)
+    @Mapping(target = "status", ignore = true)
     @Mapping(
         target = "cvFile",
         qualifiedByName = "jsonNullableBase64ToBytes"

@@ -3,12 +3,13 @@
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useMutation } from '@tanstack/react-query'
-import { login, register, type LoginInput, type RegisterInput } from '@/core/services'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { login, register, bootstrap, checkBootstrapAvailable, type LoginInput, type RegisterInput } from '@/core/services'
 import { useAuthStore } from '@/lib/auth'
 import { Button, Input, Label, Card, CardContent, CardHeader, CardTitle, Badge } from '@/components/ui'
+import { env } from '@/lib/env'
 
-type Mode = 'login' | 'register'
+type Mode = 'login' | 'register' | 'bootstrap'
 
 export function AuthShell({ mode }: { mode: Mode }) {
   const router = useRouter()
@@ -17,6 +18,15 @@ export function AuthShell({ mode }: { mode: Mode }) {
   const { setAuth } = useAuthStore()
 
   const [loginData, setLoginData] = useState<LoginInput>({ email: '', password: '' })
+
+  const showBootstrap = searchParams.get('bootstrap') === '1'
+
+  const { data: bootstrapStatus } = useQuery({
+    queryKey: ['bootstrap-available'],
+    queryFn: checkBootstrapAvailable,
+    enabled: env.NEXT_PUBLIC_DATA_MODE === 'real',
+    staleTime: 60_000,
+  })
   const [registerData, setRegisterData] = useState<RegisterInput>({
     name: '',
     email: '',
@@ -52,7 +62,22 @@ export function AuthShell({ mode }: { mode: Mode }) {
     },
   })
 
+  const bootstrapMutation = useMutation({
+    mutationFn: bootstrap,
+    onSuccess: (data) => {
+      setAuth(data.user, data.accessToken, data.refreshToken)
+      router.push(redirectTo)
+    },
+    onError: (error: Error) => {
+      alert(error.message || 'Bootstrap failed. Please try again.')
+    },
+  })
+
   const onSwitch = (next: Mode) => {
+    if (next === 'bootstrap') {
+      router.push('/login?bootstrap=1')
+      return
+    }
     router.push(next === 'login' ? '/login' : '/register')
   }
 
@@ -70,10 +95,10 @@ export function AuthShell({ mode }: { mode: Mode }) {
               : 'Join as a student or professor to collaborate on research projects.'}
           </p>
 
-          <div className="grid grid-cols-2 gap-2">
+          <div className={`grid gap-2 ${bootstrapStatus?.available ? 'grid-cols-3' : 'grid-cols-2'}`}>
             <Button
               type="button"
-              variant={mode === 'login' ? 'default' : 'outline'}
+              variant={mode === 'login' && !showBootstrap ? 'default' : 'outline'}
               onClick={() => onSwitch('login')}
             >
               Sign in
@@ -85,11 +110,59 @@ export function AuthShell({ mode }: { mode: Mode }) {
             >
               Sign up
             </Button>
+            {bootstrapStatus?.available && (
+              <Button
+                type="button"
+                variant={showBootstrap ? 'default' : 'outline'}
+                onClick={() => onSwitch('bootstrap')}
+              >
+                Create first admin
+              </Button>
+            )}
           </div>
         </CardHeader>
 
         <CardContent>
-          {mode === 'login' ? (
+          {showBootstrap && bootstrapStatus?.available ? (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                bootstrapMutation.mutate(loginData)
+              }}
+              className="space-y-4"
+            >
+              <p className="text-sm text-muted-foreground">
+                No users exist yet. Create the first admin account to get started.
+              </p>
+              <div>
+                <Label htmlFor="bootstrap-email">Email</Label>
+                <Input
+                  id="bootstrap-email"
+                  type="email"
+                  value={loginData.email}
+                  onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                  placeholder="admin@your-domain.com"
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="bootstrap-password">Password</Label>
+                <Input
+                  id="bootstrap-password"
+                  type="password"
+                  value={loginData.password}
+                  onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                  placeholder="••••••••"
+                  required
+                  minLength={8}
+                />
+                <p className="mt-1 text-xs text-muted-foreground">At least 8 characters</p>
+              </div>
+              <Button type="submit" className="w-full" disabled={bootstrapMutation.isPending}>
+                {bootstrapMutation.isPending ? 'Creating admin…' : 'Create first admin'}
+              </Button>
+            </form>
+          ) : mode === 'login' ? (
             <form
               onSubmit={(e) => {
                 e.preventDefault()

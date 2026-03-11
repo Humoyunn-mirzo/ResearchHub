@@ -51,3 +51,21 @@ export async function refreshAccessToken(refreshToken: string): Promise<{ access
 export async function logout(): Promise<void> {
   await apiClient.post('/auth/logout')
 }
+
+export async function checkBootstrapAvailable(): Promise<{ available: boolean }> {
+  const response = await apiClient.get('/auth/bootstrap-available')
+  return z.object({ available: z.boolean() }).parse(response.data)
+}
+
+export async function bootstrap(input: LoginInput): Promise<LoginResponse> {
+  const response = await apiClient.post('/auth/bootstrap', input)
+  const data = response.data as { success: boolean; message?: string; accessToken?: string; refreshToken?: string; user?: unknown }
+  if (!data.success || !data.accessToken || !data.refreshToken || !data.user) {
+    throw new Error(data.message ?? 'Bootstrap failed')
+  }
+  return LoginResponseSchema.parse({
+    user: data.user,
+    accessToken: data.accessToken,
+    refreshToken: data.refreshToken,
+  })
+}

@@ -51,6 +51,7 @@ public class SecurityConfig {
                 auth.requestMatchers(HttpMethod.PATCH, "/projects/**").hasRole("PROFESSOR");
                 auth.requestMatchers(HttpMethod.DELETE, "/projects/**").hasRole("PROFESSOR");
 
+                auth.requestMatchers(HttpMethod.GET, "/applications/my-projects").hasRole("PROFESSOR");
                 auth.requestMatchers(HttpMethod.GET, "/applications/**").authenticated();
                 auth.requestMatchers(HttpMethod.POST, "/applications/**").hasRole("STUDENT");
                 auth.requestMatchers(HttpMethod.PATCH, "/applications/**").hasAnyRole("STUDENT", "PROFESSOR"); //.hasRole("STUDENT"); TODO: separate to diff endpoints

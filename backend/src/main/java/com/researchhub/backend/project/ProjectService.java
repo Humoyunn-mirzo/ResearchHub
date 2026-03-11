@@ -6,16 +6,17 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.researchhub.backend.professor.Professor;
 import com.researchhub.backend.professor.ProfessorRepository;
 import com.researchhub.backend.professor.exception.ProfessorNotFoundException;
 import com.researchhub.backend.project.exception.ProjectNotFoundException;
+import com.researchhub.backend.security.CurrentUserService;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +24,7 @@ public class ProjectService {
     private final ProjectRepository projectRepository;
     private final ProfessorRepository professorRepository;
     private final ProjectMapper projectMapper;
+    private final CurrentUserService currentUserService;
 
     public Page<ProjectResponse> getProjects(Pageable pageable) {
         Page<Project> page = projectRepository.findAll(pageable);
@@ -40,11 +42,10 @@ public class ProjectService {
 
     @Transactional
     public ProjectResponse createProject(CreateProjectRequest request) {
-        String email = SecurityContextHolder.getContext()
-            .getAuthentication()
-            .getName();
-        Professor professor = professorRepository.findByEmail(email)
-            .orElseThrow(() -> new ProfessorNotFoundException(email));
+        Professor professor = currentUserService.getCurrentProfessorOrNull();
+        if (professor == null) {
+            throw new AccessDeniedException("Only professors can create projects");
+        }
 
         Project project = projectMapper.toEntity(request);
         project.setProfessor(professor);
@@ -66,6 +67,12 @@ public class ProjectService {
         Project project = projectRepository.findById(id)
             .orElseThrow(() -> new ProjectNotFoundException(id));
 
+        Professor currentProfessor = currentUserService.getCurrentProfessorOrNull();
+        if (currentProfessor == null || project.getProfessor() == null
+                || !project.getProfessor().getId().equals(currentProfessor.getId())) {
+            throw new AccessDeniedException("You can only update your own projects");
+        }
+
         projectMapper.toEntity(request, project);
 
         project = projectRepository.save(project);
@@ -75,8 +82,13 @@ public class ProjectService {
 
     @Transactional
     public void deleteProject(UUID id) {
-        if (!projectRepository.existsById(id)) {
-            throw new ProjectNotFoundException(id);
+        Project project = projectRepository.findById(id)
+            .orElseThrow(() -> new ProjectNotFoundException(id));
+
+        Professor currentProfessor = currentUserService.getCurrentProfessorOrNull();
+        if (currentProfessor == null || project.getProfessor() == null
+                || !project.getProfessor().getId().equals(currentProfessor.getId())) {
+            throw new AccessDeniedException("You can only delete your own projects");
         }
 
         projectRepository.deleteById(id);

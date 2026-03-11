@@ -24,12 +24,11 @@ export default function ProfessorDashboard() {
 
   const { data: applications } = useQuery({
     queryKey: ['applications', 'for-my-projects', user?.id],
-    queryFn: () => fetchApplications({ limit: 100 }),
+    queryFn: () => fetchApplications({ myProjects: true, limit: 100 }),
     enabled: !!user?.id,
   })
 
-  const myProjectIds = new Set(myProjects?.data.map((p) => p.id) ?? [])
-  const myApplications = applications?.data.filter((a) => myProjectIds.has(a.projectId)) ?? []
+  const myApplications = applications?.data ?? []
   const pendingApplications = myApplications.filter((a) => a.status === 'PENDING').length
 
   const stats = {

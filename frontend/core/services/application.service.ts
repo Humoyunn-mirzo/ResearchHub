@@ -18,6 +18,7 @@ type ApplicationsResponse = {
 export type ApplicationFilters = {
   projectId?: string
   studentId?: string
+  myProjects?: boolean
   status?: ApplicationStatus
   page?: number
   limit?: number
@@ -77,7 +78,9 @@ export async function fetchApplications(
       ? `/applications/students/${filters.studentId}`
       : filters.projectId != null
         ? `/applications/projects/${filters.projectId}`
-        : '/applications'
+        : filters.myProjects === true
+          ? '/applications/my-projects'
+          : '/applications'
   const response = await apiClient.get(url, { params })
   return mapBackendResponseToFrontend(response.data as Parameters<typeof mapBackendResponseToFrontend>[0])
 }

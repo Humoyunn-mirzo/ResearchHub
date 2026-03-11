@@ -1,0 +1,102 @@
+---
+description: ResearchHub project context for AI - tech stack, architecture, conventions
+alwaysApply: true
+---
+
+# ResearchHub – Project Context for AI
+
+## Project Overview
+ResearchHub is a research collaboration platform connecting Central Asian and EU universities. Professors post research topics; students apply and schedule interviews; the platform provides university and professor rankings.
+
+## Tech Stack
+
+### Frontend
+- **Framework**: Next.js 15 (App Router), React 19
+- **Styling**: TailwindCSS
+- **State**: TanStack Query (server state), Zustand (client state)
+- **Validation**: Zod
+- **Testing**: Vitest, Playwright
+
+### Backend
+- **Framework**: Spring Boot (Java)
+- **Database**: PostgreSQL 16
+- **Auth**: JWT (access + refresh tokens), BCrypt for passwords
+- **ORM**: Spring Data JPA / Hibernate
+
+### Infrastructure
+- **Containers**: Docker Compose (or Podman)
+- **Reverse proxy**: Nginx (port 80)
+- **Images**: GHCR (ghcr.io) for production
+
+## Architecture
+
+### Frontend (Clean Architecture)
+- `core/domain/` – Entities, Zod schemas, domain errors (no framework deps)
+- `core/services/` – Business logic, API calls
+- `core/policies/` – RBAC, permissions
+- `lib/` – API client, auth, utilities
+- `app/` – Pages (App Router)
+- `components/` – UI (atomic design: ui/, shared/, layout/, auth/)
+
+### Backend (Layered)
+- Controller → Service → Repository → Database
+- DTOs for requests/responses; entities stay internal
+- Flyway migrations in `backend/src/main/resources/db/migration/`
+
+## Key Conventions
+
+### Roles (RBAC)
+- `DEVELOPER` – Full admin, can create users
+- `UNIVERSITY_ADMIN` – University-level admin
+- `PROFESSOR` – Create/manage projects
+- `STUDENT` – Apply to projects
+
+### API
+- Base URL: `/api` (proxied by Nginx to backend:8080)
+- Auth: Bearer token in `Authorization` header
+- Frontend uses `NEXT_PUBLIC_API_URL` (e.g. `/api` in prod)
+
+### Database
+- `.env` must include: `DB_USER`, `DB_PASSWORD`, `JWT_SECRET`
+- Production: add `GITHUB_OWNER` for GHCR images
+- First admin: use **Create first admin** on `/login` when no users exist (POST `/api/auth/bootstrap`)
+- No demo/example data: V6 migration removes seeded demo professor and projects
+
+### Docker
+- Run commands from project root
+- Local: `docker compose up -d --build`
+- Production: `docker compose -f compose.prod.yaml pull && up -d`
+- DB scripts use `-U admin` (must match `DB_USER` in `.env`)
+
+## Folder Structure
+
+```
+ResearchHub/
+├── frontend/          # Next.js app
+│   ├── app/           # Pages, layouts
+│   ├── components/    # UI components
+│   ├── core/          # Domain, services, policies
+│   └── lib/           # API, auth, utils
+├── backend/           # Spring Boot
+│   ├── src/main/java/com/researchhub/backend/
+│   │   ├── auth/      # Auth, tokens
+│   │   ├── user/      # Users, roles
+│   │   ├── project/   # Projects
+│   │   ├── application/ # Applications
+│   │   ├── professor/ # Professors
+│   │   ├── student/   # Students
+│   │   ├── university/# Universities
+│   │   └── security/  # JWT, Spring Security
+│   └── scripts/       # (none – use bootstrap endpoint for first admin)
+├── nginx/             # nginx.conf
+├── compose.yaml       # Local dev
+├── compose.prod.yaml  # Production (GHCR images)
+└── .env               # DB_USER, DB_PASSWORD, JWT_SECRET, GITHUB_OWNER
+```
+
+## Common Gotchas
+
+1. **Password validation**: Login form requires 8+ chars; seeded accounts use `123` – either relax validation or use longer passwords.
+2. **DB user**: Scripts use `-U admin`; `DB_USER` in `.env` must match; if volume was created with another user, run `down -v` and recreate.
+3. **Podman**: On systems using Podman, start `podman.socket` before compose.
+4. **API path**: Frontend calls `/api/...`; Nginx proxies to `backend:8080/` (trailing slash matters).

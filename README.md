@@ -91,3 +91,6 @@ Instead of building on the server, pull images from GitHub Container Registry:
    ```
 
 > Images are built by GitHub Actions on push to `main`. Ensure at least one push has completed before pulling.
+
+### First-time setup (production)
+On a fresh deployment with no users, go to `/login` and click **Create first admin**. Enter email and password (min 8 characters) to create the initial admin account. This option is only available when no developers exist and is disabled after the first admin is created.

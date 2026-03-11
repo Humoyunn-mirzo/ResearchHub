@@ -61,6 +61,16 @@ public class ApplicationController {
 
     // ========== Custom endpoints ==========
 
+    @GetMapping("/my-projects")
+    public ResponseEntity<ApiResponsePage<ApplicationResponse>> getApplicationsForProfessorProjects(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("appliedAt").descending());
+        Page<ApplicationResponse> applications = applicationService.getApplicationsForProfessorProjects(pageable);
+        return ResponseEntity.ok(new ApiResponsePage<>(applications));
+    }
+
     @GetMapping("/students/{studentId}")
     public ResponseEntity<ApiResponsePage<ApplicationResponse>> getApplicationsByStudent(
             @PathVariable UUID studentId,

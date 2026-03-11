@@ -1,8 +1,10 @@
 package com.researchhub.backend.auth;
 
 import com.researchhub.backend.user.UserRepository;
+import com.researchhub.backend.user.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -14,13 +16,56 @@ public class AuthController {
 
     private final AuthService authService;
     private final UserRepository userRepository;
+    private final UserService userService;
     private final RefreshTokenService refreshTokenService;
 
     public AuthController(AuthService auth, UserRepository userRepository,
-                          RefreshTokenService refreshTokenService) {
+                          UserService userService, RefreshTokenService refreshTokenService) {
         this.authService = auth;
         this.userRepository = userRepository;
+        this.userService = userService;
         this.refreshTokenService = refreshTokenService;
+    }
+
+    /**
+     * Check if bootstrap is available (no developers exist yet).
+     */
+    @GetMapping("/bootstrap-available")
+    public ResponseEntity<BootstrapAvailableResponse> bootstrapAvailable() {
+        boolean available = userRepository.countDevelopers() == 0;
+        return ResponseEntity.ok(new BootstrapAvailableResponse(available));
+    }
+
+    /**
+     * Bootstrap the first admin when no developers exist.
+     * Only works when count(DEVELOPER) == 0. Disabled after first admin is created.
+     */
+    @PostMapping("/bootstrap")
+    public ResponseEntity<BootstrapResponse> bootstrap(@RequestBody BootstrapRequest req, HttpServletRequest httpReq) {
+        if (userRepository.countDevelopers() > 0) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new BootstrapResponse(false, "Bootstrap disabled: at least one admin already exists"));
+        }
+        if (req.getEmail() == null || req.getEmail().isBlank() || req.getPassword() == null || req.getPassword().isBlank()) {
+            return ResponseEntity.badRequest()
+                    .body(new BootstrapResponse(false, "Email and password are required"));
+        }
+        if (req.getPassword().length() < 8) {
+            return ResponseEntity.badRequest()
+                    .body(new BootstrapResponse(false, "Password must be at least 8 characters"));
+        }
+        userService.registerDeveloper(req.getEmail(), req.getPassword());
+        var result = authService.login(req.getEmail(), req.getPassword());
+        var response = new BootstrapResponse(
+                true,
+                "Admin created successfully",
+                result.tokens().accessToken(),
+                result.tokens().refreshToken(),
+                AuthUserDto.fromUser(result.user()));
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, buildRefreshCookie(result.tokens().refreshToken(), httpReq).toString())
+                .header(HttpHeaders.SET_COOKIE, buildAccessTokenCookie(result.tokens().accessToken(), httpReq).toString())
+                .body(response);
     }
 
     @PostMapping("/login")
@@ -40,6 +85,7 @@ public class AuthController {
         var loginResponse = new LoginResponse(null, tokenPair.accessToken(), tokenPair.refreshToken());
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, buildRefreshCookie(tokenPair.refreshToken(), httpReq).toString())
+                .header(HttpHeaders.SET_COOKIE, buildAccessTokenCookie(tokenPair.accessToken(), httpReq).toString())
                 .body(loginResponse);
     }
 
@@ -64,30 +110,54 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(@CookieValue(value = "refreshToken", required = false) String refreshToken) {
+    public ResponseEntity<Void> logout(
+            @CookieValue(value = "refreshToken", required = false) String refreshToken,
+            HttpServletRequest httpReq) {
         if (refreshToken != null && !refreshToken.isBlank()) {
             refreshTokenService.invalidate(refreshToken);
         }
-        var cookie = ResponseCookie.from("refreshToken", "")
+        boolean secure = httpReq.isSecure();
+        var refreshCookie = ResponseCookie.from("refreshToken", "")
                 .maxAge(0)
                 .path("/api/auth/refresh")
                 .httpOnly(true)
+                .secure(secure)
+                .build();
+        var accessCookie = ResponseCookie.from("access_token", "")
+                .maxAge(0)
+                .path("/")
+                .httpOnly(true)
+                .secure(secure)
                 .build();
         return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
+                .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
                 .build();
     }
 
     private ResponseEntity<LoginResponse> buildTokenResponse(AuthService.LoginResult result, HttpServletRequest httpReq) {
-        var cookie = buildRefreshCookie(result.tokens().refreshToken(), httpReq);
+        var refreshCookie = buildRefreshCookie(result.tokens().refreshToken(), httpReq);
+        var accessCookie = buildAccessTokenCookie(result.tokens().accessToken(), httpReq);
         var response = new LoginResponse(
                 AuthUserDto.fromUser(result.user()),
                 result.tokens().accessToken(),
                 result.tokens().refreshToken()
         );
         return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
+                .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
                 .body(response);
+    }
+
+    private ResponseCookie buildAccessTokenCookie(String accessToken, HttpServletRequest httpReq) {
+        boolean secure = httpReq.isSecure();
+        return ResponseCookie.from("access_token", accessToken)
+                .httpOnly(true)
+                .secure(secure)
+                .sameSite("Lax")
+                .path("/")
+                .maxAge(60 * 15) // 15 min, match JWT expiry
+                .build();
     }
 
     private ResponseCookie buildRefreshCookie(String refreshToken, HttpServletRequest httpReq) {

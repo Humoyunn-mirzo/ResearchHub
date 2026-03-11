@@ -8,4 +8,7 @@ import java.util.UUID;
 
 public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificationExecutor<User> {
     Optional<User> findByEmail(String email);
+
+    @org.springframework.data.jpa.repository.Query(value = "SELECT COUNT(*) FROM user_roles WHERE role = 'DEVELOPER'", nativeQuery = true)
+    long countDevelopers();
 }
