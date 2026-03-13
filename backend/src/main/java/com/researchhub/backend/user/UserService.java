@@ -6,6 +6,9 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -66,10 +69,14 @@ public class UserService {
         if (request.getName() != null && !request.getName().isBlank()) {
             user.setName(request.getName());
         }
-        if (request.getRole() != null && !request.getRole().isBlank() && !(user instanceof Professor) && !(user instanceof Student)) {
+        boolean isDeveloper = isCurrentUserDeveloper();
+        boolean canChangeRole = isDeveloper || (!(user instanceof Professor) && !(user instanceof Student));
+        if (request.getRole() != null && !request.getRole().isBlank() && canChangeRole) {
             try {
                 UserRole userRole = UserRole.valueOf(request.getRole());
-                if (userRole != UserRole.DEVELOPER) {
+                if (!isDeveloper && userRole == UserRole.DEVELOPER) {
+                    // Non-developers cannot assign DEVELOPER role
+                } else {
                     user.setRoles(Set.of(userRole));
                 }
             } catch (IllegalArgumentException ignored) {
@@ -188,6 +195,12 @@ public class UserService {
         student.setName(displayName);
         student.setRoles(Set.of(UserRole.STUDENT));
         return studentRepository.save(student);
+    }
+
+    private boolean isCurrentUserDeveloper() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || auth.getAuthorities() == null) return false;
+        return auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_DEVELOPER"));
     }
 
     public void registerDeveloper(String email, String password) {

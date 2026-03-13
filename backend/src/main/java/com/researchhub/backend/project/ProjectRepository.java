@@ -18,6 +18,8 @@ public interface ProjectRepository extends JpaRepository<Project, UUID> {
 
     Page<Project> findByStatus(String status, Pageable pageable);
 
+    long countByStatus(String status);
+
     @Query("""
         SELECT DISTINCT p FROM Project p
         LEFT JOIN p.tags t

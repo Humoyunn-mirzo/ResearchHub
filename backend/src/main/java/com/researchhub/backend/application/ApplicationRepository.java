@@ -17,4 +17,6 @@ public interface ApplicationRepository extends JpaRepository<Application, UUID> 
     Page<Application> findByProjectIdAndStatus(UUID projectId, ApplicationStatus status, Pageable pageable);
 
     boolean existsByStudentIdAndProjectId(UUID studentId, UUID projectId);
+
+    long countByStatus(ApplicationStatus status);
 }

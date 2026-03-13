@@ -320,6 +320,7 @@ export default function AdminUsersPage() {
       {editUser && (
         <EditUserModal
           user={editUser}
+          currentUserRole={user?.role}
           onClose={() => setEditUser(null)}
           onSubmit={(input) => updateMutation.mutate({ id: editUser.id, input })}
           isPending={updateMutation.isPending}
@@ -441,11 +442,13 @@ function CreateUserModal({
 
 function EditUserModal({
   user,
+  currentUserRole,
   onClose,
   onSubmit,
   isPending,
 }: {
   user: AdminUser
+  currentUserRole?: string
   onClose: () => void
   onSubmit: (input: UpdateUserInput) => void
   isPending: boolean
@@ -453,7 +456,8 @@ function EditUserModal({
   const [name, setName] = useState(user.name)
   const [role, setRole] = useState(user.role)
 
-  const canEditRole = user.role !== 'PROFESSOR' && user.role !== 'STUDENT'
+  const canEditRole =
+    currentUserRole === 'DEVELOPER' || (user.role !== 'PROFESSOR' && user.role !== 'STUDENT')
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()

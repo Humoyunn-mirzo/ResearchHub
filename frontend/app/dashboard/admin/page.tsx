@@ -7,7 +7,7 @@ import { useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import { Users, BookOpen, Building2, TrendingUp } from 'lucide-react'
 import Link from 'next/link'
-import { fetchUsers } from '@/core/services'
+import { fetchAdminAnalytics } from '@/core/services'
 
 export default function AdminDashboard() {
   const { user, isAuthenticated } = useAuthStore()
@@ -25,13 +25,18 @@ export default function AdminDashboard() {
     }
   }, [isAuthenticated, isAdmin, router])
 
-  const { data: usersData } = useQuery({
-    queryKey: ['users', 'admin', 'count'],
-    queryFn: () => fetchUsers({ page: 1, limit: 1 }),
+  const { data: analytics } = useQuery({
+    queryKey: ['admin', 'analytics'],
+    queryFn: fetchAdminAnalytics,
     enabled: !!isAdmin,
   })
 
-  const totalUsers = usersData?.total ?? 0
+  const totalUsers = analytics?.totalUsers ?? 0
+  const openProjects = analytics?.openProjects ?? 0
+  const totalUniversities = analytics?.totalUniversities ?? 0
+  const successRate = analytics && analytics.totalApplications > 0
+    ? Math.round((analytics.acceptedApplications / analytics.totalApplications) * 100)
+    : 0
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 lg:px-8">
@@ -59,8 +64,8 @@ export default function AdminDashboard() {
             <BookOpen className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">567</div>
-            <p className="text-xs text-muted-foreground">+12% from last month</p>
+            <div className="text-2xl font-bold">{openProjects}</div>
+            <p className="text-xs text-muted-foreground">Open for applications</p>
           </CardContent>
         </Card>
 
@@ -70,8 +75,8 @@ export default function AdminDashboard() {
             <Building2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">45</div>
-            <p className="text-xs text-muted-foreground">+5 new this month</p>
+            <div className="text-2xl font-bold">{totalUniversities}</div>
+            <p className="text-xs text-muted-foreground">On the platform</p>
           </CardContent>
         </Card>
 
@@ -81,8 +86,8 @@ export default function AdminDashboard() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">78%</div>
-            <p className="text-xs text-muted-foreground">+3% from last month</p>
+            <div className="text-2xl font-bold">{successRate}%</div>
+            <p className="text-xs text-muted-foreground">Applications accepted</p>
           </CardContent>
         </Card>
       </div>
@@ -102,27 +107,31 @@ export default function AdminDashboard() {
           </Card>
         </Link>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Content Moderation</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Review and moderate project submissions and user content.
-            </p>
-          </CardContent>
-        </Card>
+        <Link href="/dashboard/admin/content">
+          <Card className="transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-lg">
+            <CardHeader>
+              <CardTitle>Content Moderation</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Review and moderate project submissions and user content.
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Analytics</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              View platform analytics, usage statistics, and performance metrics.
-            </p>
-          </CardContent>
-        </Card>
+        <Link href="/dashboard/admin/analytics">
+          <Card className="transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-lg">
+            <CardHeader>
+              <CardTitle>Analytics</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                View platform analytics, usage statistics, and performance metrics.
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
 
         <Card>
           <CardHeader>

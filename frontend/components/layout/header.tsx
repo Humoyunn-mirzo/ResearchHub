@@ -6,20 +6,13 @@ import { Button } from '@/components/ui'
 import { useAuthStore } from '@/lib/auth'
 import { Menu, X } from 'lucide-react'
 import { useState } from 'react'
-import { logout } from '@/core/services'
+import { AccountMenu } from './account-menu'
 import { ThemeToggle } from './theme-toggle'
 
 export function Header() {
   const pathname = usePathname()
-  const { isAuthenticated, user, clearAuth } = useAuthStore()
+  const { isAuthenticated, user } = useAuthStore()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-
-  const handleLogout = () => {
-    // Best-effort backend logout (clears refresh cookie), then clear local auth.
-    void logout().catch(() => null)
-    clearAuth()
-    window.location.href = '/login'
-  }
 
   const navigation = [
     { name: 'Projects', href: '/projects' },
@@ -68,14 +61,7 @@ export function Header() {
               <Link href="/dashboard">
                 <Button variant="ghost">Dashboard</Button>
               </Link>
-              <div className="hidden items-center gap-2 rounded-md border px-3 py-2 text-sm text-muted-foreground lg:flex">
-                <span className="font-medium text-foreground">{user.name}</span>
-                <span className="text-muted-foreground">·</span>
-                <span>{user.role}</span>
-              </div>
-              <Button variant="outline" onClick={handleLogout}>
-                Logout
-              </Button>
+              <AccountMenu />
             </>
           ) : (
             <>
@@ -112,19 +98,12 @@ export function Header() {
                 <>
                   <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)}>
                     <Button variant="ghost" className="w-full">
-                      {user.name}
+                      Dashboard
                     </Button>
                   </Link>
-                  <Button
-                    variant="outline"
-                    className="mt-2 w-full"
-                    onClick={() => {
-                      handleLogout()
-                      setMobileMenuOpen(false)
-                    }}
-                  >
-                    Logout
-                  </Button>
+                  <div className="mt-2">
+                    <AccountMenu onNavigate={() => setMobileMenuOpen(false)} />
+                  </div>
                 </>
               ) : (
                 <>
