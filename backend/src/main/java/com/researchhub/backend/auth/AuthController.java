@@ -125,9 +125,17 @@ public class AuthController {
             @RequestParam String email,
             @RequestParam String password,
             @RequestParam(required = false) String fieldOfStudy,
-            @RequestParam(required = false) UUID universityId,
+            @RequestParam(required = false) String universityIdParam,
             @RequestParam("cv") MultipartFile cvFile,
             HttpServletRequest httpReq) {
+        UUID universityId = null;
+        if (universityIdParam != null && !universityIdParam.isBlank()) {
+            try {
+                universityId = UUID.fromString(universityIdParam.trim());
+            } catch (IllegalArgumentException ignored) {
+                // Invalid UUID format - treat as absent
+            }
+        }
         professorService.registerProfessorWithCv(
                 name, email, password,
                 fieldOfStudy != null && !fieldOfStudy.isBlank() ? fieldOfStudy : "General",

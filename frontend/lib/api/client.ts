@@ -18,12 +18,16 @@ export function createApiClient(config: ApiClientConfig): AxiosInstance {
     },
   })
 
-  // Request interceptor - attach token
+  // Request interceptor - attach token, fix Content-Type for FormData
   client.interceptors.request.use(
     (requestConfig) => {
       const token = config.getToken?.()
       if (token && requestConfig.headers) {
         requestConfig.headers.Authorization = `Bearer ${token}`
+      }
+      // FormData must not have Content-Type set; browser/axios sets multipart boundary
+      if (requestConfig.data instanceof FormData && requestConfig.headers) {
+        delete requestConfig.headers['Content-Type']
       }
       return requestConfig
     },
