@@ -23,6 +23,7 @@ export default function ProjectApplicationsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['applications', projectId] })
       queryClient.invalidateQueries({ queryKey: ['project', projectId] })
+      queryClient.invalidateQueries({ queryKey: ['applications', 'for-my-projects'] })
     },
     onError: (error: Error) => alert(error.message || 'Failed to update application'),
   })
@@ -38,28 +39,8 @@ export default function ProjectApplicationsPage() {
     enabled: !!projectId,
   })
 
-  const queryClient = useQueryClient()
   const applications = applicationsData?.data ?? []
-  const queryClient = useQueryClient()
-  const updateStatusMutation = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: 'ACCEPTED' | 'REJECTED' }) =>
-      updateApplicationStatus(id, status),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['applications', projectId] })
-    },
-  })
   const isAdmin = user?.role === 'DEVELOPER' || user?.role === 'PLATFORM_ADMIN'
-
-  const updateStatusMutation = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: 'ACCEPTED' | 'REJECTED' }) =>
-      updateApplicationStatus(id, status),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['applications', projectId] })
-      queryClient.invalidateQueries({ queryKey: ['project', projectId] })
-      queryClient.invalidateQueries({ queryKey: ['applications', 'for-my-projects'] })
-    },
-    onError: (error: Error) => alert(error.message || 'Failed to update application'),
-  })
   const isOwner =
     isAuthenticated &&
     (isAdmin || (user?.role === 'PROFESSOR' && project?.professorId === user?.id))
@@ -73,7 +54,7 @@ export default function ProjectApplicationsPage() {
       router.push('/dashboard')
       return
     }
-  }, [isAuthenticated, user?.role, router])
+  }, [isAuthenticated, isAdmin, user?.role, router])
 
   if (projectLoading || !project) {
     if (projectError) {
@@ -155,15 +136,65 @@ export default function ProjectApplicationsPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             {applications.map((app) => (
-              <ApplicationCard
-                key={app.id}
-                app={app}
-                projectId={projectId}
-                onStatusChange={() => {
-                  queryClient.invalidateQueries({ queryKey: ['applications', projectId] })
-                  queryClient.invalidateQueries({ queryKey: ['project', projectId] })
-                }}
-              />
+              <div key={app.id} className="rounded-lg border p-4">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <div className="font-medium flex items-center gap-2">
+                      {app.student?.name ?? 'Unknown student'}
+                      {app.studentId && (
+                        <Link
+                          href={`/students/${app.studentId}`}
+                          className="text-sm text-primary hover:underline flex items-center gap-1"
+                        >
+                          <User className="h-4 w-4" />
+                          View profile
+                        </Link>
+                      )}
+                    </div>
+                    {app.student?.email && (
+                      <div className="text-sm text-muted-foreground">{app.student.email}</div>
+                    )}
+                    <div className="mt-2 text-sm text-muted-foreground">
+                      Applied {format(new Date(app.createdAt), 'MMM d, yyyy')}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge
+                      variant={
+                        app.status === 'ACCEPTED'
+                          ? 'default'
+                          : app.status === 'REJECTED'
+                            ? 'destructive'
+                            : 'secondary'
+                      }
+                    >
+                      {app.status}
+                    </Badge>
+                    {app.status === 'PENDING' && (
+                      <>
+                        <Button
+                          size="sm"
+                          variant="default"
+                          onClick={() => updateStatusMutation.mutate({ id: app.id, status: 'ACCEPTED' })}
+                          disabled={updateStatusMutation.isPending}
+                        >
+                          <Check className="h-4 w-4 mr-1" />
+                          Accept
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => updateStatusMutation.mutate({ id: app.id, status: 'REJECTED' })}
+                          disabled={updateStatusMutation.isPending}
+                        >
+                          <X className="h-4 w-4 mr-1" />
+                          Reject
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
             ))}
           </CardContent>
         </Card>
