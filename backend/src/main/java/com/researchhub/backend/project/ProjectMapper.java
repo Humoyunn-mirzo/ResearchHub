@@ -14,6 +14,7 @@ public abstract class ProjectMapper {
         target = "professorId",
         expression = "java(project.getProfessor() != null ? project.getProfessor().getId() : null)"
     )
+    @Mapping(target = "tags", expression = "java(project.getTags() != null ? project.getTags() : java.util.Collections.emptyList())")
     public abstract ProjectResponse toResponse(Project project);
 
     List<ProjectResponse> toResponseList(List<Project> projects) {
@@ -27,6 +28,7 @@ public abstract class ProjectMapper {
     @Mapping(target = "currentStudents", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "tags", ignore = true)
     public abstract Project toEntity(CreateProjectRequest request);
 
 
@@ -35,6 +37,7 @@ public abstract class ProjectMapper {
     @Mapping(target = "currentStudents", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "tags", ignore = true)
     public abstract void toEntity(UpdateProjectRequest request, @MappingTarget Project project);
 }
 

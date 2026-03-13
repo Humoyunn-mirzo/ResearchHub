@@ -1,14 +1,6 @@
 import { apiClient } from '@/lib/api'
 import { type Project, type CreateProjectInput, type UpdateProjectInput } from '@/core/domain'
-import { env } from '@/lib/env'
 import { useAuthStore } from '@/lib/auth'
-import {
-  mockCloseProject,
-  mockCreateProject,
-  mockFetchProjectById,
-  mockFetchProjects,
-  mockProjects,
-} from './mock-db'
 
 export type ProjectFilters = {
   search?: string
@@ -53,17 +45,16 @@ function mapBackendProjectToFrontend(p: Record<string, unknown>): Project {
 }
 
 export async function fetchProjects(filters: ProjectFilters = {}): Promise<ProjectsResponse> {
-  if (env.NEXT_PUBLIC_DATA_MODE === 'mock') {
-    return mockFetchProjects(filters)
-  }
   const page = filters.page ?? 1
   const limit = filters.limit ?? 12
   const response = await apiClient.get('/projects', {
     params: cleanParams({
       page: page - 1,
       size: limit,
+      ...(filters.professorId && { professorId: filters.professorId }),
       ...(filters.status && { status: filters.status }),
       ...(filters.search && { search: filters.search }),
+      ...(filters.tags && filters.tags.length > 0 && { tags: filters.tags }),
     }),
   })
   const body = response.data as {
@@ -81,11 +72,6 @@ export async function fetchProjects(filters: ProjectFilters = {}): Promise<Proje
 }
 
 export async function fetchProjectById(id: string): Promise<Project> {
-  if (env.NEXT_PUBLIC_DATA_MODE === 'mock') {
-    const project = mockFetchProjectById(id)
-    if (!project) throw new Error('Project not found')
-    return project
-  }
   const response = await apiClient.get(`/projects/${id}`)
   const body = response.data as { data?: Record<string, unknown> }
   const raw = body.data ?? response.data
@@ -93,19 +79,6 @@ export async function fetchProjectById(id: string): Promise<Project> {
 }
 
 export async function createProject(input: CreateProjectInput): Promise<Project> {
-  if (env.NEXT_PUBLIC_DATA_MODE === 'mock') {
-    const user = useAuthStore.getState().user
-    if (!user) throw new Error('You must be signed in to create a project')
-    if (user.role !== 'PROFESSOR') throw new Error('Only professors can create projects')
-
-    const professor = { id: user.id, name: user.name, email: user.email }
-    return mockCreateProject({
-      ...input,
-      professorId: user.id,
-      professor,
-      interviewQuestions: input.interviewQuestions,
-    })
-  }
   const user = useAuthStore.getState().user
   if (!user) throw new Error('You must be signed in to create a project')
   if (user.role !== 'PROFESSOR') throw new Error('Only professors can create projects')
@@ -117,6 +90,7 @@ export async function createProject(input: CreateProjectInput): Promise<Project>
     field: input.tags?.[0] ?? 'General',
     regionFocus: 'Central Asia',
     status: 'OPEN',
+    tags: input.tags ?? [],
     interviewQuestions: input.interviewQuestions,
   }
   const response = await apiClient.post('/projects', payload)
@@ -126,12 +100,6 @@ export async function createProject(input: CreateProjectInput): Promise<Project>
 }
 
 export async function updateProject(id: string, input: UpdateProjectInput): Promise<Project> {
-  if (env.NEXT_PUBLIC_DATA_MODE === 'mock') {
-    const project = mockProjects.find((p) => p.id === id)
-    if (!project) throw new Error('Project not found')
-    Object.assign(project, input)
-    return project
-  }
   const response = await apiClient.patch(`/projects/${id}`, input)
   const body = response.data as { data?: Record<string, unknown> }
   const raw = body.data ?? response.data
@@ -139,20 +107,10 @@ export async function updateProject(id: string, input: UpdateProjectInput): Prom
 }
 
 export async function deleteProject(id: string): Promise<void> {
-  if (env.NEXT_PUBLIC_DATA_MODE === 'mock') {
-    const idx = mockProjects.findIndex((p) => p.id === id)
-    if (idx >= 0) mockProjects.splice(idx, 1)
-    return
-  }
   await apiClient.delete(`/projects/${id}`)
 }
 
 export async function closeProject(id: string): Promise<Project> {
-  if (env.NEXT_PUBLIC_DATA_MODE === 'mock') {
-    const project = mockCloseProject(id)
-    if (!project) throw new Error('Project not found')
-    return project
-  }
   const response = await apiClient.post(`/projects/${id}/close`)
   const body = response.data as { data?: Record<string, unknown> }
   const raw = body.data ?? response.data

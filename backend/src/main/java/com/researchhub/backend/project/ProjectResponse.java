@@ -19,5 +19,6 @@ public record ProjectResponse (
     int currentStudents,
 
     String status,
-    List<Map<String, Object>> interviewQuestions
+    List<Map<String, Object>> interviewQuestions,
+    List<String> tags
 ) {}

@@ -18,4 +18,5 @@ public class UpdateProjectRequest {
     private JsonNullable<Integer> maxStudents = JsonNullable.undefined();
     private JsonNullable<String> status = JsonNullable.undefined();
     private JsonNullable<List<Map<String, Object>>> interviewQuestions = JsonNullable.undefined();
+    private JsonNullable<List<String>> tags = JsonNullable.undefined();
 }

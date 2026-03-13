@@ -8,8 +8,6 @@ import { useState } from 'react'
 import { Search, RefreshCw } from 'lucide-react'
 import Link from 'next/link'
 import { useAuthStore } from '@/lib/auth'
-import { env } from '@/lib/env'
-import { mockProjects } from '@/core/services/mock-db'
 
 export function ProjectsList() {
   const { user, isAuthenticated } = useAuthStore()
@@ -32,10 +30,10 @@ export function ProjectsList() {
     setFilters((prev) => ({ ...prev, search: searchInput, page: 1 }))
   }
 
-  const tagOptions =
-    env.NEXT_PUBLIC_DATA_MODE === 'mock'
-      ? Array.from(new Set(mockProjects.flatMap((p) => p.tags))).sort()
-      : ['Machine Learning', 'Climate', 'NLP', 'Policy', 'Data Visualization', 'Research Impact', 'Biology', 'Engineering', 'Security', 'HCI', 'Economics']
+  const tagOptions = [
+    'Machine Learning', 'Climate', 'NLP', 'Policy', 'Data Visualization', 'Research Impact',
+    'Biology', 'Engineering', 'Security', 'HCI', 'Economics',
+  ]
 
   const selectedTags = filters.tags ?? []
 

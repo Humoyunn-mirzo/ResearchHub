@@ -26,11 +26,25 @@ public class ProjectService {
     private final ProjectMapper projectMapper;
     private final CurrentUserService currentUserService;
 
-    public Page<ProjectResponse> getProjects(Pageable pageable) {
-        Page<Project> page = projectRepository.findAll(pageable);
-
+    public Page<ProjectResponse> getProjects(Pageable pageable, UUID professorId, String status, String search, List<String> tags) {
+        boolean useSearchOrTags = (search != null && !search.isBlank()) || (tags != null && !tags.isEmpty());
+        Page<Project> page;
+        if (useSearchOrTags) {
+            if (tags != null && !tags.isEmpty()) {
+                page = projectRepository.findFilteredWithTags(professorId, status, search, tags, pageable);
+            } else {
+                page = projectRepository.findFiltered(professorId, status, search, pageable);
+            }
+        } else if (professorId != null && status != null && !status.isBlank()) {
+            page = projectRepository.findByProfessorIdAndStatus(professorId, status, pageable);
+        } else if (professorId != null) {
+            page = projectRepository.findByProfessorId(professorId, pageable);
+        } else if (status != null && !status.isBlank()) {
+            page = projectRepository.findByStatus(status, pageable);
+        } else {
+            page = projectRepository.findAll(pageable);
+        }
         List<ProjectResponse> content = projectMapper.toResponseList(page.getContent());
-
         return new PageImpl<>(content, pageable, page.getTotalElements());
     }
 
@@ -57,6 +71,11 @@ public class ProjectService {
             project.setRegionFocus("Central Asia");
         }
 
+        if (request.getTags() != null && !request.getTags().isEmpty()) {
+            project.getTags().clear();
+            project.getTags().addAll(request.getTags());
+        }
+
         project = projectRepository.save(project);
 
         return projectMapper.toResponse(project);
@@ -75,6 +94,11 @@ public class ProjectService {
 
         projectMapper.toEntity(request, project);
 
+        if (request.getTags() != null && request.getTags().isPresent() && !request.getTags().get().isEmpty()) {
+            project.getTags().clear();
+            project.getTags().addAll(request.getTags().get());
+        }
+
         project = projectRepository.save(project);
 
         return projectMapper.toResponse(project);
@@ -92,5 +116,22 @@ public class ProjectService {
         }
 
         projectRepository.deleteById(id);
+    }
+
+    @Transactional
+    public ProjectResponse closeProject(UUID id) {
+        Project project = projectRepository.findById(id)
+            .orElseThrow(() -> new ProjectNotFoundException(id));
+
+        Professor currentProfessor = currentUserService.getCurrentProfessorOrNull();
+        if (currentProfessor == null || project.getProfessor() == null
+                || !project.getProfessor().getId().equals(currentProfessor.getId())) {
+            throw new AccessDeniedException("You can only close your own projects");
+        }
+
+        project.setStatus("CLOSED");
+        project = projectRepository.save(project);
+
+        return projectMapper.toResponse(project);
     }
 }

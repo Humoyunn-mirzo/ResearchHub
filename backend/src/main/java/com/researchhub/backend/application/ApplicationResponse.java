@@ -12,5 +12,7 @@ public record ApplicationResponse(
     String cvFile,
     List<String> screeningAnswers,
     OffsetDateTime appliedAt,
-    OffsetDateTime updatedAt
+    OffsetDateTime updatedAt,
+    ApplicationStudentInfo student,
+    ApplicationProjectInfo project
 ) {}

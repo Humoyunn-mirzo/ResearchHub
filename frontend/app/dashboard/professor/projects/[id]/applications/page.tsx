@@ -1,20 +1,31 @@
 'use client'
 
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useParams, useRouter } from 'next/navigation'
-import { fetchProjectById, fetchApplications } from '@/core/services'
+import { fetchProjectById, fetchApplications, updateApplicationStatus } from '@/core/services'
 import { useAuthStore } from '@/lib/auth'
 import { Card, CardContent, CardHeader, CardTitle, Badge, Button } from '@/components/ui'
 import Link from 'next/link'
-import { ArrowLeft, LayoutDashboard, FileText } from 'lucide-react'
+import { ArrowLeft, LayoutDashboard, FileText, User, Check, X } from 'lucide-react'
 import { format } from 'date-fns'
 import { useEffect } from 'react'
 
 export default function ProjectApplicationsPage() {
   const params = useParams()
   const router = useRouter()
+  const queryClient = useQueryClient()
   const { user, isAuthenticated } = useAuthStore()
   const projectId = params.id as string
+
+  const updateStatusMutation = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: 'ACCEPTED' | 'REJECTED' }) =>
+      updateApplicationStatus(id, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['applications', projectId] })
+      queryClient.invalidateQueries({ queryKey: ['project', projectId] })
+    },
+    onError: (error: Error) => alert(error.message || 'Failed to update application'),
+  })
 
   const { data: project, isLoading: projectLoading, error: projectError } = useQuery({
     queryKey: ['project', projectId],
@@ -27,8 +38,28 @@ export default function ProjectApplicationsPage() {
     enabled: !!projectId,
   })
 
+  const queryClient = useQueryClient()
   const applications = applicationsData?.data ?? []
+  const queryClient = useQueryClient()
+  const updateStatusMutation = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: 'ACCEPTED' | 'REJECTED' }) =>
+      updateApplicationStatus(id, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['applications', projectId] })
+    },
+  })
   const isAdmin = user?.role === 'DEVELOPER' || user?.role === 'PLATFORM_ADMIN'
+
+  const updateStatusMutation = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: 'ACCEPTED' | 'REJECTED' }) =>
+      updateApplicationStatus(id, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['applications', projectId] })
+      queryClient.invalidateQueries({ queryKey: ['project', projectId] })
+      queryClient.invalidateQueries({ queryKey: ['applications', 'for-my-projects'] })
+    },
+    onError: (error: Error) => alert(error.message || 'Failed to update application'),
+  })
   const isOwner =
     isAuthenticated &&
     (isAdmin || (user?.role === 'PROFESSOR' && project?.professorId === user?.id))
@@ -124,35 +155,15 @@ export default function ProjectApplicationsPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             {applications.map((app) => (
-              <div
+              <ApplicationCard
                 key={app.id}
-                className="rounded-lg border p-4"
-              >
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <div className="font-medium">
-                      {app.student?.name ?? 'Unknown student'}
-                    </div>
-                    {app.student?.email && (
-                      <div className="text-sm text-muted-foreground">{app.student.email}</div>
-                    )}
-                    <div className="mt-2 text-sm text-muted-foreground">
-                      Applied {format(new Date(app.createdAt), 'MMM d, yyyy')}
-                    </div>
-                  </div>
-                  <Badge
-                    variant={
-                      app.status === 'ACCEPTED'
-                        ? 'default'
-                        : app.status === 'REJECTED'
-                          ? 'destructive'
-                          : 'secondary'
-                    }
-                  >
-                    {app.status}
-                  </Badge>
-                </div>
-              </div>
+                app={app}
+                projectId={projectId}
+                onStatusChange={() => {
+                  queryClient.invalidateQueries({ queryKey: ['applications', projectId] })
+                  queryClient.invalidateQueries({ queryKey: ['project', projectId] })
+                }}
+              />
             ))}
           </CardContent>
         </Card>

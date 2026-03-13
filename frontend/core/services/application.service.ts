@@ -4,9 +4,6 @@ import {
   type CreateApplicationInput,
   type ApplicationStatus,
 } from '@/core/domain'
-import { env } from '@/lib/env'
-import { useAuthStore } from '@/lib/auth'
-import { mockCreateApplication, mockFetchApplications, mockApplications } from './mock-db'
 type ApplicationsResponse = {
   data: Application[]
   total: number
@@ -63,9 +60,6 @@ function mapBackendResponseToFrontend(body: {
 export async function fetchApplications(
   filters: ApplicationFilters = {}
 ): Promise<ApplicationsResponse> {
-  if (env.NEXT_PUBLIC_DATA_MODE === 'mock') {
-    return mockFetchApplications(filters)
-  }
   const page = filters.page ?? 1
   const limit = filters.limit ?? 20
   const params = cleanParams({
@@ -86,11 +80,6 @@ export async function fetchApplications(
 }
 
 export async function fetchApplicationById(id: string): Promise<Application> {
-  if (env.NEXT_PUBLIC_DATA_MODE === 'mock') {
-    const app = mockApplications.find((a) => a.id === id)
-    if (!app) throw new Error('Application not found')
-    return app
-  }
   const response = await apiClient.get(`/applications/${id}`)
   const body = response.data as { data?: Record<string, unknown> }
   const app = (body.data ?? response.data) as Record<string, unknown>
@@ -109,17 +98,6 @@ export async function fetchApplicationById(id: string): Promise<Application> {
 }
 
 export async function createApplication(input: CreateApplicationInput): Promise<Application> {
-  if (env.NEXT_PUBLIC_DATA_MODE === 'mock') {
-    const user = useAuthStore.getState().user
-    if (!user) throw new Error('You must be signed in to apply')
-    if (user.role !== 'STUDENT') throw new Error('Only students can apply to projects')
-    return mockCreateApplication({
-      projectId: input.projectId,
-      studentId: user.id,
-      student: { id: user.id, name: user.name, email: user.email },
-      screeningAnswers: input.screeningAnswers,
-    })
-  }
   const response = await apiClient.post('/applications', input)
   const body = response.data as { data?: Record<string, unknown> }
   const app = (body.data ?? response.data) as Record<string, unknown>
@@ -141,13 +119,6 @@ export async function updateApplicationStatus(
   id: string,
   status: ApplicationStatus
 ): Promise<Application> {
-  if (env.NEXT_PUBLIC_DATA_MODE === 'mock') {
-    const app = mockApplications.find((a) => a.id === id)
-    if (!app) throw new Error('Application not found')
-    app.status = status
-    app.updatedAt = new Date()
-    return app
-  }
   const response = await apiClient.patch(`/applications/${id}`, { status })
   const body = response.data as { data?: Record<string, unknown> }
   const app = (body.data ?? response.data) as Record<string, unknown>
@@ -166,10 +137,5 @@ export async function updateApplicationStatus(
 }
 
 export async function withdrawApplication(id: string): Promise<void> {
-  if (env.NEXT_PUBLIC_DATA_MODE === 'mock') {
-    const idx = mockApplications.findIndex((a) => a.id === id)
-    if (idx >= 0) mockApplications.splice(idx, 1)
-    return
-  }
   await apiClient.delete(`/applications/${id}`)
 }

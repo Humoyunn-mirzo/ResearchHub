@@ -51,7 +51,6 @@ jobs:
           cache-to: type=gha,mode=max
           build-args: |
             NEXT_PUBLIC_API_URL=/api
-            NEXT_PUBLIC_DATA_MODE=real
 
   build-backend:
     runs-on: ubuntu-latest

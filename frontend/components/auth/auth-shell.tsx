@@ -33,7 +33,7 @@ export function AuthShell({ mode }: { mode: Mode }) {
   const { data: bootstrapStatus } = useQuery({
     queryKey: ['bootstrap-available'],
     queryFn: checkBootstrapAvailable,
-    enabled: env.NEXT_PUBLIC_DATA_MODE === 'real',
+    enabled: true,
     staleTime: 60_000,
   })
   const [registerData, setRegisterData] = useState<RegisterInput>({

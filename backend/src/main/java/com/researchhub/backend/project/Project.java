@@ -6,6 +6,7 @@ import lombok.*;
 import com.vladmihalcea.hibernate.type.json.JsonType;
 import org.hibernate.annotations.Type;
 
+import java.util.ArrayList;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +50,11 @@ public class Project {
     @Type(JsonType.class) //allows conversion between Java and JsonB
     @Column(columnDefinition = "jsonb") //using TEXT would lose JSON features - good practice
     private List<Map<String, Object>> interviewQuestions;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "project_tags", joinColumns = @JoinColumn(name = "project_id"))
+    @Column(name = "tag")
+    private List<String> tags = new java.util.ArrayList<>();
 
     @Column(nullable = false)
     private OffsetDateTime createdAt = OffsetDateTime.now();

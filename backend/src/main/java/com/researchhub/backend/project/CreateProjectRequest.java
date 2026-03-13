@@ -18,4 +18,5 @@ public class CreateProjectRequest {
     private Integer maxStudents;
     private String status;
     private List<Map<String, Object>> interviewQuestions;
+    private List<String> tags;
 }

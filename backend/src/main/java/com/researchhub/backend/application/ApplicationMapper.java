@@ -13,11 +13,23 @@ public abstract class ApplicationMapper {
 
     @Mapping(target = "studentId", expression = "java(application.getStudent() != null ? application.getStudent().getId() : null)")
     @Mapping(target = "projectId", expression = "java(application.getProject() != null ? application.getProject().getId() : null)")
+    @Mapping(target = "student", expression = "java(toStudentInfo(application.getStudent()))")
+    @Mapping(target = "project", expression = "java(toProjectInfo(application.getProject()))")
     @Mapping(
         target = "cvFile",
         qualifiedByName = "bytesToBase64"
     )
     public abstract ApplicationResponse toResponse(Application application);
+
+    static ApplicationStudentInfo toStudentInfo(com.researchhub.backend.student.Student student) {
+        if (student == null) return null;
+        return new ApplicationStudentInfo(student.getId(), student.getName(), student.getEmail());
+    }
+
+    static ApplicationProjectInfo toProjectInfo(com.researchhub.backend.project.Project project) {
+        if (project == null) return null;
+        return new ApplicationProjectInfo(project.getId(), project.getTitle());
+    }
 
     public List<ApplicationResponse> toResponseList(List<Application> applications) {
         return applications.stream()

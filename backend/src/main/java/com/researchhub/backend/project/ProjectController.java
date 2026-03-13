@@ -13,6 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -25,14 +27,18 @@ public class ProjectController {
     @GetMapping
     public ResponseEntity<ApiResponsePage<ProjectResponse>> getProjects(
         @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "20") int size
+        @RequestParam(defaultValue = "20") int size,
+        @RequestParam(required = false) UUID professorId,
+        @RequestParam(required = false) String status,
+        @RequestParam(required = false) String search,
+        @RequestParam(required = false) List<String> tags
     ) {
         Pageable pageable = PageRequest.of(
             page,
             size,
-            Sort.by("title").descending()
+            Sort.by("createdAt").descending()
         );
-        Page<ProjectResponse> projects = projectService.getProjects(pageable);
+        Page<ProjectResponse> projects = projectService.getProjects(pageable, professorId, status, search, tags);
         return ResponseEntity.ok(new ApiResponsePage<>(projects));
     }
 
@@ -58,5 +64,11 @@ public class ProjectController {
     public ResponseEntity<Void> deleteProject(@PathVariable UUID id) {
         projectService.deleteProject(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/close")
+    public ResponseEntity<ApiResponse<ProjectResponse>> closeProject(@PathVariable UUID id) {
+        ProjectResponse response = projectService.closeProject(id);
+        return ResponseEntity.ok(new ApiResponse<>(response));
     }
 }
