@@ -5,12 +5,7 @@ import { useAuthStore } from '@/lib/auth'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import {
-  fetchPendingProfessors,
-  approveProfessor,
-  getProfessorCvUrl,
-  type PendingProfessor,
-} from '@/core/services'
+import { fetchPendingProfessors, approveProfessor, getProfessorCvUrl } from '@/core/services'
 import { Card, CardContent, CardHeader, CardTitle, Button, Badge } from '@/components/ui'
 import { ArrowLeft, Users, Check, FileDown } from 'lucide-react'
 
