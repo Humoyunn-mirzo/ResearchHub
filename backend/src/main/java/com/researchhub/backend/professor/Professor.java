@@ -35,6 +35,16 @@ public class Professor extends User {
 
     private Double acceptanceRate;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 50)
+    private ProfessorStatus status = ProfessorStatus.CONFIRMED;
+
+    @Column(name = "cv_file", columnDefinition = "BYTEA")
+    private byte[] cvFile;
+
+    @Column(name = "cv_file_name")
+    private String cvFileName;
+
     @Column(nullable = false)
     private OffsetDateTime createdAt = OffsetDateTime.now();
 

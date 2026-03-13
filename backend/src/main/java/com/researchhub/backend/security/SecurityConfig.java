@@ -60,12 +60,15 @@ public class SecurityConfig {
                 auth.requestMatchers(HttpMethod.DELETE, "/projects/**").hasAnyRole("PROFESSOR", "DEVELOPER");
 
                 auth.requestMatchers(HttpMethod.GET, "/admin/analytics", "/admin/analytics/**").hasAnyRole("DEVELOPER", "UNIVERSITY_ADMIN");
+                auth.requestMatchers(HttpMethod.GET, "/admin/professors/pending").hasAnyRole("DEVELOPER", "UNIVERSITY_ADMIN");
+                auth.requestMatchers(HttpMethod.PATCH, "/admin/professors/**/approve").hasAnyRole("DEVELOPER", "UNIVERSITY_ADMIN");
+                auth.requestMatchers(HttpMethod.GET, "/admin/professors/**/cv").hasAnyRole("DEVELOPER", "UNIVERSITY_ADMIN");
 
                 auth.requestMatchers(HttpMethod.GET, "/applications/my-projects").hasRole("PROFESSOR");
                 auth.requestMatchers(HttpMethod.GET, "/applications/**").authenticated();
                 auth.requestMatchers(HttpMethod.POST, "/applications/**").hasRole("STUDENT");
                 auth.requestMatchers(HttpMethod.PATCH, "/applications/**").hasAnyRole("STUDENT", "PROFESSOR"); //.hasRole("STUDENT"); TODO: separate to diff endpoints
-                auth.requestMatchers(HttpMethod.DELETE, "/applications/**").hasRole("STUDENT");
+                auth.requestMatchers(HttpMethod.DELETE, "/applications/**").hasAnyRole("STUDENT", "PROFESSOR");
 
                 auth.requestMatchers(HttpMethod.GET, "/universities/**").permitAll();
                 auth.requestMatchers(HttpMethod.POST, "/universities/**").hasRole("DEVELOPER");

@@ -12,5 +12,6 @@ public record ProfessorResponse (
     int rankingScore,
     int totalProjects,
     int studentsSupervised,
-    Double acceptanceRate
+    Double acceptanceRate,
+    String professorStatus
 ) {}

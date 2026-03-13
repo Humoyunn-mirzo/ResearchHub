@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.researchhub.backend.professor.Professor;
+import com.researchhub.backend.professor.ProfessorStatus;
 import com.researchhub.backend.professor.ProfessorRepository;
 import com.researchhub.backend.professor.exception.ProfessorNotFoundException;
 import com.researchhub.backend.project.exception.ProjectNotFoundException;
@@ -60,6 +61,9 @@ public class ProjectService {
         if (professor == null) {
             throw new AccessDeniedException("Only professors can create projects");
         }
+        if (professor.getStatus() != com.researchhub.backend.professor.ProfessorStatus.CONFIRMED) {
+            throw new AccessDeniedException("Your professor account is pending approval. You can create projects once an admin confirms your registration.");
+        }
 
         Project project = projectMapper.toEntity(request);
         project.setProfessor(professor);
@@ -91,6 +95,9 @@ public class ProjectService {
                 || !project.getProfessor().getId().equals(currentProfessor.getId())) {
             throw new AccessDeniedException("You can only update your own projects");
         }
+        if (currentProfessor.getStatus() != com.researchhub.backend.professor.ProfessorStatus.CONFIRMED) {
+            throw new AccessDeniedException("Your professor account is pending approval.");
+        }
 
         projectMapper.toEntity(request, project);
 
@@ -114,6 +121,9 @@ public class ProjectService {
                 || !project.getProfessor().getId().equals(currentProfessor.getId())) {
             throw new AccessDeniedException("You can only delete your own projects");
         }
+        if (currentProfessor.getStatus() != com.researchhub.backend.professor.ProfessorStatus.CONFIRMED) {
+            throw new AccessDeniedException("Your professor account is pending approval.");
+        }
 
         projectRepository.deleteById(id);
     }
@@ -127,6 +137,9 @@ public class ProjectService {
         if (currentProfessor == null || project.getProfessor() == null
                 || !project.getProfessor().getId().equals(currentProfessor.getId())) {
             throw new AccessDeniedException("You can only close your own projects");
+        }
+        if (currentProfessor.getStatus() != com.researchhub.backend.professor.ProfessorStatus.CONFIRMED) {
+            throw new AccessDeniedException("Your professor account is pending approval.");
         }
 
         project.setStatus("CLOSED");

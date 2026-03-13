@@ -23,17 +23,54 @@ export type RegisterInput = {
   universityId?: string
 }
 
+export type RegisterProfessorInput = {
+  name: string
+  email: string
+  password: string
+  fieldOfStudy?: string
+  universityId?: string
+  cvFile: File
+}
+
+export async function registerProfessor(input: RegisterProfessorInput): Promise<LoginResponse> {
+  const formData = new FormData()
+  formData.append('name', input.name)
+  formData.append('email', input.email)
+  formData.append('password', input.password)
+  formData.append('fieldOfStudy', input.fieldOfStudy ?? 'General')
+  if (input.universityId) formData.append('universityId', input.universityId)
+  formData.append('cv', input.cvFile)
+  const response = await apiClient.post('/auth/register-professor', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+  return LoginResponseSchema.parse(response.data)
+}
+
 export async function login(input: LoginInput): Promise<LoginResponse> {
   const response = await apiClient.post('/auth/login', input)
   return LoginResponseSchema.parse(response.data)
 }
 
 export async function register(input: RegisterInput): Promise<LoginResponse> {
-  // Backend currently supports only {email,password,role} for registration.
   const response = await apiClient.post('/auth/register', {
     email: input.email,
     password: input.password,
     role: input.role,
+    name: input.name,
+  })
+  return LoginResponseSchema.parse(response.data)
+}
+
+export async function registerProfessor(input: RegisterProfessorInput): Promise<LoginResponse> {
+  const formData = new FormData()
+  formData.append('name', input.name)
+  formData.append('email', input.email)
+  formData.append('password', input.password)
+  formData.append('fieldOfStudy', input.fieldOfStudy ?? 'General')
+  if (input.universityId) formData.append('universityId', input.universityId)
+  formData.append('cv', input.cv)
+  const response = await apiClient.post('/auth/register-professor', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
   })
   return LoginResponseSchema.parse(response.data)
 }

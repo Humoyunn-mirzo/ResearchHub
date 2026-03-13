@@ -104,8 +104,14 @@ public class ApplicationService {
                 .orElseThrow(() -> new ApplicationNotFoundException(id));
 
         Student currentStudent = currentUserService.getCurrentStudentOrNull();
-        if (currentStudent == null || !application.getStudent().getId().equals(currentStudent.getId())) {
-            throw new AccessDeniedException("Only the applicant can withdraw an application");
+        Professor currentProfessor = currentUserService.getCurrentProfessorOrNull();
+
+        boolean isApplicant = currentStudent != null && application.getStudent().getId().equals(currentStudent.getId());
+        boolean isProjectProfessor = currentProfessor != null && application.getProject().getProfessor() != null
+                && application.getProject().getProfessor().getId().equals(currentProfessor.getId());
+
+        if (!isApplicant && !isProjectProfessor && !currentUserService.isDeveloperOrUniversityAdmin()) {
+            throw new AccessDeniedException("Only the applicant, project professor, or admin can delete an application");
         }
 
         applicationRepository.deleteById(id);

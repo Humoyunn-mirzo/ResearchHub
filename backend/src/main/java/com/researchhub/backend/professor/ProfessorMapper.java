@@ -17,6 +17,10 @@ public abstract class ProfessorMapper {
         target = "universityId",
         expression = "java(professor.getUniversity() != null ? professor.getUniversity().getId() : null)"
     )
+    @Mapping(
+        target = "professorStatus",
+        expression = "java(professor.getStatus() != null ? professor.getStatus().name() : \"CONFIRMED\")"
+    )
     public abstract ProfessorResponse toResponse(Professor professor);
 
     List<ProfessorResponse> toResponseList(List<Professor> professors) {
@@ -35,6 +39,7 @@ public abstract class ProfessorMapper {
     @AfterMapping
     protected void afterCreate(CreateProfessorRequest request, @MappingTarget Professor professor) {
         professor.setRoles(Set.of(UserRole.PROFESSOR));
+        professor.setStatus(ProfessorStatus.CONFIRMED);
     }
 
 

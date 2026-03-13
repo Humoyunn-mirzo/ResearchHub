@@ -19,6 +19,8 @@ public class AuthUserDto {
     private String role;
     private String universityId;
     private String createdAt;
+    /** PENDING or CONFIRMED - only present when role is PROFESSOR */
+    private String professorStatus;
 
     public static AuthUserDto fromUser(User user) {
         if (user == null) return null;
@@ -34,6 +36,9 @@ public class AuthUserDto {
         dto.setRole(role);
         dto.setUniversityId(null);
         dto.setCreatedAt(Instant.now().toString());
+        if (user instanceof com.researchhub.backend.professor.Professor prof) {
+            dto.setProfessorStatus(prof.getStatus() != null ? prof.getStatus().name() : "CONFIRMED");
+        }
         return dto;
     }
 }

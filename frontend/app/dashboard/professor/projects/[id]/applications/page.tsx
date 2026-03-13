@@ -2,13 +2,13 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useParams, useRouter } from 'next/navigation'
-import { fetchProjectById, fetchApplications, updateApplicationStatus } from '@/core/services'
+import { fetchProjectById, fetchApplications, updateApplicationStatus, withdrawApplication } from '@/core/services'
 import { useAuthStore } from '@/lib/auth'
 import { Card, CardContent, CardHeader, CardTitle, Badge, Button } from '@/components/ui'
 import Link from 'next/link'
-import { ArrowLeft, LayoutDashboard, FileText, User, Check, X } from 'lucide-react'
+import { ArrowLeft, LayoutDashboard, FileText, User, Check, X, Trash2, RotateCcw } from 'lucide-react'
 import { format } from 'date-fns'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 export default function ProjectApplicationsPage() {
   const params = useParams()
@@ -17,8 +17,10 @@ export default function ProjectApplicationsPage() {
   const { user, isAuthenticated } = useAuthStore()
   const projectId = params.id as string
 
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; studentName: string } | null>(null)
+
   const updateStatusMutation = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: 'ACCEPTED' | 'REJECTED' }) =>
+    mutationFn: ({ id, status }: { id: string; status: 'ACCEPTED' | 'REJECTED' | 'PENDING' }) =>
       updateApplicationStatus(id, status),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['applications', projectId] })
@@ -26,6 +28,17 @@ export default function ProjectApplicationsPage() {
       queryClient.invalidateQueries({ queryKey: ['applications', 'for-my-projects'] })
     },
     onError: (error: Error) => alert(error.message || 'Failed to update application'),
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: withdrawApplication,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['applications', projectId] })
+      queryClient.invalidateQueries({ queryKey: ['project', projectId] })
+      queryClient.invalidateQueries({ queryKey: ['applications', 'for-my-projects'] })
+      setDeleteConfirm(null)
+    },
+    onError: (error: Error) => alert(error.message || 'Failed to delete application'),
   })
 
   const { data: project, isLoading: projectLoading, error: projectError } = useQuery({
@@ -192,6 +205,28 @@ export default function ProjectApplicationsPage() {
                         </Button>
                       </>
                     )}
+                    {(app.status === 'ACCEPTED' || app.status === 'REJECTED') && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => updateStatusMutation.mutate({ id: app.id, status: 'PENDING' })}
+                        disabled={updateStatusMutation.isPending}
+                        title="Revert to pending"
+                      >
+                        <RotateCcw className="h-4 w-4 mr-1" />
+                        Revert
+                      </Button>
+                    )}
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setDeleteConfirm({ id: app.id, studentName: app.student?.name ?? 'this student' })}
+                      disabled={deleteMutation.isPending}
+                      className="text-destructive hover:text-destructive"
+                      title="Delete application"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -213,6 +248,35 @@ export default function ProjectApplicationsPage() {
             </Link>
           </CardContent>
         </Card>
+      )}
+
+      {deleteConfirm && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+          onClick={() => setDeleteConfirm(null)}
+        >
+          <div
+            className="mx-4 max-w-md rounded-lg border bg-card p-6 shadow-lg"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-xl font-semibold">Delete application</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Remove the application from {deleteConfirm.studentName}? This cannot be undone.
+            </p>
+            <div className="mt-6 flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setDeleteConfirm(null)}>
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => deleteMutation.mutate(deleteConfirm.id)}
+                disabled={deleteMutation.isPending}
+              >
+                {deleteMutation.isPending ? 'Deleting…' : 'Delete'}
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

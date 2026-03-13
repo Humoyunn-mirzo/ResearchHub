@@ -13,4 +13,5 @@ import java.util.UUID;
 public interface ProfessorRepository extends JpaRepository<Professor, UUID>, JpaSpecificationExecutor<Professor> {
     boolean existsByEmail(String email);
     Optional<Professor> findByEmail(String email);
+    Page<Professor> findByStatus(ProfessorStatus status, Pageable pageable);
 }

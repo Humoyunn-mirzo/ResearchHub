@@ -1,5 +1,6 @@
 package com.researchhub.backend.auth;
 
+import com.researchhub.backend.professor.ProfessorService;
 import com.researchhub.backend.user.UserRepository;
 import com.researchhub.backend.user.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,6 +10,9 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/auth")
@@ -18,13 +22,16 @@ public class AuthController {
     private final UserRepository userRepository;
     private final UserService userService;
     private final RefreshTokenService refreshTokenService;
+    private final ProfessorService professorService;
 
     public AuthController(AuthService auth, UserRepository userRepository,
-                          UserService userService, RefreshTokenService refreshTokenService) {
+                          UserService userService, RefreshTokenService refreshTokenService,
+                          ProfessorService professorService) {
         this.authService = auth;
         this.userRepository = userRepository;
         this.userService = userService;
         this.refreshTokenService = refreshTokenService;
+        this.professorService = professorService;
     }
 
     /**
@@ -104,8 +111,28 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<LoginResponse> register(@RequestBody AuthRegisterRequest req, HttpServletRequest httpReq) {
+        if ("PROFESSOR".equals(req.getRole())) {
+            return ResponseEntity.badRequest().build();
+        }
         var name = req.getName() != null && !req.getName().isBlank() ? req.getName() : req.getEmail();
         var result = authService.registerAndLogin(req.getEmail(), req.getPassword(), req.getRole(), name);
+        return buildTokenResponse(result, httpReq);
+    }
+
+    @PostMapping(value = "/register-professor", consumes = "multipart/form-data")
+    public ResponseEntity<LoginResponse> registerProfessor(
+            @RequestParam String name,
+            @RequestParam String email,
+            @RequestParam String password,
+            @RequestParam(required = false) String fieldOfStudy,
+            @RequestParam(required = false) UUID universityId,
+            @RequestParam("cv") MultipartFile cvFile,
+            HttpServletRequest httpReq) {
+        professorService.registerProfessorWithCv(
+                name, email, password,
+                fieldOfStudy != null && !fieldOfStudy.isBlank() ? fieldOfStudy : "General",
+                universityId, cvFile);
+        var result = authService.login(email, password);
         return buildTokenResponse(result, httpReq);
     }
 
