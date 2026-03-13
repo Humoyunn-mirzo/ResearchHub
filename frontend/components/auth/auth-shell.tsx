@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { login, register, bootstrap, checkBootstrapAvailable, getCurrentUser, type LoginInput, type RegisterInput } from '@/core/services'
+import { login, register, registerProfessor, bootstrap, checkBootstrapAvailable, getCurrentUser, type LoginInput, type RegisterInput } from '@/core/services'
 import { useAuthStore } from '@/lib/auth'
 import { Button, Input, Label, Card, CardContent, CardHeader, CardTitle, Badge } from '@/components/ui'
 import { env } from '@/lib/env'
@@ -36,13 +36,15 @@ export function AuthShell({ mode }: { mode: Mode }) {
     enabled: true,
     staleTime: 60_000,
   })
-  const [registerData, setRegisterData] = useState<RegisterInput>({
+  const [registerData, setRegisterData] = useState<RegisterInput & { fieldOfStudy?: string }>({
     name: '',
     email: '',
     password: '',
     role: 'STUDENT',
     universityId: '',
+    fieldOfStudy: 'General',
   })
+  const [cvFile, setCvFile] = useState<File | null>(null)
 
   const redirectTo = useMemo(() => {
     // Default post-auth route per spec: students → projects, professors/admins → dashboard
@@ -95,6 +97,17 @@ export function AuthShell({ mode }: { mode: Mode }) {
 
   const registerMutation = useMutation({
     mutationFn: register,
+    onSuccess: (data) => {
+      setAuth(data.user, data.accessToken, data.refreshToken)
+      router.push(redirectTo)
+    },
+    onError: (error: Error) => {
+      alert(error.message || 'Registration failed. Please try again.')
+    },
+  })
+
+  const registerProfessorMutation = useMutation({
+    mutationFn: registerProfessor,
     onSuccess: (data) => {
       setAuth(data.user, data.accessToken, data.refreshToken)
       router.push(redirectTo)
@@ -281,7 +294,28 @@ export function AuthShell({ mode }: { mode: Mode }) {
             <form
               onSubmit={(e) => {
                 e.preventDefault()
-                registerMutation.mutate(registerData)
+                if (registerData.role === 'PROFESSOR') {
+                  if (!cvFile) {
+                    alert('Please upload your CV (PDF, DOC, or DOCX)')
+                    return
+                  }
+                  registerProfessorMutation.mutate({
+                    name: registerData.name,
+                    email: registerData.email,
+                    password: registerData.password,
+                    fieldOfStudy: registerData.fieldOfStudy || 'General',
+                    universityId: registerData.universityId || undefined,
+                    cvFile,
+                  })
+                } else {
+                  registerMutation.mutate({
+                    name: registerData.name,
+                    email: registerData.email,
+                    password: registerData.password,
+                    role: 'STUDENT',
+                    universityId: registerData.universityId || undefined,
+                  })
+                }
               }}
               className="space-y-4"
             >
@@ -329,9 +363,11 @@ export function AuthShell({ mode }: { mode: Mode }) {
                   <select
                     id="role"
                     value={registerData.role}
-                    onChange={(e) =>
-                      setRegisterData({ ...registerData, role: e.target.value as 'STUDENT' | 'PROFESSOR' })
-                    }
+                    onChange={(e) => {
+                      const role = e.target.value as 'STUDENT' | 'PROFESSOR'
+                      setRegisterData({ ...registerData, role })
+                      if (role === 'STUDENT') setCvFile(null)
+                    }}
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                     required
                   >
@@ -339,6 +375,33 @@ export function AuthShell({ mode }: { mode: Mode }) {
                     <option value="PROFESSOR">Professor</option>
                   </select>
                 </div>
+
+                {registerData.role === 'PROFESSOR' && (
+                  <>
+                    <div className="sm:col-span-2">
+                      <Label htmlFor="cv">CV (required)</Label>
+                      <Input
+                        id="cv"
+                        type="file"
+                        accept=".pdf,.doc,.docx"
+                        onChange={(e) => setCvFile(e.target.files?.[0] ?? null)}
+                        required={registerData.role === 'PROFESSOR'}
+                        className="cursor-pointer"
+                      />
+                      <p className="mt-1 text-xs text-muted-foreground">PDF, DOC, or DOCX. Max 10MB.</p>
+                    </div>
+                    <div className="sm:col-span-2">
+                      <Label htmlFor="fieldOfStudy">Field of study (optional)</Label>
+                      <Input
+                        id="fieldOfStudy"
+                        type="text"
+                        value={registerData.fieldOfStudy ?? 'General'}
+                        onChange={(e) => setRegisterData({ ...registerData, fieldOfStudy: e.target.value })}
+                        placeholder="e.g., Computer Science"
+                      />
+                    </div>
+                  </>
+                )}
 
                 <div className="sm:col-span-2">
                   <Label htmlFor="universityId">University ID (optional)</Label>
@@ -352,8 +415,22 @@ export function AuthShell({ mode }: { mode: Mode }) {
                 </div>
               </div>
 
-              <Button type="submit" className="w-full" disabled={registerMutation.isPending}>
-                {registerMutation.isPending ? 'Creating account…' : 'Sign up'}
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={
+                  registerData.role === 'PROFESSOR'
+                    ? registerProfessorMutation.isPending
+                    : registerMutation.isPending
+                }
+              >
+                {registerData.role === 'PROFESSOR'
+                  ? registerProfessorMutation.isPending
+                    ? 'Creating account…'
+                    : 'Sign up (pending approval)'
+                  : registerMutation.isPending
+                    ? 'Creating account…'
+                    : 'Sign up'}
               </Button>
 
               <p className="text-center text-sm text-muted-foreground">

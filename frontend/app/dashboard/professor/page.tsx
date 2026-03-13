@@ -5,10 +5,11 @@ import { fetchProjects, fetchApplications } from '@/core/services'
 import { useAuthStore } from '@/lib/auth'
 import { Card, CardContent, CardHeader, CardTitle, Button, Badge } from '@/components/ui'
 import Link from 'next/link'
-import { BookOpen, Users, FileText, Plus, History } from 'lucide-react'
+import { BookOpen, Users, FileText, Plus, History, AlertCircle } from 'lucide-react'
 
 export default function ProfessorDashboard() {
   const { user } = useAuthStore()
+  const isPending = user?.role === 'PROFESSOR' && user?.professorStatus === 'PENDING'
 
   const {
     data: myProjects,
@@ -19,13 +20,13 @@ export default function ProfessorDashboard() {
     queryKey: ['projects', 'my', user?.id],
     queryFn: () =>
       fetchProjects(user?.id ? { professorId: user.id, limit: 50 } : {}),
-    enabled: !!user?.id,
+    enabled: !!user?.id && !isPending,
   })
 
   const { data: applications } = useQuery({
     queryKey: ['applications', 'for-my-projects', user?.id],
     queryFn: () => fetchApplications({ myProjects: true, limit: 100 }),
-    enabled: !!user?.id,
+    enabled: !!user?.id && !isPending,
   })
 
   const myApplications = applications?.data ?? []
@@ -43,17 +44,29 @@ export default function ProfessorDashboard() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 lg:px-8">
+      {isPending && (
+        <Card className="mb-6 border-amber-500/50 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-500/30">
+          <CardContent className="flex items-center gap-3 py-4">
+            <AlertCircle className="h-5 w-5 shrink-0 text-amber-600 dark:text-amber-500" />
+            <p className="text-sm font-medium text-amber-900 dark:text-amber-100">
+              Your account is pending approval. An admin will review your CV and approve your account. You can view the dashboard but cannot create projects or manage applications until you are approved.
+            </p>
+          </CardContent>
+        </Card>
+      )}
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-4xl font-bold">Professor Dashboard</h1>
           <p className="mt-2 text-muted-foreground">Welcome back, {user?.name}</p>
         </div>
-        <Link href="/dashboard/professor/projects/new">
-          <Button size="lg">
-            <Plus className="mr-2 h-4 w-4" />
-            Create Project
-          </Button>
-        </Link>
+        {!isPending && (
+          <Link href="/dashboard/professor/projects/new">
+            <Button size="lg">
+              <Plus className="mr-2 h-4 w-4" />
+              Create Project
+            </Button>
+          </Link>
+        )}
       </div>
 
       {/* Stats Grid */}
@@ -134,12 +147,14 @@ export default function ProfessorDashboard() {
                         View
                       </Button>
                     </Link>
-                    <Link
-                      href={`/dashboard/professor/projects/${project.id}/applications`}
-                      className="flex-1"
-                    >
-                      <Button className="w-full">Applications</Button>
-                    </Link>
+                    {!isPending && (
+                      <Link
+                        href={`/dashboard/professor/projects/${project.id}/applications`}
+                        className="flex-1"
+                      >
+                        <Button className="w-full">Applications</Button>
+                      </Link>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -148,13 +163,15 @@ export default function ProfessorDashboard() {
         ) : !isProjectsError && myProjects ? (
           <Card>
             <CardContent className="py-12 text-center">
-              <p className="mb-4 text-muted-foreground">No active projects. Create one or view your research history below.</p>
-              <Link href="/dashboard/professor/projects/new">
-                <Button>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create New Project
-                </Button>
-              </Link>
+              <p className="mb-4 text-muted-foreground">No active projects. {!isPending && 'Create one or '}view your research history below.</p>
+              {!isPending && (
+                <Link href="/dashboard/professor/projects/new">
+                  <Button>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Create New Project
+                  </Button>
+                </Link>
+              )}
             </CardContent>
           </Card>
         ) : null}
@@ -189,12 +206,14 @@ export default function ProfessorDashboard() {
                         View
                       </Button>
                     </Link>
-                    <Link
-                      href={`/dashboard/professor/projects/${project.id}/applications`}
-                      className="flex-1"
-                    >
-                      <Button variant="outline" className="w-full">Applications</Button>
-                    </Link>
+                    {!isPending && (
+                      <Link
+                        href={`/dashboard/professor/projects/${project.id}/applications`}
+                        className="flex-1"
+                      >
+                        <Button variant="outline" className="w-full">Applications</Button>
+                      </Link>
+                    )}
                   </div>
                 </CardContent>
               </Card>

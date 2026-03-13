@@ -40,9 +40,7 @@ export async function registerProfessor(input: RegisterProfessorInput): Promise<
   formData.append('fieldOfStudy', input.fieldOfStudy ?? 'General')
   if (input.universityId) formData.append('universityId', input.universityId)
   formData.append('cv', input.cvFile)
-  const response = await apiClient.post('/auth/register-professor', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  })
+  const response = await apiClient.post('/auth/register-professor', formData)
   return LoginResponseSchema.parse(response.data)
 }
 
@@ -57,20 +55,6 @@ export async function register(input: RegisterInput): Promise<LoginResponse> {
     password: input.password,
     role: input.role,
     name: input.name,
-  })
-  return LoginResponseSchema.parse(response.data)
-}
-
-export async function registerProfessor(input: RegisterProfessorInput): Promise<LoginResponse> {
-  const formData = new FormData()
-  formData.append('name', input.name)
-  formData.append('email', input.email)
-  formData.append('password', input.password)
-  formData.append('fieldOfStudy', input.fieldOfStudy ?? 'General')
-  if (input.universityId) formData.append('universityId', input.universityId)
-  formData.append('cv', input.cv)
-  const response = await apiClient.post('/auth/register-professor', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
   })
   return LoginResponseSchema.parse(response.data)
 }

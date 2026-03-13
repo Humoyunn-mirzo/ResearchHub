@@ -133,6 +133,19 @@ export default function AdminDashboard() {
           </Card>
         </Link>
 
+        <Link href="/dashboard/admin/professors/pending">
+          <Card className="transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-lg">
+            <CardHeader>
+              <CardTitle>Pending Professors</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Review and approve professor registrations with CV submissions.
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+
         <Card>
           <CardHeader>
             <CardTitle>System Settings</CardTitle>
