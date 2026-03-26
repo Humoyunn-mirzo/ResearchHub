@@ -6,7 +6,19 @@ import { fetchProjectById, fetchApplications, updateApplicationStatus, withdrawA
 import { useAuthStore } from '@/lib/auth'
 import { Card, CardContent, CardHeader, CardTitle, Badge, Button } from '@/components/ui'
 import Link from 'next/link'
-import { ArrowLeft, LayoutDashboard, FileText, User, Check, X, Trash2, RotateCcw } from 'lucide-react'
+import {
+  ArrowLeft,
+  LayoutDashboard,
+  FileText,
+  User,
+  Check,
+  X,
+  Trash2,
+  RotateCcw,
+  FileDown,
+  ChevronDown,
+} from 'lucide-react'
+import type { ScreeningQuestion } from '@/core/domain/project'
 import { format } from 'date-fns'
 import { useEffect, useState } from 'react'
 
@@ -53,6 +65,7 @@ export default function ProjectApplicationsPage() {
   })
 
   const applications = applicationsData?.data ?? []
+  const screeningQuestions = (project?.interviewQuestions ?? []) as ScreeningQuestion[]
   const isAdmin = user?.role === 'DEVELOPER' || user?.role === 'PLATFORM_ADMIN'
   const isOwner =
     isAuthenticated &&
@@ -148,7 +161,14 @@ export default function ProjectApplicationsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {applications.map((app) => (
+            {applications.map((app) => {
+              const answers = app.screeningAnswers ?? []
+              const hasCv = Boolean(app.cvFile && app.cvFile.length > 0)
+              const hasWrittenResponses =
+                screeningQuestions.length > 0 || answers.length > 0
+              const showResponsesSection = hasWrittenResponses || hasCv
+
+              return (
               <div key={app.id} className="rounded-lg border p-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
@@ -229,8 +249,81 @@ export default function ProjectApplicationsPage() {
                     </Button>
                   </div>
                 </div>
+
+                {showResponsesSection && (
+                  <details className="group mt-4 border-t pt-4" open>
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-sm font-medium text-foreground outline-none marker:hidden [&::-webkit-details-marker]:hidden">
+                      <span className="flex items-center gap-2">
+                        <FileText className="h-4 w-4 text-muted-foreground" />
+                        Application answers
+                      </span>
+                      <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
+                    </summary>
+                    <div className="mt-3 space-y-3">
+                      {screeningQuestions.length > 0 ? (
+                        screeningQuestions.map((q, idx) => (
+                          <div
+                            key={`${app.id}-q-${idx}`}
+                            className="rounded-md border border-border/80 bg-muted/30 p-3"
+                          >
+                            <p className="text-sm font-medium leading-snug">
+                              {q.question?.trim() ? q.question : `Question ${idx + 1}`}
+                            </p>
+                            <p className="mt-2 whitespace-pre-wrap break-words text-sm text-muted-foreground">
+                              {answers[idx]?.trim() ? answers[idx] : '—'}
+                            </p>
+                          </div>
+                        ))
+                      ) : answers.length > 0 ? (
+                        answers.map((text, idx) => (
+                          <div
+                            key={`${app.id}-a-${idx}`}
+                            className="rounded-md border border-border/80 bg-muted/30 p-3"
+                          >
+                            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                              Response {idx + 1}
+                            </p>
+                            <p className="mt-1 whitespace-pre-wrap break-words text-sm text-muted-foreground">
+                              {text.trim() ? text : '—'}
+                            </p>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-sm text-muted-foreground">No written responses for this application.</p>
+                      )}
+                      {hasCv && app.cvFile && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="w-full sm:w-auto"
+                          onClick={() => {
+                            try {
+                              const raw = atob(app.cvFile!)
+                              const bytes = new Uint8Array(raw.length)
+                              for (let i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i)
+                              const blob = new Blob([bytes], { type: 'application/pdf' })
+                              const url = URL.createObjectURL(blob)
+                              const a = document.createElement('a')
+                              a.href = url
+                              a.download = `cv-${app.student?.name?.replace(/\s+/g, '-') ?? app.studentId}.pdf`
+                              a.click()
+                              URL.revokeObjectURL(url)
+                            } catch {
+                              alert('Could not download the CV file.')
+                            }
+                          }}
+                        >
+                          <FileDown className="mr-2 h-4 w-4" />
+                          Download CV (PDF)
+                        </Button>
+                      )}
+                    </div>
+                  </details>
+                )}
               </div>
-            ))}
+              )
+            })}
           </CardContent>
         </Card>
       ) : (
