@@ -1,4 +1,5 @@
 export * from './project.service'
+export * from './professor.service'
 export * from './research-topics.service'
 export * from './auth.service'
 export * from './application.service'

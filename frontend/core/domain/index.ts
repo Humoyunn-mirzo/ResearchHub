@@ -1,4 +1,5 @@
 export * from './user'
+export * from './professor'
 export * from './research-topic'
 export * from './project'
 export * from './application'
