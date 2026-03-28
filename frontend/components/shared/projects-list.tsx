@@ -1,7 +1,7 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { fetchProjects, type ProjectFilters } from '@/core/services'
+import { fetchProjects, fetchResearchTopics, type ProjectFilters } from '@/core/services'
 import { ProjectCard } from '@/components/shared/project-card'
 import { Badge, Button, Input } from '@/components/ui'
 import { useState } from 'react'
@@ -25,16 +25,18 @@ export function ProjectsList() {
     staleTime: 15 * 1000,
   })
 
+  const { data: researchTopics = [] } = useQuery({
+    queryKey: ['research-topics'],
+    queryFn: fetchResearchTopics,
+    staleTime: 60 * 1000,
+  })
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     setFilters((prev) => ({ ...prev, search: searchInput, page: 1 }))
   }
 
-  const tagOptions = [
-    'Machine Learning', 'Climate', 'NLP', 'Policy', 'Data Visualization', 'Research Impact',
-    'Biology', 'Engineering', 'Security', 'HCI', 'Economics',
-  ]
-
+  const topicNames = researchTopics.map((t) => t.name)
   const selectedTags = filters.tags ?? []
 
   const toggleTag = (tag: string) => {
@@ -151,22 +153,26 @@ export function ProjectsList() {
 
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-sm font-medium text-muted-foreground">Topics</span>
-          <div className="flex flex-wrap gap-2">
-            {tagOptions.slice(0, 12).map((tag) => {
-              const active = selectedTags.includes(tag)
-              return (
-                <button
-                  key={tag}
-                  type="button"
-                  onClick={() => toggleTag(tag)}
-                  className={`rounded-full border px-3 py-1 text-sm transition ${
-                    active ? 'border-primary bg-primary/10 text-primary' : 'hover:bg-accent'
-                  }`}
-                >
-                  {tag}
-                </button>
-              )
-            })}
+          <div className="flex max-h-32 flex-wrap gap-2 overflow-y-auto">
+            {topicNames.length === 0 ? (
+              <span className="text-sm text-muted-foreground">No topics configured</span>
+            ) : (
+              topicNames.map((tag) => {
+                const active = selectedTags.includes(tag)
+                return (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => toggleTag(tag)}
+                    className={`rounded-full border px-3 py-1 text-sm transition ${
+                      active ? 'border-primary bg-primary/10 text-primary' : 'hover:bg-accent'
+                    }`}
+                  >
+                    {tag}
+                  </button>
+                )
+              })
+            )}
           </div>
 
           {selectedTags.length > 0 && (

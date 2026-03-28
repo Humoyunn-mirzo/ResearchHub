@@ -110,6 +110,27 @@ export async function deleteProject(id: string): Promise<void> {
   await apiClient.delete(`/projects/${id}`)
 }
 
+export async function adminDeleteProject(id: string): Promise<void> {
+  await apiClient.delete(`/admin/projects/${id}`)
+}
+
+export async function adminCloseProject(id: string): Promise<Project> {
+  const response = await apiClient.post(`/admin/projects/${id}/close`)
+  const body = response.data as { data?: Record<string, unknown> }
+  const raw = body.data ?? response.data
+  return mapBackendProjectToFrontend(raw as Record<string, unknown>)
+}
+
+export async function adminModerateProject(
+  id: string,
+  input: { tags?: string[]; status?: 'OPEN' | 'CLOSED' }
+): Promise<Project> {
+  const response = await apiClient.patch(`/admin/projects/${id}`, input)
+  const body = response.data as { data?: Record<string, unknown> }
+  const raw = body.data ?? response.data
+  return mapBackendProjectToFrontend(raw as Record<string, unknown>)
+}
+
 export async function closeProject(id: string): Promise<Project> {
   const response = await apiClient.post(`/projects/${id}/close`)
   const body = response.data as { data?: Record<string, unknown> }

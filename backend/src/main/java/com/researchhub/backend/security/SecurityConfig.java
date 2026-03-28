@@ -59,6 +59,13 @@ public class SecurityConfig {
                 auth.requestMatchers(HttpMethod.PATCH, "/projects/**").hasAnyRole("PROFESSOR", "DEVELOPER");
                 auth.requestMatchers(HttpMethod.DELETE, "/projects/**").hasAnyRole("PROFESSOR", "DEVELOPER");
 
+                auth.requestMatchers(HttpMethod.GET, "/research-topics", "/research-topics/**").permitAll();
+
+                auth.requestMatchers("/admin/research-topics", "/admin/research-topics/**")
+                        .hasAnyRole("DEVELOPER", "UNIVERSITY_ADMIN");
+                auth.requestMatchers("/admin/projects", "/admin/projects/**")
+                        .hasAnyRole("DEVELOPER", "UNIVERSITY_ADMIN");
+
                 auth.requestMatchers(HttpMethod.GET, "/admin/analytics", "/admin/analytics/**").hasAnyRole("DEVELOPER", "UNIVERSITY_ADMIN");
                 auth.requestMatchers(HttpMethod.GET, "/admin/professors/pending").hasAnyRole("DEVELOPER", "UNIVERSITY_ADMIN");
                 auth.requestMatchers(HttpMethod.PATCH, "/admin/professors/*/approve").hasAnyRole("DEVELOPER", "UNIVERSITY_ADMIN");

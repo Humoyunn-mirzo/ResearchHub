@@ -1,18 +1,22 @@
 'use client'
 
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createProject } from '@/core/services'
+import { createProject, fetchResearchTopics } from '@/core/services'
 import { Button, Input, Label, Textarea, Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
-import { X, Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2, X } from 'lucide-react'
 import type { ScreeningQuestion, ScreeningQuestionType } from '@/core/domain'
 
 export default function CreateProjectPage() {
   const router = useRouter()
   const queryClient = useQueryClient()
-  const [tags, setTags] = useState<string[]>([])
-  const [tagInput, setTagInput] = useState('')
+  const [selectedTopicNames, setSelectedTopicNames] = useState<string[]>([])
+
+  const { data: researchTopics = [], isLoading: topicsLoading } = useQuery({
+    queryKey: ['research-topics'],
+    queryFn: fetchResearchTopics,
+  })
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -32,16 +36,10 @@ export default function CreateProjectPage() {
     },
   })
 
-  const handleAddTag = () => {
-    const trimmedTag = tagInput.trim()
-    if (trimmedTag && !tags.includes(trimmedTag) && tags.length < 10) {
-      setTags([...tags, trimmedTag])
-      setTagInput('')
-    }
-  }
-
-  const handleRemoveTag = (tagToRemove: string) => {
-    setTags(tags.filter((tag) => tag !== tagToRemove))
+  const toggleTopic = (name: string) => {
+    setSelectedTopicNames((prev) =>
+      prev.includes(name) ? prev.filter((t) => t !== name) : [...prev, name]
+    )
   }
 
   const addScreeningQuestion = () => {
@@ -95,8 +93,8 @@ export default function CreateProjectPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (tags.length === 0) {
-      alert('Please add at least one tag')
+    if (selectedTopicNames.length === 0) {
+      alert('Please select at least one research topic from the list.')
       return
     }
     const parsedMax = parseInt(maxStudentsInput, 10)
@@ -114,7 +112,7 @@ export default function CreateProjectPage() {
     createMutation.mutate({
       ...formData,
       maxStudents,
-      tags,
+      tags: selectedTopicNames,
       interviewQuestions: questionsWithOptions.length > 0 ? questionsWithOptions : undefined,
     })
   }
@@ -185,47 +183,41 @@ export default function CreateProjectPage() {
             </div>
 
             <div>
-              <Label htmlFor="tags">Tags</Label>
-              <div className="flex gap-2">
-                <Input
-                  id="tags"
-                  value={tagInput}
-                  onChange={(e) => setTagInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault()
-                      handleAddTag()
-                    }
-                  }}
-                  placeholder="e.g., Machine Learning"
-                  maxLength={30}
-                />
-                <Button type="button" onClick={handleAddTag} variant="outline">
-                  Add
-                </Button>
-              </div>
+              <Label>Research topics</Label>
               <p className="mt-1 text-sm text-muted-foreground">
-                Press Enter or click Add to add tags (max 10)
+                Choose from topics approved by the platform. You cannot add custom topics.
               </p>
-
-              {tags.length > 0 && (
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-sm"
-                    >
-                      {tag}
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveTag(tag)}
-                        className="hover:text-destructive"
+              {topicsLoading ? (
+                <p className="mt-3 text-sm text-muted-foreground">Loading topics…</p>
+              ) : researchTopics.length === 0 ? (
+                <p className="mt-3 text-sm text-amber-700 dark:text-amber-400">
+                  No topics are available yet. Please contact an administrator.
+                </p>
+              ) : (
+                <div className="mt-3 flex max-h-56 flex-col gap-2 overflow-y-auto rounded-md border p-3">
+                  {researchTopics.map((topic) => {
+                    const checked = selectedTopicNames.includes(topic.name)
+                    return (
+                      <label
+                        key={topic.id}
+                        className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-muted/60"
                       >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </span>
-                  ))}
+                        <input
+                          type="checkbox"
+                          className="h-4 w-4 rounded border-input"
+                          checked={checked}
+                          onChange={() => toggleTopic(topic.name)}
+                        />
+                        <span>{topic.name}</span>
+                      </label>
+                    )
+                  })}
                 </div>
+              )}
+              {selectedTopicNames.length > 0 && (
+                <p className="mt-2 text-xs text-muted-foreground">
+                  {selectedTopicNames.length} topic{selectedTopicNames.length !== 1 ? 's' : ''} selected
+                </p>
               )}
             </div>
 

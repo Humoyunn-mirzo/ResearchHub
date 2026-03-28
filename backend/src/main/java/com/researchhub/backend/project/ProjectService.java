@@ -1,5 +1,7 @@
 package com.researchhub.backend.project;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.UUID;
 
@@ -11,9 +13,10 @@ import org.springframework.stereotype.Service;
 import com.researchhub.backend.professor.Professor;
 import com.researchhub.backend.professor.ProfessorStatus;
 import com.researchhub.backend.professor.ProfessorRepository;
-import com.researchhub.backend.professor.exception.ProfessorNotFoundException;
+import com.researchhub.backend.admin.AdminModerateProjectRequest;
 import com.researchhub.backend.project.exception.ProjectNotFoundException;
 import com.researchhub.backend.security.CurrentUserService;
+import com.researchhub.backend.topic.ResearchTopicService;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +29,7 @@ public class ProjectService {
     private final ProfessorRepository professorRepository;
     private final ProjectMapper projectMapper;
     private final CurrentUserService currentUserService;
+    private final ResearchTopicService researchTopicService;
 
     public Page<ProjectResponse> getProjects(Pageable pageable, UUID professorId, String status, String search, List<String> tags) {
         boolean useSearchOrTags = (search != null && !search.isBlank()) || (tags != null && !tags.isEmpty());
@@ -76,8 +80,12 @@ public class ProjectService {
         }
 
         if (request.getTags() != null && !request.getTags().isEmpty()) {
+            List<String> deduped = dedupeTagList(request.getTags());
+            researchTopicService.assertValidProjectTags(deduped);
             project.getTags().clear();
-            project.getTags().addAll(request.getTags());
+            project.getTags().addAll(deduped);
+        } else {
+            throw new IllegalArgumentException("Select at least one research topic.");
         }
 
         project = projectRepository.save(project);
@@ -101,9 +109,15 @@ public class ProjectService {
 
         projectMapper.toEntity(request, project);
 
-        if (request.getTags() != null && request.getTags().isPresent() && !request.getTags().get().isEmpty()) {
+        if (request.getTags() != null && request.getTags().isPresent()) {
+            List<String> tagList = request.getTags().get();
+            if (tagList.isEmpty()) {
+                throw new IllegalArgumentException("Select at least one research topic.");
+            }
+            List<String> deduped = dedupeTagList(tagList);
+            researchTopicService.assertValidProjectTags(deduped);
             project.getTags().clear();
-            project.getTags().addAll(request.getTags().get());
+            project.getTags().addAll(deduped);
         }
 
         project = projectRepository.save(project);
@@ -146,5 +160,64 @@ public class ProjectService {
         project = projectRepository.save(project);
 
         return projectMapper.toResponse(project);
+    }
+
+    @Transactional
+    public void deleteProjectAsAdmin(UUID id) {
+        requirePlatformAdmin();
+        Project project = projectRepository.findById(id)
+                .orElseThrow(() -> new ProjectNotFoundException(id));
+        projectRepository.delete(project);
+    }
+
+    @Transactional
+    public ProjectResponse closeProjectAsAdmin(java.util.UUID id) {
+        requirePlatformAdmin();
+        Project project = projectRepository.findById(id)
+                .orElseThrow(() -> new ProjectNotFoundException(id));
+        project.setStatus("CLOSED");
+        project = projectRepository.save(project);
+        return projectMapper.toResponse(project);
+    }
+
+    @Transactional
+    public ProjectResponse moderateProjectAsAdmin(java.util.UUID id, AdminModerateProjectRequest request) {
+        requirePlatformAdmin();
+        Project project = projectRepository.findById(id)
+                .orElseThrow(() -> new ProjectNotFoundException(id));
+        if (request.getTags() != null && !request.getTags().isEmpty()) {
+            List<String> deduped = dedupeTagList(request.getTags());
+            researchTopicService.assertValidProjectTags(deduped);
+            project.getTags().clear();
+            project.getTags().addAll(deduped);
+        }
+        if (request.getStatus() != null && !request.getStatus().isBlank()) {
+            String s = request.getStatus().trim().toUpperCase();
+            if (!"OPEN".equals(s) && !"CLOSED".equals(s)) {
+                throw new IllegalArgumentException("status must be OPEN or CLOSED");
+            }
+            project.setStatus(s);
+        }
+        project = projectRepository.save(project);
+        return projectMapper.toResponse(project);
+    }
+
+    private void requirePlatformAdmin() {
+        if (!currentUserService.isDeveloperOrUniversityAdmin()) {
+            throw new AccessDeniedException("Admin only");
+        }
+    }
+
+    private static List<String> dedupeTagList(List<String> tags) {
+        LinkedHashSet<String> set = new LinkedHashSet<>();
+        for (String t : tags) {
+            if (t != null) {
+                String trimmed = t.trim();
+                if (!trimmed.isEmpty()) {
+                    set.add(trimmed);
+                }
+            }
+        }
+        return new ArrayList<>(set);
     }
 }
