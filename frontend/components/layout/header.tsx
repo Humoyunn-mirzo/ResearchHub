@@ -18,6 +18,9 @@ export function Header() {
     { name: 'Projects', href: '/projects' },
     { name: 'Rankings', href: '/rankings' },
     { name: 'About', href: '/about' },
+    ...(user?.role === 'STUDENT' || user?.role === 'PROFESSOR'
+      ? [{ name: 'Messages', href: '/dashboard/messages' as const }]
+      : []),
   ]
 
   return (

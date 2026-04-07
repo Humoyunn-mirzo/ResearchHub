@@ -61,6 +61,9 @@ public class SecurityConfig {
 
                 auth.requestMatchers(HttpMethod.GET, "/research-topics", "/research-topics/**").permitAll();
 
+                auth.requestMatchers("/conversations", "/conversations/**")
+                        .hasAnyRole("STUDENT", "PROFESSOR");
+
                 auth.requestMatchers("/admin/research-topics", "/admin/research-topics/**")
                         .hasAnyRole("DEVELOPER", "UNIVERSITY_ADMIN");
                 auth.requestMatchers("/admin/projects", "/admin/projects/**")

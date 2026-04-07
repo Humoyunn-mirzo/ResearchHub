@@ -1,16 +1,20 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { fetchProfessorById, fetchProjects } from '@/core/services'
+import { useAuthStore } from '@/lib/auth'
 import { Button, Badge, Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
-import { ArrowLeft, BookOpen, Mail, User, TrendingUp, GraduationCap } from 'lucide-react'
+import { ArrowLeft, BookOpen, Mail, User, TrendingUp, GraduationCap, MessageCircle } from 'lucide-react'
 import { ProjectCard } from '@/components/shared/project-card'
 
 export default function ProfessorProfilePage() {
   const params = useParams()
+  const router = useRouter()
+  const { user, isAuthenticated } = useAuthStore()
   const id = params.id as string
+  const canMessageProfessor = isAuthenticated && user?.role === 'STUDENT'
 
   const { data: professor, isLoading, error } = useQuery({
     queryKey: ['professor', id],
@@ -74,7 +78,7 @@ export default function ProfessorProfilePage() {
               <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-primary/10">
                 <User className="h-7 w-7 text-primary" />
               </div>
-              <div>
+              <div className="min-w-0 flex-1">
                 <CardTitle className="text-2xl">{professor.name}</CardTitle>
                 {professor.fieldOfStudy && (
                   <p className="mt-1 text-muted-foreground">{professor.fieldOfStudy}</p>
@@ -89,6 +93,16 @@ export default function ProfessorProfilePage() {
                 </div>
               </div>
             </div>
+            {canMessageProfessor && (
+              <Button
+                type="button"
+                className="shrink-0"
+                onClick={() => router.push(`/dashboard/messages?with=${professor.id}`)}
+              >
+                <MessageCircle className="mr-2 h-4 w-4" />
+                Message
+              </Button>
+            )}
           </div>
         </CardHeader>
         <CardContent className="space-y-4">

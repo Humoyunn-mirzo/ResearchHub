@@ -175,13 +175,21 @@ export default function ProjectApplicationsPage() {
                     <div className="font-medium flex items-center gap-2">
                       {app.student?.name ?? 'Unknown student'}
                       {app.studentId && (
-                        <Link
-                          href={`/students/${app.studentId}`}
-                          className="text-sm text-primary hover:underline flex items-center gap-1"
-                        >
-                          <User className="h-4 w-4" />
-                          View profile
-                        </Link>
+                        <>
+                          <Link
+                            href={`/students/${app.studentId}`}
+                            className="text-sm text-primary hover:underline flex items-center gap-1"
+                          >
+                            <User className="h-4 w-4" />
+                            View profile
+                          </Link>
+                          <Link
+                            href={`/dashboard/messages?with=${app.studentId}`}
+                            className="text-sm text-primary hover:underline flex items-center gap-1"
+                          >
+                            Message
+                          </Link>
+                        </>
                       )}
                     </div>
                     {app.student?.email && (

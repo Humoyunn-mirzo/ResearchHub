@@ -9,6 +9,7 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.security.access.AccessDeniedException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -20,6 +21,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity
             .status(ex.getStatus())
             .body(new ApiErrorResponse(new ApiError(ex.getMessage())));
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiErrorResponse> handleAccessDenied(AccessDeniedException ex) {
+        return ResponseEntity
+            .status(403)
+            .body(new ApiErrorResponse(new ApiError(ex.getMessage() != null ? ex.getMessage() : "Forbidden")));
     }
 
     @ExceptionHandler({

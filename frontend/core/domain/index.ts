@@ -1,6 +1,7 @@
 export * from './user'
 export * from './professor'
 export * from './research-topic'
+export * from './messaging'
 export * from './project'
 export * from './application'
 export * from './errors'
