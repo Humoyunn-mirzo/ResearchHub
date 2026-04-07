@@ -39,8 +39,18 @@ export function ProjectCard({ project, actionSlot }: ProjectCardProps) {
         <div className="mt-4 space-y-2 text-sm text-muted-foreground">
           {project.professor && (
             <div className="flex items-center gap-2">
-              <User className="h-4 w-4" />
-              <span>{project.professor.name}</span>
+              <User className="h-4 w-4 shrink-0" />
+              {project.professorId ? (
+                <Link
+                  href={`/professors/${project.professorId}`}
+                  className="text-foreground hover:text-primary hover:underline"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {project.professor.name}
+                </Link>
+              ) : (
+                <span>{project.professor.name}</span>
+              )}
             </div>
           )}
           <div className="flex items-center gap-2">

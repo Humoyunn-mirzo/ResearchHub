@@ -183,6 +183,17 @@ export default function ProjectDetailPage() {
             <Card>
               <CardContent className="pt-6">
                 <form onSubmit={handleApply} className="space-y-6">
+                  {project.professor && project.professorId && (
+                    <p className="text-sm text-muted-foreground">
+                      Supervising professor:{' '}
+                      <Link
+                        href={`/professors/${project.professorId}`}
+                        className="font-medium text-foreground underline-offset-4 hover:text-primary hover:underline"
+                      >
+                        {project.professor.name}
+                      </Link>
+                    </p>
+                  )}
                   {hasScreeningQuestions && (
                     <div className="space-y-4">
                       <h3 className="text-lg font-semibold">Screening Questions</h3>
@@ -300,9 +311,20 @@ export default function ProjectDetailPage() {
               <div className="space-y-4">
                 {project.professor && (
                   <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <User className="h-5 w-5" />
-                      <span className="font-medium text-foreground">{project.professor.name}</span>
+                    <div className="flex items-start gap-2 text-muted-foreground">
+                      <User className="mt-0.5 h-5 w-5 shrink-0" />
+                      <div className="min-w-0 space-y-1">
+                        {project.professorId ? (
+                          <Link
+                            href={`/professors/${project.professorId}`}
+                            className="block font-medium text-foreground hover:text-primary hover:underline"
+                          >
+                            {project.professor.name}
+                          </Link>
+                        ) : (
+                          <span className="font-medium text-foreground">{project.professor.name}</span>
+                        )}
+                      </div>
                     </div>
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Mail className="h-4 w-4" />

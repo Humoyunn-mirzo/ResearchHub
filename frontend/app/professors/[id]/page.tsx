@@ -23,8 +23,8 @@ export default function ProfessorProfilePage() {
   })
 
   const { data: projectsData } = useQuery({
-    queryKey: ['projects', 'professor', id],
-    queryFn: () => fetchProjects({ professorId: id, limit: 24, status: 'OPEN' }),
+    queryKey: ['projects', 'professor', id, 'all'],
+    queryFn: () => fetchProjects({ professorId: id, limit: 48 }),
     enabled: !!id && !!professor,
   })
 
@@ -58,7 +58,9 @@ export default function ProfessorProfilePage() {
     )
   }
 
-  const openProjects = projectsData?.data ?? []
+  const allProjects = projectsData?.data ?? []
+  const openProjects = allProjects.filter((p) => p.status === 'OPEN')
+  const closedProjects = allProjects.filter((p) => p.status === 'CLOSED')
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-12 lg:px-8">
@@ -152,17 +154,33 @@ export default function ProfessorProfilePage() {
         </CardContent>
       </Card>
 
-      <div>
-        <h2 className="mb-4 text-xl font-semibold">Open research listings</h2>
-        {openProjects.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No open projects right now.</p>
-        ) : (
-          <div className="grid gap-6 sm:grid-cols-2">
-            {openProjects.map((project) => (
-              <ProjectCard key={project.id} project={project} />
-            ))}
-          </div>
-        )}
+      <div className="space-y-10">
+        <section>
+          <h2 className="mb-4 text-xl font-semibold">Open research listings</h2>
+          {openProjects.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No open projects right now.</p>
+          ) : (
+            <div className="grid gap-6 sm:grid-cols-2">
+              {openProjects.map((project) => (
+                <ProjectCard key={project.id} project={project} />
+              ))}
+            </div>
+          )}
+        </section>
+
+        <section>
+          <h2 className="mb-4 text-xl font-semibold">Project history</h2>
+          <p className="mb-4 text-sm text-muted-foreground">Closed listings from this professor.</p>
+          {closedProjects.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No closed projects to show.</p>
+          ) : (
+            <div className="grid gap-6 sm:grid-cols-2">
+              {closedProjects.map((project) => (
+                <ProjectCard key={project.id} project={project} />
+              ))}
+            </div>
+          )}
+        </section>
       </div>
     </div>
   )

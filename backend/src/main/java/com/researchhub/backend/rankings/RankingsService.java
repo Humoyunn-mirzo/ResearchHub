@@ -44,7 +44,8 @@ public class RankingsService {
         for (var e : sorted) {
             User user = userRepository.findById((UUID) e.getKey()).orElse(null);
             String name = user != null ? (user.getName() != null ? user.getName() : user.getEmail()) : "Unknown";
-            result.add(new RankingEntry(rank++, name, null, "Accepted: " + e.getValue(), null));
+            result.add(new RankingEntry(rank++, name, null, "Accepted: " + e.getValue(),
+                    "/students/" + e.getKey()));
         }
         return result;
     }
@@ -65,7 +66,8 @@ public class RankingsService {
         for (var e : sorted) {
             User user = userRepository.findById((UUID) e.getKey()).orElse(null);
             String name = user != null ? (user.getName() != null ? user.getName() : user.getEmail()) : "Unknown";
-            result.add(new RankingEntry(rank++, name, null, "Projects: " + e.getValue(), null));
+            result.add(new RankingEntry(rank++, name, null, "Projects: " + e.getValue(),
+                    "/professors/" + e.getKey()));
         }
         return result;
     }
