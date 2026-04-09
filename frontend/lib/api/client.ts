@@ -1,10 +1,31 @@
-import axios, { type AxiosError, type AxiosInstance, type AxiosRequestConfig } from 'axios'
+import axios, { type AxiosError, type AxiosInstance, type InternalAxiosRequestConfig, type AxiosRequestConfig } from 'axios'
 import { DomainError, UnauthorizedError, NotFoundError, ValidationError } from '@/core/domain'
 
 type ApiClientConfig = {
   baseUrl: string
   getToken?: () => string | null
+  /** Return true if a new access token was obtained (cookies + store updated elsewhere). */
+  refreshSession?: () => Promise<boolean>
   onUnauthorized?: () => void
+}
+
+function shouldAttemptRefreshForUrl(url: string | undefined): boolean {
+  if (!url) return true
+  let path = url
+  try {
+    if (url.includes('://')) path = new URL(url).pathname
+  } catch {
+    /* relative axios url */
+  }
+  const norm = path.startsWith('/') ? path : `/${path}`
+  const blocked = [
+    '/auth/login',
+    '/auth/register',
+    '/auth/register-professor',
+    '/auth/bootstrap',
+    '/auth/refresh',
+  ]
+  return !blocked.some((b) => norm === b || norm.startsWith(`${b}/`) || norm.startsWith(`${b}?`))
 }
 
 export function createApiClient(config: ApiClientConfig): AxiosInstance {
@@ -37,15 +58,30 @@ export function createApiClient(config: ApiClientConfig): AxiosInstance {
   // Response interceptor - handle errors
   client.interceptors.response.use(
     (response) => response,
-    (error: AxiosError<{ message?: string; code?: string }>) => {
+    async (error: AxiosError<{ message?: string; code?: string }>) => {
       if (error.response) {
         const { status, data } = error.response
         const message = data.message || 'An error occurred'
 
         switch (status) {
-          case 401:
+          case 401: {
+            const original = error.config as (InternalAxiosRequestConfig & { _authRetried?: boolean }) | undefined
+            const url = original?.url
+            if (
+              original &&
+              !original._authRetried &&
+              shouldAttemptRefreshForUrl(url) &&
+              config.refreshSession
+            ) {
+              original._authRetried = true
+              const ok = await config.refreshSession()
+              if (ok) {
+                return client.request(original)
+              }
+            }
             config.onUnauthorized?.()
             return Promise.reject(new UnauthorizedError(message))
+          }
           case 403:
             return Promise.reject(new DomainError(message, 'FORBIDDEN', 403))
           case 404:

@@ -1,4 +1,5 @@
 import { apiClient } from '@/lib/api'
+import { postAuthRefresh } from '@/lib/api/refresh'
 import { UserSchema, type User } from '@/core/domain'
 import { z } from 'zod'
 
@@ -64,9 +65,8 @@ export async function getCurrentUser(): Promise<User> {
   return UserSchema.parse(response.data)
 }
 
-export async function refreshAccessToken(refreshToken: string): Promise<{ accessToken: string }> {
-  const response = await apiClient.post('/auth/refresh', { refreshToken })
-  return z.object({ accessToken: z.string() }).parse(response.data)
+export async function refreshAccessToken(): Promise<{ accessToken: string; refreshToken: string }> {
+  return postAuthRefresh()
 }
 
 export async function logout(): Promise<void> {

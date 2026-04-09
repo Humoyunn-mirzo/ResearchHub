@@ -10,6 +10,7 @@ type AuthState = {
   refreshToken: string | null
   isAuthenticated: boolean
   setAuth: (user: User, accessToken: string, refreshToken: string) => void
+  setTokens: (accessToken: string, refreshToken: string) => void
   setAuthFromCookies: (user: User) => void
   clearAuth: () => void
   updateUser: (user: Partial<User>) => void
@@ -28,6 +29,11 @@ export const useAuthStore = create<AuthState>()(
           accessToken,
           refreshToken,
           isAuthenticated: true,
+        })),
+      setTokens: (accessToken, refreshToken) =>
+        set(() => ({
+          accessToken,
+          refreshToken,
         })),
       setAuthFromCookies: (user) =>
         set(() => ({
