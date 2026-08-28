@@ -103,6 +103,18 @@ Pages (app/)
 - Pagination
 - Search queries
 
+### Locale (`lib/i18n`)
+The active language lives in a `locale` cookie rather than client storage.
+`app/layout.tsx` reads it on the server, stamps `<html lang>`, and seeds
+`I18nProvider`, so server markup and the first client render always agree — no
+hydration mismatch and no flash of the wrong language. `useTranslation()`
+returns `t(key, values)`; `en.ts` is the source of truth and every other locale
+is typed as `Record<MessageKey, string>`, so a missing key is a compile error.
+
+Reading the cookie in the root layout makes every route server-rendered on
+demand. That is the deliberate trade for correct server-side language; the
+alternative is locale-prefixed routes (`/uz/...`).
+
 ## Security Architecture
 
 ### Frontend Security Layers

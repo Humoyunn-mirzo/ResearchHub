@@ -14,6 +14,7 @@ ResearchHub is a comprehensive platform connecting students, professors, and adm
 ## ✨ Key Features
 
 - 🔐 **Role-Based Access Control (RBAC)** - 4 user roles with granular permissions
+- 🌐 **Multilingual** - English and Uzbek, cookie-backed so SSR and the client always agree
 - 🎨 **Modern UI** - Built with Tailwind CSS, CVA, and ShadCN components
 - 🚀 **Server Components** - RSC-first architecture for optimal performance
 - 📱 **Fully Responsive** - Mobile-first design approach

@@ -1,6 +1,10 @@
+'use client'
+
 import Link from 'next/link'
+import { useTranslation } from '@/lib/i18n'
 
 export function Footer() {
+  const { t } = useTranslation()
   const currentYear = new Date().getFullYear()
 
   return (
@@ -9,43 +13,41 @@ export function Footer() {
         <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
           <div>
             <h3 className="mb-4 text-lg font-semibold">ResearchHub</h3>
-            <p className="text-sm text-muted-foreground">
-              Connecting students and professors for collaborative research opportunities.
-            </p>
+            <p className="text-sm text-muted-foreground">{t('footer.tagline')}</p>
           </div>
 
           <div>
-            <h4 className="mb-4 text-sm font-semibold">Quick Links</h4>
+            <h4 className="mb-4 text-sm font-semibold">{t('footer.quickLinks')}</h4>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link href="/projects" className="text-muted-foreground hover:text-foreground">
-                  Browse Projects
+                  {t('footer.browseProjects')}
                 </Link>
               </li>
               <li>
                 <Link href="/rankings" className="text-muted-foreground hover:text-foreground">
-                  Rankings
+                  {t('footer.rankings')}
                 </Link>
               </li>
               <li>
                 <Link href="/about" className="text-muted-foreground hover:text-foreground">
-                  About Us
+                  {t('footer.about')}
                 </Link>
               </li>
             </ul>
           </div>
 
           <div>
-            <h4 className="mb-4 text-sm font-semibold">Legal</h4>
+            <h4 className="mb-4 text-sm font-semibold">{t('footer.legal')}</h4>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link href="/privacy" className="text-muted-foreground hover:text-foreground">
-                  Privacy Policy
+                  {t('footer.privacy')}
                 </Link>
               </li>
               <li>
                 <Link href="/terms" className="text-muted-foreground hover:text-foreground">
-                  Terms of Service
+                  {t('footer.terms')}
                 </Link>
               </li>
             </ul>
@@ -53,7 +55,7 @@ export function Footer() {
         </div>
 
         <div className="mt-8 border-t pt-8 text-center text-sm text-muted-foreground">
-          © {currentYear} ResearchHub. All rights reserved.
+          {t('footer.rights', { year: currentYear })}
         </div>
       </div>
     </footer>

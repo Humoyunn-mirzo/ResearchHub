@@ -8,9 +8,11 @@ import { useState } from 'react'
 import { Search, RefreshCw } from 'lucide-react'
 import Link from 'next/link'
 import { useAuthStore } from '@/lib/auth'
+import { useTranslation } from '@/lib/i18n'
 
 export function ProjectsList() {
   const { user, isAuthenticated } = useAuthStore()
+  const { t } = useTranslation()
   const [filters, setFilters] = useState<ProjectFilters>({
     page: 1,
     limit: 12,
@@ -51,10 +53,10 @@ export function ProjectsList() {
     const errMsg = error instanceof Error ? error.message : 'Unknown error'
     return (
       <div className="rounded-lg bg-destructive/10 p-4 text-center text-destructive">
-        <p className="font-medium">Failed to load projects. Please try again.</p>
+        <p className="font-medium">{t('projects.loadFailed')}</p>
         <p className="mt-2 text-sm opacity-90">{errMsg}</p>
         <Button variant="outline" size="sm" className="mt-3" onClick={() => refetch()}>
-          Retry
+          {t('common.retry')}
         </Button>
       </div>
     )
@@ -66,12 +68,9 @@ export function ProjectsList() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="text-sm text-muted-foreground">
           {data ? (
-            <>
-              Showing <span className="font-medium text-foreground">{data.data.length}</span> of{' '}
-              <span className="font-medium text-foreground">{data.total}</span> projects
-            </>
+            <span>{t('projects.showing', { shown: data.data.length, total: data.total })}</span>
           ) : (
-            <span>Browse projects and filter by topic.</span>
+            <span>{t('projects.browseHint')}</span>
           )}
         </div>
 
@@ -83,11 +82,11 @@ export function ProjectsList() {
             disabled={isFetching}
           >
             <RefreshCw className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
-            Refresh
+            {t('common.refresh')}
           </Button>
           {isAuthenticated && user?.role === 'PROFESSOR' && (
             <Link href="/dashboard/professor/projects/new">
-              <Button>+ Create project</Button>
+              <Button>{t('projects.create')}</Button>
             </Link>
           )}
         </div>
@@ -99,31 +98,31 @@ export function ProjectsList() {
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             type="text"
-            placeholder="Search projects..."
+            placeholder={t('projects.searchPlaceholder')}
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             className="pl-10"
           />
         </div>
-        <Button type="submit">Search</Button>
+        <Button type="submit">{t('common.search')}</Button>
       </form>
 
       {/* Filters */}
       <div className="flex flex-col gap-4 rounded-lg border bg-muted/30 p-4">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm font-medium text-muted-foreground">Status</span>
+          <span className="text-sm font-medium text-muted-foreground">{t('common.status')}</span>
           <div className="flex gap-2">
             <Button
               variant={filters.status === 'OPEN' ? 'default' : 'outline'}
               onClick={() => setFilters((prev) => ({ ...prev, status: 'OPEN', page: 1 }))}
             >
-              Open
+              {t('common.open')}
             </Button>
             <Button
               variant={filters.status === 'CLOSED' ? 'default' : 'outline'}
               onClick={() => setFilters((prev) => ({ ...prev, status: 'CLOSED', page: 1 }))}
             >
-              Closed
+              {t('common.closed')}
             </Button>
             <Button
               variant={filters.status === undefined ? 'default' : 'outline'}
@@ -132,12 +131,12 @@ export function ProjectsList() {
                 setFilters({ ...rest, page: 1 })
               }}
             >
-              All
+              {t('common.all')}
             </Button>
           </div>
 
           <div className="ml-auto flex items-center gap-2">
-            <span className="text-sm font-medium text-muted-foreground">Sort</span>
+            <span className="text-sm font-medium text-muted-foreground">{t('common.sort')}</span>
             <select
               value={filters.sort ?? 'newest'}
               onChange={(e) =>
@@ -145,17 +144,17 @@ export function ProjectsList() {
               }
               className="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
             >
-              <option value="newest">Newest</option>
-              <option value="oldest">Oldest</option>
+              <option value="newest">{t('common.newest')}</option>
+              <option value="oldest">{t('common.oldest')}</option>
             </select>
           </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm font-medium text-muted-foreground">Topics</span>
+          <span className="text-sm font-medium text-muted-foreground">{t('projects.topics')}</span>
           <div className="flex max-h-32 flex-wrap gap-2 overflow-y-auto">
             {topicNames.length === 0 ? (
-              <span className="text-sm text-muted-foreground">No topics configured</span>
+              <span className="text-sm text-muted-foreground">{t('projects.noTopics')}</span>
             ) : (
               topicNames.map((tag) => {
                 const active = selectedTags.includes(tag)
@@ -177,12 +176,12 @@ export function ProjectsList() {
 
           {selectedTags.length > 0 && (
             <div className="ml-auto flex items-center gap-2">
-              <Badge variant="secondary">{selectedTags.length} selected</Badge>
+              <Badge variant="secondary">{t('projects.selected', { count: selectedTags.length })}</Badge>
               <Button
                 variant="outline"
                 onClick={() => setFilters((prev) => ({ ...prev, tags: undefined, page: 1 }))}
               >
-                Clear
+                {t('common.clear')}
               </Button>
             </div>
           )}
@@ -192,8 +191,16 @@ export function ProjectsList() {
       {/* Active filter chips */}
       {(filters.search || (filters.tags && filters.tags.length > 0) || filters.status) && (
         <div className="flex flex-wrap items-center gap-2">
-          {filters.search && <Badge variant="outline">Search: “{filters.search}”</Badge>}
-          {filters.status && <Badge variant="outline">Status: {filters.status}</Badge>}
+          {filters.search && (
+            <Badge variant="outline">{t('projects.filterSearch', { term: filters.search })}</Badge>
+          )}
+          {filters.status && (
+            <Badge variant="outline">
+              {t('projects.filterStatus', {
+                status: filters.status === 'OPEN' ? t('projects.statusOpen') : t('projects.statusClosed'),
+              })}
+            </Badge>
+          )}
           {filters.tags?.map((t) => (
             <button key={t} type="button" onClick={() => toggleTag(t)}>
               <Badge variant="outline" className="hover:bg-accent">
@@ -227,27 +234,27 @@ export function ProjectsList() {
                 disabled={filters.page === 1}
                 onClick={() => setFilters((prev) => ({ ...prev, page: (prev.page || 1) - 1 }))}
               >
-                Previous
+                {t('common.previous')}
               </Button>
               <span className="flex items-center px-2 text-sm text-muted-foreground">
-                Page <span className="mx-1 font-medium text-foreground">{data.page}</span> of{' '}
-                <span className="ml-1 font-medium text-foreground">
-                  {Math.ceil(data.total / data.limit)}
-                </span>
+                {t('common.pageOf', {
+                  page: data.page,
+                  total: Math.ceil(data.total / data.limit),
+                })}
               </span>
               <Button
                 variant="outline"
                 disabled={data.page >= Math.ceil(data.total / data.limit)}
                 onClick={() => setFilters((prev) => ({ ...prev, page: (prev.page || 1) + 1 }))}
               >
-                Next
+                {t('common.next')}
               </Button>
             </div>
           )}
         </>
       ) : (
         <div className="rounded-lg border border-dashed p-12 text-center">
-          <p className="text-muted-foreground">No projects found</p>
+          <p className="text-muted-foreground">{t('projects.none')}</p>
         </div>
       )}
     </div>

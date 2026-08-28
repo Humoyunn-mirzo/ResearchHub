@@ -1,6 +1,12 @@
 spring:
   application:
     name: backend
+  servlet:
+    multipart:
+      # Professor CVs are capped at 10 MB and avatars at 2 MB in ProfessorService;
+      # the servlet limits must leave room for both.
+      max-file-size: 10MB
+      max-request-size: 12MB
   security:
     oauth2:
       client:

@@ -18,6 +18,14 @@ public abstract class ProfessorMapper {
         expression = "java(professor.getUniversity() != null ? professor.getUniversity().getId() : null)"
     )
     @Mapping(
+        target = "universityName",
+        expression = "java(professor.getUniversity() != null ? professor.getUniversity().getName() : null)"
+    )
+    @Mapping(
+        target = "hasProfilePicture",
+        expression = "java(professor.getProfilePicture() != null && professor.getProfilePicture().length > 0)"
+    )
+    @Mapping(
         target = "professorStatus",
         expression = "java(professor.getStatus() != null ? professor.getStatus().name() : \"CONFIRMED\")"
     )

@@ -1,8 +1,11 @@
+'use client'
+
 import type { Project } from '@/core/domain'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, Badge, Button } from '@/components/ui'
 import Link from 'next/link'
 import { Calendar, User, Users } from 'lucide-react'
 import { format } from 'date-fns'
+import { useTranslation } from '@/lib/i18n'
 
 type ProjectCardProps = {
   project: Project
@@ -10,19 +13,21 @@ type ProjectCardProps = {
 }
 
 export function ProjectCard({ project, actionSlot }: ProjectCardProps) {
+  const { t } = useTranslation()
+
   return (
     <Card className="flex h-full flex-col transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-lg">
       <CardHeader>
         <div className="flex items-start justify-between gap-2">
           <CardTitle className="line-clamp-2 text-xl">{project.title}</CardTitle>
           <Badge variant={project.status === 'OPEN' ? 'default' : 'secondary'}>
-            {project.status}
+            {project.status === 'OPEN' ? t('projects.statusOpen') : t('projects.statusClosed')}
           </Badge>
         </div>
       </CardHeader>
       <CardContent className="flex-1">
         <p className="line-clamp-3 text-sm text-muted-foreground">{project.description}</p>
-        
+
         <div className="mt-4 flex flex-wrap gap-2">
           {project.tags.slice(0, 3).map((tag) => (
             <Badge key={tag} variant="outline" className="text-xs">
@@ -55,7 +60,14 @@ export function ProjectCard({ project, actionSlot }: ProjectCardProps) {
           )}
           <div className="flex items-center gap-2">
             <Users className="h-4 w-4" />
-            <span>{project.maxStudents ? `${project.currentStudents}/${project.maxStudents} spots` : 'Open'}</span>
+            <span>
+              {project.maxStudents
+                ? t('projects.spots', {
+                    current: project.currentStudents,
+                    max: project.maxStudents,
+                  })
+                : t('common.open')}
+            </span>
           </div>
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4" />
@@ -66,7 +78,7 @@ export function ProjectCard({ project, actionSlot }: ProjectCardProps) {
       <CardFooter className="flex gap-2">
         <Link href={`/projects/${project.id}`} className="flex-1">
           <Button variant="outline" className="w-full">
-            View Details
+            {t('common.viewDetails')}
           </Button>
         </Link>
         {actionSlot}

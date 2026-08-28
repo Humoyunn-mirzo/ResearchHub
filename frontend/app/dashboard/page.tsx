@@ -3,10 +3,12 @@
 import { useAuthStore } from '@/lib/auth'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
+import { useTranslation } from '@/lib/i18n'
 
 export default function DashboardPage() {
   const { isAuthenticated, user } = useAuthStore()
   const router = useRouter()
+  const { t } = useTranslation()
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -36,7 +38,7 @@ export default function DashboardPage() {
     <div className="flex min-h-[calc(100vh-200px)] items-center justify-center">
       <div className="text-center">
         <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-        <p className="mt-4 text-muted-foreground">Redirecting...</p>
+        <p className="mt-4 text-muted-foreground">{t('dashboard.redirecting')}</p>
       </div>
     </div>
   )

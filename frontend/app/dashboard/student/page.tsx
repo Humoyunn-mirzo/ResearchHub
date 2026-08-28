@@ -7,9 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle, Badge, Button } from '@/compo
 import Link from 'next/link'
 import { BookOpen, FileText, Clock } from 'lucide-react'
 import { format } from 'date-fns'
+import { useTranslation } from '@/lib/i18n'
 
 export default function StudentDashboard() {
   const { user } = useAuthStore()
+  const { t } = useTranslation()
 
   const { data: applications } = useQuery({
     queryKey: ['applications', 'my', user?.id],
@@ -37,15 +39,17 @@ export default function StudentDashboard() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 lg:px-8">
       <div className="mb-8">
-        <h1 className="text-4xl font-bold">Student Dashboard</h1>
-        <p className="mt-2 text-muted-foreground">Welcome back, {user?.name}</p>
+        <h1 className="text-4xl font-bold">{t('student.title')}</h1>
+        <p className="mt-2 text-muted-foreground">
+          {t('dashboard.welcomeBack', { name: user?.name ?? '' })}
+        </p>
       </div>
 
       {/* Stats Grid */}
       <div className="mb-8 grid gap-6 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Applications</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('student.totalApplications')}</CardTitle>
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -55,7 +59,7 @@ export default function StudentDashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('student.pending')}</CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -65,7 +69,7 @@ export default function StudentDashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Accepted</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('student.accepted')}</CardTitle>
             <BookOpen className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -76,7 +80,7 @@ export default function StudentDashboard() {
 
       {/* My Applications */}
       <div className="mb-8">
-        <h2 className="mb-4 text-2xl font-semibold">My Applications</h2>
+        <h2 className="mb-4 text-2xl font-semibold">{t('student.myApplications')}</h2>
         {applications && applications.data.length > 0 ? (
           <div className="space-y-4">
             {applications.data.slice(0, 5).map((application) => (
@@ -85,7 +89,9 @@ export default function StudentDashboard() {
                   <div className="flex-1">
                     <h3 className="font-semibold">{application.project?.title}</h3>
                     <p className="text-sm text-muted-foreground">
-                      Applied {format(new Date(application.createdAt), 'MMM d, yyyy')}
+                      {t('student.appliedOn', {
+                        date: format(new Date(application.createdAt), 'MMM d, yyyy'),
+                      })}
                     </p>
                   </div>
                   <Badge
@@ -106,7 +112,7 @@ export default function StudentDashboard() {
         ) : (
           <Card>
             <CardContent className="py-8 text-center text-muted-foreground">
-              You haven&apos;t applied to any projects yet
+              {t('student.noApplications')}
             </CardContent>
           </Card>
         )}
@@ -115,19 +121,20 @@ export default function StudentDashboard() {
       {/* Available Projects */}
       <div>
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-2xl font-semibold">Available Projects</h2>
+          <h2 className="text-2xl font-semibold">{t('student.availableProjects')}</h2>
           <Link href="/projects">
-            <Button variant="outline">View All</Button>
+            <Button variant="outline">{t('common.viewAll')}</Button>
           </Link>
         </div>
         {isProjectsError && (
           <Card className="mb-4 border-destructive/50 bg-destructive/10">
             <CardContent className="py-4">
               <p className="text-sm text-destructive">
-                Failed to load projects. {projectsError instanceof Error ? projectsError.message : 'Please try again.'}
+                {t('student.loadProjectsFailed')}{' '}
+                {projectsError instanceof Error ? projectsError.message : t('student.tryAgain')}
               </p>
               <Button variant="outline" size="sm" className="mt-2" onClick={() => refetchProjects()}>
-                Retry
+                {t('common.retry')}
               </Button>
             </CardContent>
           </Card>
@@ -145,7 +152,7 @@ export default function StudentDashboard() {
                   </p>
                   <Link href={`/projects/${project.id}`} className="mt-4 block">
                     <Button variant="outline" className="w-full">
-                      View Details
+                      {t('common.viewDetails')}
                     </Button>
                   </Link>
                 </CardContent>
@@ -155,7 +162,7 @@ export default function StudentDashboard() {
         ) : (
           <Card>
             <CardContent className="py-8 text-center text-muted-foreground">
-              No projects available
+              {t('student.noProjects')}
             </CardContent>
           </Card>
         )}

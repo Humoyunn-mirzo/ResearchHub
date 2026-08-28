@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
@@ -40,6 +41,12 @@ public class GlobalExceptionHandler {
         String message = ex instanceof IllegalArgumentException iae ? iae.getMessage() : ex.getMessage();
         return ResponseEntity.badRequest()
             .body(new ApiErrorResponse(new ApiError(message != null ? message : "Invalid request")));
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ApiErrorResponse> handleUploadTooLarge(MaxUploadSizeExceededException ex) {
+        return ResponseEntity.status(413)
+            .body(new ApiErrorResponse(new ApiError("Uploaded file is too large")));
     }
 
     @ExceptionHandler(HttpMediaTypeNotSupportedException.class)

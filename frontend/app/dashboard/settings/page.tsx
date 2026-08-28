@@ -5,12 +5,14 @@ import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
-import { ArrowLeft, Settings as SettingsIcon } from 'lucide-react'
-import { ThemeToggle } from '@/components/layout/theme-toggle'
+import { ArrowLeft, Languages, Settings as SettingsIcon } from 'lucide-react'
+import { LanguageToggle, ThemeToggle } from '@/components/layout'
+import { useTranslation } from '@/lib/i18n'
 
 export default function SettingsPage() {
   const { isAuthenticated } = useAuthStore()
   const router = useRouter()
+  const { t } = useTranslation()
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -31,26 +33,41 @@ export default function SettingsPage() {
           <ArrowLeft className="h-5 w-5" />
         </Link>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-          <p className="text-muted-foreground">Manage your preferences</p>
+          <h1 className="text-3xl font-bold tracking-tight">{t('settingsPage.title')}</h1>
+          <p className="text-muted-foreground">{t('settingsPage.subtitle')}</p>
         </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <SettingsIcon className="h-5 w-5" />
-            Appearance
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="flex items-center justify-between">
-          <div>
-            <p className="font-medium">Theme</p>
-            <p className="text-sm text-muted-foreground">Switch between light and dark mode</p>
-          </div>
-          <ThemeToggle />
-        </CardContent>
-      </Card>
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <SettingsIcon className="h-5 w-5" />
+              {t('settingsPage.appearance')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex items-center justify-between">
+            <div>
+              <p className="font-medium">{t('settingsPage.theme')}</p>
+              <p className="text-sm text-muted-foreground">{t('settingsPage.themeHint')}</p>
+            </div>
+            <ThemeToggle />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Languages className="h-5 w-5" />
+              {t('settingsPage.language')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-sm text-muted-foreground">{t('language.description')}</p>
+            <LanguageToggle variant="inline" />
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }

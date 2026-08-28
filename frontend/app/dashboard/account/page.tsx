@@ -8,10 +8,12 @@ import { useMutation } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle, Button, Input, Label } from '@/components/ui'
 import { ArrowLeft } from 'lucide-react'
 import { updateAccountProfile } from '@/core/services'
+import { useTranslation } from '@/lib/i18n'
 
 export default function AccountPage() {
   const { user, isAuthenticated, updateUser } = useAuthStore()
   const router = useRouter()
+  const { t } = useTranslation()
   const [name, setName] = useState('')
 
   useEffect(() => {
@@ -28,7 +30,7 @@ export default function AccountPage() {
     onSuccess: () => {
       updateUser({ name: name.trim() })
     },
-    onError: (err: Error) => alert(err.message || 'Failed to save'),
+    onError: (err: Error) => alert(err.message || t('accountPage.saveFailed')),
   })
 
   const handleSave = (e: React.FormEvent) => {
@@ -49,36 +51,36 @@ export default function AccountPage() {
           <ArrowLeft className="h-5 w-5" />
         </Link>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Account settings</h1>
-          <p className="text-muted-foreground">Update your profile information</p>
+          <h1 className="text-3xl font-bold tracking-tight">{t('accountPage.title')}</h1>
+          <p className="text-muted-foreground">{t('accountPage.subtitle')}</p>
         </div>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Profile</CardTitle>
+          <CardTitle>{t('accountPage.profile')}</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSave} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('accountPage.email')}</Label>
               <Input id="email" type="email" value={user.email} disabled className="bg-muted" />
-              <p className="text-xs text-muted-foreground">Email cannot be changed</p>
+              <p className="text-xs text-muted-foreground">{t('accountPage.emailLocked')}</p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="name">Display name</Label>
+              <Label htmlFor="name">{t('accountPage.displayName')}</Label>
               <Input
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Your name"
+                placeholder={t('accountPage.displayNamePlaceholder')}
               />
             </div>
             <div className="text-sm text-muted-foreground">
-              <span className="font-medium">Role:</span> {user.role}
+              <span className="font-medium">{t('accountPage.role')}</span> {user.role}
             </div>
             <Button type="submit" disabled={saveMutation.isPending}>
-              {saveMutation.isPending ? 'Saving…' : 'Save changes'}
+              {saveMutation.isPending ? t('common.saving') : t('common.save')}
             </Button>
           </form>
         </CardContent>

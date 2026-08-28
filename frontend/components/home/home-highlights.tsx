@@ -5,8 +5,10 @@ import { useQuery } from '@tanstack/react-query'
 import { fetchProjects } from '@/core/services'
 import { Card, CardContent, CardHeader, CardTitle, Button, Badge } from '@/components/ui'
 import { BookOpen, GraduationCap, Building2, Users } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n'
 
 export function HomeHighlights() {
+  const { t } = useTranslation()
   const { data } = useQuery({
     queryKey: ['home', 'featured-projects'],
     queryFn: () => fetchProjects({ limit: 3, sort: 'newest' }),
@@ -15,22 +17,22 @@ export function HomeHighlights() {
   const featured = data?.data ?? []
 
   const stats = [
-    { label: 'Active projects', value: '50+', icon: BookOpen },
-    { label: 'Students', value: '2k+', icon: GraduationCap },
-    { label: 'Professors', value: '300+', icon: Users },
-    { label: 'Universities', value: '40+', icon: Building2 },
+    { key: 'projects', label: t('home.statActiveProjects'), value: '50+', icon: BookOpen },
+    { key: 'students', label: t('home.statStudents'), value: '2k+', icon: GraduationCap },
+    { key: 'professors', label: t('home.statProfessors'), value: '300+', icon: Users },
+    { key: 'universities', label: t('home.statUniversities'), value: '40+', icon: Building2 },
   ] as const
 
   return (
     <div className="space-y-16">
       {/* Stats */}
-      <section aria-label="Platform stats" className="mx-auto max-w-7xl px-4 pt-2 lg:px-8">
+      <section aria-label={t('home.statsLabel')} className="mx-auto max-w-7xl px-4 pt-2 lg:px-8">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {stats.map((s, i) => {
             const Icon = s.icon
             return (
               <Card
-                key={s.label}
+                key={s.key}
                 className="group overflow-visible border bg-card opacity-0 transition-all duration-300 ease-out hover:-translate-y-1.5 hover:scale-[1.02] hover:border-primary/40 hover:shadow-lg animate-fade-in-up"
                 style={{ animationDelay: `${i * 80}ms` }}
               >
@@ -54,16 +56,14 @@ export function HomeHighlights() {
       </section>
 
       {/* Featured projects */}
-      <section aria-label="Featured projects" className="mx-auto max-w-7xl px-4 lg:px-8">
+      <section aria-label={t('home.featuredLabel')} className="mx-auto max-w-7xl px-4 lg:px-8">
         <div className="mb-6 flex items-end justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-semibold tracking-tight">Featured projects</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Discover opportunities across disciplines and universities.
-            </p>
+            <h2 className="text-2xl font-semibold tracking-tight">{t('home.featuredTitle')}</h2>
+            <p className="mt-1 text-sm text-muted-foreground">{t('home.featuredSubtitle')}</p>
           </div>
           <Link href="/projects">
-            <Button variant="outline">View all</Button>
+            <Button variant="outline">{t('common.viewAll')}</Button>
           </Link>
         </div>
 
@@ -73,20 +73,22 @@ export function HomeHighlights() {
               <CardHeader>
                 <div className="flex items-start justify-between gap-2">
                   <CardTitle className="line-clamp-2 text-lg">{p.title}</CardTitle>
-                  <Badge variant={p.status === 'OPEN' ? 'default' : 'secondary'}>{p.status}</Badge>
+                  <Badge variant={p.status === 'OPEN' ? 'default' : 'secondary'}>
+                    {p.status === 'OPEN' ? t('projects.statusOpen') : t('projects.statusClosed')}
+                  </Badge>
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
                 <p className="line-clamp-3 text-sm text-muted-foreground">{p.description}</p>
                 {p.professor && (
                   <p className="text-sm">
-                    <span className="text-muted-foreground">Lead:</span>{' '}
+                    <span className="text-muted-foreground">{t('home.lead')}</span>{' '}
                     <span className="font-medium">{p.professor.name}</span>
                   </p>
                 )}
                 <Link href={`/projects/${p.id}`} className="inline-block">
                   <Button className="mt-2" size="sm">
-                    View project
+                    {t('home.viewProject')}
                   </Button>
                 </Link>
               </CardContent>

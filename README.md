@@ -11,10 +11,25 @@ This platform bridges academia by enabling:
 
 ## 🚀 Features
 - Professor profiles & research topic listings
+- Professor dashboard with an editable profile (photo, title, department, contact details, research interests)
 - Student profiles & application system
 - Interview scheduling interface
 - University & professor activity-based rankings
 - Admin interface for moderation & stats
+- Multilingual UI — English and Uzbek (O'zbekcha), switchable from the header or Settings
+
+
+## 🌐 Languages
+The interface ships with English (`en`) and Uzbek (`uz`). The chosen language is
+stored in a `locale` cookie so the server renders the correct language on the
+first paint, and it is applied to the `<html lang>` attribute.
+
+To add another language:
+1. Create `frontend/lib/i18n/messages/<code>.ts` exporting a `Messages` object.
+   TypeScript will list any key you have not translated yet.
+2. Register it in `frontend/lib/i18n/messages/index.ts`.
+3. Add the code to `LOCALES` and a label/flag to `LOCALE_META` in
+   `frontend/lib/i18n/config.ts`.
 
 
 ## 🧱 Tech Stack

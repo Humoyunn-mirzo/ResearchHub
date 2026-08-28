@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useAuthStore } from '@/lib/auth'
 import { logout } from '@/core/services'
 import { ChevronDown, User, Bell, Settings, LogOut } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
 type AccountMenuProps = {
@@ -13,6 +14,7 @@ type AccountMenuProps = {
 
 export function AccountMenu({ onNavigate }: AccountMenuProps = {}) {
   const { user, clearAuth } = useAuthStore()
+  const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
@@ -61,7 +63,7 @@ export function AccountMenu({ onNavigate }: AccountMenuProps = {}) {
               className="flex items-center gap-3 rounded-md px-3 py-2 text-sm hover:bg-accent"
             >
               <User className="h-4 w-4 text-muted-foreground" />
-              Profile & account
+              {t('account.profile')}
             </Link>
             <Link
               href="/dashboard/notifications"
@@ -72,7 +74,7 @@ export function AccountMenu({ onNavigate }: AccountMenuProps = {}) {
               className="flex items-center gap-3 rounded-md px-3 py-2 text-sm hover:bg-accent"
             >
               <Bell className="h-4 w-4 text-muted-foreground" />
-              Notifications
+              {t('account.notifications')}
             </Link>
             <Link
               href="/dashboard/settings"
@@ -83,7 +85,7 @@ export function AccountMenu({ onNavigate }: AccountMenuProps = {}) {
               className="flex items-center gap-3 rounded-md px-3 py-2 text-sm hover:bg-accent"
             >
               <Settings className="h-4 w-4 text-muted-foreground" />
-              Settings
+              {t('account.settings')}
             </Link>
             <hr className="my-2" />
             <button
@@ -96,7 +98,7 @@ export function AccountMenu({ onNavigate }: AccountMenuProps = {}) {
               className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-destructive hover:bg-accent"
             >
               <LogOut className="h-4 w-4" />
-              Log out
+              {t('account.logout')}
             </button>
           </div>
         </div>

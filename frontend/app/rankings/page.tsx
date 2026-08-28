@@ -5,15 +5,17 @@ import Link from 'next/link'
 import { useQuery } from '@tanstack/react-query'
 import { fetchRankings, type RankingCategory } from '@/core/services'
 import { Card, CardContent, CardHeader, CardTitle, Badge, Button } from '@/components/ui'
+import { useTranslation, type MessageKey } from '@/lib/i18n'
 
-const tabs: { id: RankingCategory; label: string }[] = [
-  { id: 'students', label: 'Top Students' },
-  { id: 'professors', label: 'Top Professors' },
-  { id: 'projects', label: 'Top Projects' },
-  { id: 'universities', label: 'Top Universities' },
+const tabs: { id: RankingCategory; labelKey: MessageKey }[] = [
+  { id: 'students', labelKey: 'rankings.students' },
+  { id: 'professors', labelKey: 'rankings.professors' },
+  { id: 'projects', labelKey: 'rankings.projects' },
+  { id: 'universities', labelKey: 'rankings.universities' },
 ]
 
 export default function RankingsPage() {
+  const { t } = useTranslation()
   const [tab, setTab] = useState<RankingCategory>('students')
 
   const { data, isLoading, error } = useQuery({
@@ -24,27 +26,25 @@ export default function RankingsPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 lg:px-8">
       <div className="mb-8">
-        <h1 className="text-4xl font-bold">Rankings</h1>
-        <p className="mt-2 text-muted-foreground">
-          Leaderboards celebrating active contributors across the platform.
-        </p>
+        <h1 className="text-4xl font-bold">{t('rankings.title')}</h1>
+        <p className="mt-2 text-muted-foreground">{t('rankings.subtitle')}</p>
       </div>
 
       <div className="mb-6 flex flex-wrap gap-2">
-        {tabs.map((t) => (
+        {tabs.map((item) => (
           <Button
-            key={t.id}
-            variant={tab === t.id ? 'default' : 'outline'}
-            onClick={() => setTab(t.id)}
+            key={item.id}
+            variant={tab === item.id ? 'default' : 'outline'}
+            onClick={() => setTab(item.id)}
           >
-            {t.label}
+            {t(item.labelKey)}
           </Button>
         ))}
       </div>
 
       {error ? (
         <div className="rounded-lg bg-destructive/10 p-4 text-center text-destructive">
-          Failed to load rankings.
+          {t('rankings.loadFailed')}
         </div>
       ) : isLoading ? (
         <div className="space-y-3">
@@ -55,7 +55,7 @@ export default function RankingsPage() {
       ) : data && data.length > 0 ? (
         <Card>
           <CardHeader>
-            <CardTitle>{tabs.find((t) => t.id === tab)?.label}</CardTitle>
+            <CardTitle>{t(tabs.find((item) => item.id === tab)?.labelKey ?? 'rankings.title')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             {data.map((row) => {
@@ -86,7 +86,7 @@ export default function RankingsPage() {
         </Card>
       ) : (
         <div className="rounded-lg border border-dashed p-12 text-center text-muted-foreground">
-          Rankings will appear once there&apos;s activity.
+          {t('rankings.empty')}
         </div>
       )}
     </div>

@@ -318,6 +318,35 @@ components:
           type: number
           minimum: 0
           maximum: 1
+        universityName:
+          type: string
+          nullable: true
+        title:
+          type: string
+          nullable: true
+          description: Academic title, e.g. "Associate Professor"
+        department:
+          type: string
+          nullable: true
+        officeLocation:
+          type: string
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        websiteUrl:
+          type: string
+          nullable: true
+        researchInterests:
+          type: string
+          nullable: true
+          description: Comma-separated list of research interests
+        hasProfilePicture:
+          type: boolean
+          description: True when the professor has uploaded an avatar
+        professorStatus:
+          type: string
+          enum: [PENDING, CONFIRMED]
 
     ProfessorCreateInput:
       type: object
@@ -346,16 +375,40 @@ components:
 
     ProfessorUpdateInput:
       type: object
+      description: >
+        Partial update. Only the properties present in the body are applied;
+        an explicit null clears the stored value.
       properties:
         name:
           type: string
         universityId:
           type: string
           format: uuid
+          nullable: true
         fieldOfStudy:
           type: string
+          nullable: true
         bio:
           type: string
+          nullable: true
+        title:
+          type: string
+          nullable: true
+        department:
+          type: string
+          nullable: true
+        officeLocation:
+          type: string
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        websiteUrl:
+          type: string
+          nullable: true
+        researchInterests:
+          type: string
+          nullable: true
 
     ProjectResponseBase:
       type: object
@@ -938,6 +991,86 @@ paths:
       responses:
         '204':
           description: Professor deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/professors/{id}/avatar:
+    parameters:
+      - $ref: '#/components/parameters/ID'
+
+    get:
+      tags: [professors]
+      summary: Get a professor profile picture
+      description: Public endpoint returning the raw image bytes.
+      operationId: getProfessorAvatar
+      responses:
+        '200':
+          description: Profile picture
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+            image/png:
+              schema:
+                type: string
+                format: binary
+            image/webp:
+              schema:
+                type: string
+                format: binary
+            image/gif:
+              schema:
+                type: string
+                format: binary
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      tags: [professors]
+      summary: Upload a professor profile picture
+      description: >
+        Professors may only upload to their own profile; admins may upload for
+        anyone. JPEG, PNG, WEBP, or GIF, max 2 MB.
+      operationId: uploadProfessorAvatar
+      security:
+        - accessTokenBearer: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Profile picture stored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfessorResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [professors]
+      summary: Remove a professor profile picture
+      operationId: deleteProfessorAvatar
+      security:
+        - accessTokenBearer: []
+      responses:
+        '200':
+          description: Profile picture removed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfessorResponse'
         '404':
           $ref: '#/components/responses/NotFound'
 

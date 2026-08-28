@@ -50,6 +50,9 @@ public class SecurityConfig {
                 auth.requestMatchers(HttpMethod.DELETE, "/students/**").hasRole("UNIVERSITY_ADMIN");
 
                 auth.requestMatchers(HttpMethod.GET, "/professors/**").permitAll();
+                // Profile picture upload/removal is self-service; ownership is enforced in the controller.
+                auth.requestMatchers(HttpMethod.POST, "/professors/*/avatar").hasAnyRole("UNIVERSITY_ADMIN", "PROFESSOR");
+                auth.requestMatchers(HttpMethod.DELETE, "/professors/*/avatar").hasAnyRole("UNIVERSITY_ADMIN", "PROFESSOR");
                 auth.requestMatchers(HttpMethod.POST, "/professors/**").hasRole("UNIVERSITY_ADMIN");
                 auth.requestMatchers(HttpMethod.PATCH, "/professors/**").hasAnyRole("UNIVERSITY_ADMIN", "PROFESSOR");
                 auth.requestMatchers(HttpMethod.DELETE, "/professors/**").hasRole("UNIVERSITY_ADMIN");

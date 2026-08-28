@@ -8,6 +8,7 @@ import { login, register, registerProfessor, bootstrap, checkBootstrapAvailable,
 import { useAuthStore } from '@/lib/auth'
 import { Button, Input, Label, Card, CardContent, CardHeader, CardTitle, Badge } from '@/components/ui'
 import { env } from '@/lib/env'
+import { useTranslation } from '@/lib/i18n'
 
 type Mode = 'login' | 'register' | 'bootstrap'
 
@@ -25,6 +26,7 @@ export function AuthShell({ mode }: { mode: Mode }) {
   const oauthSuccess = searchParams.get('oauth') === 'success'
   const oauthError = searchParams.get('error')
   const { setAuth, setAuthFromCookies } = useAuthStore()
+  const { t } = useTranslation()
 
   const [loginData, setLoginData] = useState<LoginInput>({ email: '', password: '' })
 
@@ -76,13 +78,13 @@ export function AuthShell({ mode }: { mode: Mode }) {
 
   useEffect(() => {
     if (oauthError === 'oauth_failed') {
-      alert('Google sign-in failed. Please try again.')
+      alert(t('auth.googleFailed'))
       router.replace('/login')
     } else if (oauthError === 'oauth_email_missing') {
-      alert('Could not get email from Google. Please try another account or sign up with email.')
+      alert(t('auth.googleEmailMissing'))
       router.replace('/login')
     }
-  }, [oauthError, router])
+  }, [oauthError, router, t])
 
   const loginMutation = useMutation({
     mutationFn: login,
@@ -91,7 +93,7 @@ export function AuthShell({ mode }: { mode: Mode }) {
       router.push(redirectTo)
     },
     onError: (error: Error) => {
-      alert(error.message || 'Login failed. Please check your credentials.')
+      alert(error.message || t('auth.loginFailed'))
     },
   })
 
@@ -102,7 +104,7 @@ export function AuthShell({ mode }: { mode: Mode }) {
       router.push(redirectTo)
     },
     onError: (error: Error) => {
-      alert(error.message || 'Registration failed. Please try again.')
+      alert(error.message || t('auth.registerFailed'))
     },
   })
 
@@ -113,7 +115,7 @@ export function AuthShell({ mode }: { mode: Mode }) {
       router.push(redirectTo)
     },
     onError: (error: Error) => {
-      alert(error.message || 'Registration failed. Please try again.')
+      alert(error.message || t('auth.registerFailed'))
     },
   })
 
@@ -124,7 +126,7 @@ export function AuthShell({ mode }: { mode: Mode }) {
       router.push(redirectTo)
     },
     onError: (error: Error) => {
-      alert(error.message || 'Bootstrap failed. Please try again.')
+      alert(error.message || t('auth.bootstrapFailed'))
     },
   })
 
@@ -133,7 +135,7 @@ export function AuthShell({ mode }: { mode: Mode }) {
       <div className="flex min-h-[calc(100vh-200px)] items-center justify-center px-4 py-12">
         <div className="text-center">
           <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto" />
-          <p className="mt-4 text-muted-foreground">Signing you in...</p>
+          <p className="mt-4 text-muted-foreground">{t('auth.signingYouIn')}</p>
         </div>
       </div>
     )
@@ -152,13 +154,13 @@ export function AuthShell({ mode }: { mode: Mode }) {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-2">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-2xl">{mode === 'login' ? 'Welcome back' : 'Create your account'}</CardTitle>
+            <CardTitle className="text-2xl">
+              {mode === 'login' ? t('auth.welcomeBack') : t('auth.createAccount')}
+            </CardTitle>
             <Badge variant="secondary">ResearchHub</Badge>
           </div>
           <p className="text-sm text-muted-foreground">
-            {mode === 'login'
-              ? 'Sign in to access your dashboard and apply to projects.'
-              : 'Join as a student or professor to collaborate on research projects.'}
+            {mode === 'login' ? t('auth.loginSubtitle') : t('auth.registerSubtitle')}
           </p>
 
           <div className={`grid gap-2 ${bootstrapStatus?.available ? 'grid-cols-3' : 'grid-cols-2'}`}>
@@ -167,14 +169,14 @@ export function AuthShell({ mode }: { mode: Mode }) {
               variant={mode === 'login' && !showBootstrap ? 'default' : 'outline'}
               onClick={() => onSwitch('login')}
             >
-              Sign in
+              {t('auth.signIn')}
             </Button>
             <Button
               type="button"
               variant={mode === 'register' ? 'default' : 'outline'}
               onClick={() => onSwitch('register')}
             >
-              Sign up
+              {t('auth.signUp')}
             </Button>
             {bootstrapStatus?.available && (
               <Button
@@ -182,7 +184,7 @@ export function AuthShell({ mode }: { mode: Mode }) {
                 variant={showBootstrap ? 'default' : 'outline'}
                 onClick={() => onSwitch('bootstrap')}
               >
-                Create first admin
+                {t('auth.createFirstAdmin')}
               </Button>
             )}
           </div>
@@ -197,11 +199,9 @@ export function AuthShell({ mode }: { mode: Mode }) {
               }}
               className="space-y-4"
             >
-              <p className="text-sm text-muted-foreground">
-                No users exist yet. Create the first admin account to get started.
-              </p>
+              <p className="text-sm text-muted-foreground">{t('auth.bootstrapHint')}</p>
               <div>
-                <Label htmlFor="bootstrap-email">Email</Label>
+                <Label htmlFor="bootstrap-email">{t('auth.email')}</Label>
                 <Input
                   id="bootstrap-email"
                   type="email"
@@ -212,7 +212,7 @@ export function AuthShell({ mode }: { mode: Mode }) {
                 />
               </div>
               <div>
-                <Label htmlFor="bootstrap-password">Password</Label>
+                <Label htmlFor="bootstrap-password">{t('auth.password')}</Label>
                 <Input
                   id="bootstrap-password"
                   type="password"
@@ -222,10 +222,10 @@ export function AuthShell({ mode }: { mode: Mode }) {
                   required
                   minLength={8}
                 />
-                <p className="mt-1 text-xs text-muted-foreground">At least 8 characters</p>
+                <p className="mt-1 text-xs text-muted-foreground">{t('auth.passwordHint')}</p>
               </div>
               <Button type="submit" className="w-full" disabled={bootstrapMutation.isPending}>
-                {bootstrapMutation.isPending ? 'Creating admin…' : 'Create first admin'}
+                {bootstrapMutation.isPending ? t('auth.creatingAdmin') : t('auth.createFirstAdmin')}
               </Button>
             </form>
           ) : mode === 'login' ? (
@@ -237,7 +237,7 @@ export function AuthShell({ mode }: { mode: Mode }) {
               className="space-y-4"
             >
               <div>
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t('auth.email')}</Label>
                 <Input
                   id="email"
                   type="email"
@@ -249,7 +249,7 @@ export function AuthShell({ mode }: { mode: Mode }) {
               </div>
 
               <div>
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">{t('auth.password')}</Label>
                 <Input
                   id="password"
                   type="password"
@@ -262,7 +262,7 @@ export function AuthShell({ mode }: { mode: Mode }) {
               </div>
 
               <Button type="submit" className="w-full" disabled={loginMutation.isPending}>
-                {loginMutation.isPending ? 'Signing in…' : 'Sign in'}
+                {loginMutation.isPending ? t('auth.signingIn') : t('auth.signIn')}
               </Button>
 
               <div className="relative">
@@ -270,7 +270,9 @@ export function AuthShell({ mode }: { mode: Mode }) {
                   <span className="w-full border-t" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+                  <span className="bg-background px-2 text-muted-foreground">
+                    {t('auth.orContinueWith')}
+                  </span>
                 </div>
               </div>
 
@@ -280,13 +282,13 @@ export function AuthShell({ mode }: { mode: Mode }) {
                 className="w-full"
                 onClick={() => { window.location.href = getOAuthUrl() }}
               >
-                Sign in with Google
+                {t('auth.googleSignIn')}
               </Button>
 
               <p className="text-center text-sm text-muted-foreground">
-                Don&apos;t have an account?{' '}
+                {t('auth.noAccount')}{' '}
                 <Link href="/register" className="font-medium text-primary hover:underline">
-                  Sign up
+                  {t('auth.signUp')}
                 </Link>
               </p>
             </form>
@@ -296,7 +298,7 @@ export function AuthShell({ mode }: { mode: Mode }) {
                 e.preventDefault()
                 if (registerData.role === 'PROFESSOR') {
                   if (!cvFile) {
-                    alert('Please upload your CV (PDF, DOC, or DOCX)')
+                    alert(t('auth.cvRequired'))
                     return
                   }
                   registerProfessorMutation.mutate({
@@ -321,7 +323,7 @@ export function AuthShell({ mode }: { mode: Mode }) {
             >
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="sm:col-span-2">
-                  <Label htmlFor="name">Full name</Label>
+                  <Label htmlFor="name">{t('auth.fullName')}</Label>
                   <Input
                     id="name"
                     type="text"
@@ -333,7 +335,7 @@ export function AuthShell({ mode }: { mode: Mode }) {
                 </div>
 
                 <div className="sm:col-span-2">
-                  <Label htmlFor="reg-email">Email</Label>
+                  <Label htmlFor="reg-email">{t('auth.email')}</Label>
                   <Input
                     id="reg-email"
                     type="email"
@@ -345,7 +347,7 @@ export function AuthShell({ mode }: { mode: Mode }) {
                 </div>
 
                 <div className="sm:col-span-2">
-                  <Label htmlFor="reg-password">Password</Label>
+                  <Label htmlFor="reg-password">{t('auth.password')}</Label>
                   <Input
                     id="reg-password"
                     type="password"
@@ -355,11 +357,11 @@ export function AuthShell({ mode }: { mode: Mode }) {
                     required
                     minLength={8}
                   />
-                  <p className="mt-1 text-xs text-muted-foreground">At least 8 characters</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{t('auth.passwordHint')}</p>
                 </div>
 
                 <div className="sm:col-span-2">
-                  <Label htmlFor="role">Role</Label>
+                  <Label htmlFor="role">{t('auth.role')}</Label>
                   <select
                     id="role"
                     value={registerData.role}
@@ -371,15 +373,15 @@ export function AuthShell({ mode }: { mode: Mode }) {
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                     required
                   >
-                    <option value="STUDENT">Student</option>
-                    <option value="PROFESSOR">Professor</option>
+                    <option value="STUDENT">{t('auth.roleStudent')}</option>
+                    <option value="PROFESSOR">{t('auth.roleProfessor')}</option>
                   </select>
                 </div>
 
                 {registerData.role === 'PROFESSOR' && (
                   <>
                     <div className="sm:col-span-2">
-                      <Label htmlFor="cv">CV (required)</Label>
+                      <Label htmlFor="cv">{t('auth.cvLabel')}</Label>
                       <Input
                         id="cv"
                         type="file"
@@ -388,23 +390,23 @@ export function AuthShell({ mode }: { mode: Mode }) {
                         required={registerData.role === 'PROFESSOR'}
                         className="cursor-pointer"
                       />
-                      <p className="mt-1 text-xs text-muted-foreground">PDF, DOC, or DOCX. Max 10MB.</p>
+                      <p className="mt-1 text-xs text-muted-foreground">{t('auth.cvHint')}</p>
                     </div>
                     <div className="sm:col-span-2">
-                      <Label htmlFor="fieldOfStudy">Field of study (optional)</Label>
+                      <Label htmlFor="fieldOfStudy">{t('auth.fieldOfStudy')}</Label>
                       <Input
                         id="fieldOfStudy"
                         type="text"
                         value={registerData.fieldOfStudy ?? 'General'}
                         onChange={(e) => setRegisterData({ ...registerData, fieldOfStudy: e.target.value })}
-                        placeholder="e.g., Computer Science"
+                        placeholder={t('auth.fieldOfStudyPlaceholder')}
                       />
                     </div>
                   </>
                 )}
 
                 <div className="sm:col-span-2">
-                  <Label htmlFor="universityId">University ID (optional)</Label>
+                  <Label htmlFor="universityId">{t('auth.universityId')}</Label>
                   <Input
                     id="universityId"
                     type="text"
@@ -426,17 +428,17 @@ export function AuthShell({ mode }: { mode: Mode }) {
               >
                 {registerData.role === 'PROFESSOR'
                   ? registerProfessorMutation.isPending
-                    ? 'Creating account…'
-                    : 'Sign up (pending approval)'
+                    ? t('auth.creatingAccount')
+                    : t('auth.signUpPending')
                   : registerMutation.isPending
-                    ? 'Creating account…'
-                    : 'Sign up'}
+                    ? t('auth.creatingAccount')
+                    : t('auth.signUp')}
               </Button>
 
               <p className="text-center text-sm text-muted-foreground">
-                Already have an account?{' '}
+                {t('auth.haveAccount')}{' '}
                 <Link href="/login" className="font-medium text-primary hover:underline">
-                  Sign in
+                  {t('auth.signIn')}
                 </Link>
               </p>
             </form>

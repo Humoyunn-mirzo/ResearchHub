@@ -4,22 +4,25 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Button } from '@/components/ui'
 import { useAuthStore } from '@/lib/auth'
+import { useTranslation } from '@/lib/i18n'
 import { Menu, X } from 'lucide-react'
 import { useState } from 'react'
 import { AccountMenu } from './account-menu'
+import { LanguageToggle } from './language-toggle'
 import { ThemeToggle } from './theme-toggle'
 
 export function Header() {
   const pathname = usePathname()
   const { isAuthenticated, user } = useAuthStore()
+  const { t } = useTranslation()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const navigation = [
-    { name: 'Projects', href: '/projects' },
-    { name: 'Rankings', href: '/rankings' },
-    { name: 'About', href: '/about' },
+    { name: t('nav.projects'), href: '/projects' },
+    { name: t('nav.rankings'), href: '/rankings' },
+    { name: t('nav.about'), href: '/about' },
     ...(user?.role === 'STUDENT' || user?.role === 'PROFESSOR'
-      ? [{ name: 'Messages', href: '/dashboard/messages' as const }]
+      ? [{ name: t('nav.messages'), href: '/dashboard/messages' as const }]
       : []),
   ]
 
@@ -38,7 +41,7 @@ export function Header() {
             className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
-            <span className="sr-only">Toggle menu</span>
+            <span className="sr-only">{t('nav.toggleMenu')}</span>
             {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
         </div>
@@ -46,7 +49,7 @@ export function Header() {
         <div className="hidden lg:flex lg:gap-x-8">
           {navigation.map((item) => (
             <Link
-              key={item.name}
+              key={item.href}
               href={item.href}
               className={`text-sm font-semibold leading-6 ${
                 pathname === item.href ? 'text-primary' : 'text-foreground hover:text-primary'
@@ -58,21 +61,22 @@ export function Header() {
         </div>
 
         <div className="hidden lg:flex lg:flex-1 lg:items-center lg:justify-end lg:gap-x-4">
+          <LanguageToggle />
           <ThemeToggle />
           {isAuthenticated && user ? (
             <>
               <Link href="/dashboard">
-                <Button variant="ghost">Dashboard</Button>
+                <Button variant="ghost">{t('nav.dashboard')}</Button>
               </Link>
               <AccountMenu />
             </>
           ) : (
             <>
               <Link href="/login">
-                <Button variant="ghost">Sign in</Button>
+                <Button variant="ghost">{t('nav.signIn')}</Button>
               </Link>
               <Link href="/register">
-                <Button>Sign up</Button>
+                <Button>{t('nav.signUp')}</Button>
               </Link>
             </>
           )}
@@ -85,7 +89,7 @@ export function Header() {
           <div className="space-y-2 px-4 pb-4">
             {navigation.map((item) => (
               <Link
-                key={item.name}
+                key={item.href}
                 href={item.href}
                 className="block rounded-lg px-3 py-2 text-base font-semibold leading-7 hover:bg-accent"
                 onClick={() => setMobileMenuOpen(false)}
@@ -94,14 +98,15 @@ export function Header() {
               </Link>
             ))}
             <div className="flex flex-col gap-2 border-t pt-4">
-              <div className="flex justify-center">
+              <div className="flex justify-center gap-2">
+                <LanguageToggle />
                 <ThemeToggle />
               </div>
               {isAuthenticated && user ? (
                 <>
                   <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)}>
                     <Button variant="ghost" className="w-full">
-                      Dashboard
+                      {t('nav.dashboard')}
                     </Button>
                   </Link>
                   <div className="mt-2">
@@ -112,11 +117,11 @@ export function Header() {
                 <>
                   <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
                     <Button variant="ghost" className="w-full">
-                      Sign in
+                      {t('nav.signIn')}
                     </Button>
                   </Link>
                   <Link href="/register" onClick={() => setMobileMenuOpen(false)}>
-                    <Button className="mt-2 w-full">Sign up</Button>
+                    <Button className="mt-2 w-full">{t('nav.signUp')}</Button>
                   </Link>
                 </>
               )}

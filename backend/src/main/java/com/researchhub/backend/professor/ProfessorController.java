@@ -6,13 +6,19 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.researchhub.backend.common.ApiResponse;
 import com.researchhub.backend.common.ApiResponsePage;
+import com.researchhub.backend.security.CurrentUserService;
 
+import java.time.Duration;
 import java.util.UUID;
 
 @RestController
@@ -21,6 +27,7 @@ import java.util.UUID;
 public class ProfessorController {
 
     private final ProfessorService professorService;
+    private final CurrentUserService currentUserService;
 
     @GetMapping
     public ResponseEntity<ApiResponsePage<ProfessorResponse>> getProfessors(
@@ -53,7 +60,8 @@ public class ProfessorController {
 
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<ProfessorResponse>> updateProfessor(@PathVariable UUID id, @RequestBody UpdateProfessorRequest request) {
-    ProfessorResponse response = professorService.updateProfessor(id, request);
+        assertCanManageProfile(id);
+        ProfessorResponse response = professorService.updateProfessor(id, request);
         return ResponseEntity.ok(new ApiResponse<>(response));
     }
 
@@ -61,5 +69,43 @@ public class ProfessorController {
     public ResponseEntity<Void> deleteProfessor(@PathVariable UUID id) {
         professorService.deleteProfessor(id);
         return ResponseEntity.noContent().build();
+    }
+
+    /** Public avatar image. Returns 404 when the professor has not uploaded one. */
+    @GetMapping("/{id}/avatar")
+    public ResponseEntity<byte[]> getProfilePicture(@PathVariable UUID id) {
+        return professorService.getProfilePicture(id)
+                .map(picture -> ResponseEntity.ok()
+                        .contentType(MediaType.parseMediaType(picture.contentType()))
+                        .cacheControl(CacheControl.maxAge(Duration.ofMinutes(5)).cachePrivate())
+                        .body(picture.data()))
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @PostMapping(value = "/{id}/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse<ProfessorResponse>> uploadProfilePicture(
+            @PathVariable UUID id,
+            @RequestParam("file") MultipartFile file
+    ) {
+        assertCanManageProfile(id);
+        ProfessorResponse response = professorService.uploadProfilePicture(id, file);
+        return ResponseEntity.ok(new ApiResponse<>(response));
+    }
+
+    @DeleteMapping("/{id}/avatar")
+    public ResponseEntity<ApiResponse<ProfessorResponse>> deleteProfilePicture(@PathVariable UUID id) {
+        assertCanManageProfile(id);
+        ProfessorResponse response = professorService.deleteProfilePicture(id);
+        return ResponseEntity.ok(new ApiResponse<>(response));
+    }
+
+    /** Professors may only edit their own profile; admins may edit any. */
+    private void assertCanManageProfile(UUID professorId) {
+        if (currentUserService.isDeveloperOrUniversityAdmin()) {
+            return;
+        }
+        if (!professorId.equals(currentUserService.getCurrentUserId())) {
+            throw new AccessDeniedException("You can only edit your own professor profile");
+        }
     }
 }
